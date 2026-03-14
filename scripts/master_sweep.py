@@ -86,9 +86,11 @@ def phase_2_massive_sweep(gains_dict: dict):
                 
                 cmd = (
                     f"python main.py -m "
+                    f"hydra/sweeper=basic "               # <--- Bypasses Optuna for a strict grid sweep
                     f"simulation.sys_id={sys_id} "
                     f"simulation.controller_type='{ctrl_name}' "
-                    f"simulation.random_seed='choice({seeds})' "
+                    f"simulation.randomize_x0=True "      # <--- Forces the MC random state generation
+                    f"simulation.random_seed={seeds} "    # <--- Feeds the 20 seeds to the basic sweeper
                     f"math_constants.k_1={gains['k_1']} "
                     f"math_constants.k_2={gains['k_2']} "
                     f"math_constants.beta={gains['beta']} "
@@ -97,7 +99,6 @@ def phase_2_massive_sweep(gains_dict: dict):
                     f"neural_network.k_0={arch['k_0']} "
                     f"neural_network.k_i={arch['k_i']} "
                     f"neural_network.hidden_width={arch['hidden_width']} "
-                    f"hydra.sweeper.n_jobs=2" 
                 )
                 run_cmd(cmd)
 
@@ -109,9 +110,9 @@ if __name__ == "__main__":
 
     # --- INPUT YOUR OPTUNA RESULTS HERE AFTER RUNNING --tune ---
     HARDCODED_GAINS = {
-        1: {"k_1": 5.0, "k_2": 5.0, "beta": 2.0},
-        2: {"k_1": 5.0, "k_2": 5.0, "beta": 2.0},
-        3: {"k_1": 5.0, "k_2": 5.0, "beta": 2.0}
+        1: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
+        2: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
+        3: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0}
     }
 
     if not any(vars(args).values()):

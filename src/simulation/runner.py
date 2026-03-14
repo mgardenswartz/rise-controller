@@ -126,14 +126,25 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.neural_network.k_i
     )
 
+    # 1. Split the seed into two independent PRNG keys
     key = jax.random.PRNGKey(config.simulation.random_seed)
+    key_theta, key_x0 = jax.random.split(key)
+
+    # 2. Initialize weights using the first key
     theta_hat_0 = jnp.where(
         config.neural_network.init_type == "normal",
-        config.neural_network.init_mean + config.neural_network.init_std * jax.random.normal(key, (p,)),
+        config.neural_network.init_mean + config.neural_network.init_std * jax.random.normal(key_theta, (p,)),
         jnp.zeros((p,))
     )
 
-    x_0 = jnp.array(config.simulation.x0)
+    # 3. Initialize state using the boolean flag and the second key
+    if config.simulation.randomize_x0:
+        # Uniform distribution between -2.5 and 2.5
+        x_0 = jax.random.uniform(key_x0, shape=(2,), minval=-2.5, maxval=2.5)
+    else:
+        # Strict deterministic coordinate from config.yaml
+        x_0 = jnp.array(config.simulation.x0)
+
     gamma_0 = config.math_constants.initial_gamma_scalar * jnp.eye(p)
     I_0 = jnp.zeros_like(x_0)
     
