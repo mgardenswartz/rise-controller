@@ -1,0 +1,99 @@
+defaults:
+  - override hydra/sweeper: optuna
+
+hydra:
+  sweeper:
+    sampler:
+      _target_: optuna.samplers.TPESampler
+      seed: 42
+      n_startup_trials: 10
+    direction: minimize
+    study_name: adaptive_gains_sweep
+    storage: null
+    n_trials: 200
+    n_jobs: 1
+    
+directories:
+  output_parent_dir: "output"
+  recycle_bin_dir: "recycle_bin"
+  results_iterable_dir_prefix: "run_"
+  default_config_dir: "configurations"
+  figures_dir: "figures"
+  raw_data_dir: "raw_data"
+  config_filename: "config.yaml"
+  statistics_filename: "statistics.json"
+
+simulation:
+  controller_type: "nn_in_integral"
+  t0: 0.0
+  duration_seconds: 30.0
+  save_interval_seconds: 0.05
+  excitation_duration_seconds: 15.0
+  x0: [1.5, -0.5]
+  max_solver_steps: 50000
+  atol: 1e-5
+  rtol: 1e-5
+  random_seed: 582394
+  debug_print: false
+
+math_constants:
+  learning_rate_upper_bound_mult: 2.0
+  learning_rate_lower_bound_mult: 0.1
+  nu: 1.0
+  k_theta_hat: 0.001
+  k_1: 5.0
+  k_2: 5.0
+  beta: 0.5
+  initial_gamma_scalar: 1.5
+  theta_bar: 20.0
+
+agent_network:
+  d_in: 2
+  d_out: 2
+  b: 0
+  k_0: 1
+  k_i: 2
+  hidden_width: 8
+  hidden_activation: "swish"
+  output_activation: "tanh"
+  shortcut_activation: "linear"
+  init_type: "normal"
+  init_mean: 0.1
+  init_std: 0.05
+
+data_labels:
+  tracking_error: "tracking_errors"
+  parameter_estimate: "parameter_estimates"
+  states: "states"
+  control_effort: "control_efforts"
+  desired_states: "desired_states"
+  reconstruction_error: "reconstruction_errors"
+  learning_rate_matrix: "learning_rate_matrix"
+  nn_output: "nn_output"
+  time: "Time"
+
+plot_settings:
+  aspect_ratio_x: 10
+  aspect_ratio_y: 6
+  dpi: 300
+  label_font_size: 12
+  save_extension: "svg"
+  show_figures: false
+  filename_tracking_error_norm: "tracking_error_norm"
+  filename_control_input_norm: "control_input_norm"
+  filename_states: "states_and_desired"
+  filename_theta_hat: "theta_hat"
+  filename_gamma: "gamma"
+  filename_reconstruction_error: "reconstruction_error"
+
+animation:
+  fps: 60
+  dpi: 200
+  trail_duration_seconds: 1.5
+  filename: "trajectory_animation.mp4"
+  color_state_dot: "#E63946FF"      
+  color_state_trail: "#E6394680"    
+  color_desired_star: "#1D3557FF"   
+  color_desired_trail: "#457B9D80"  
+  x_label: "Position $x_1$"
+  y_label: "Velocity $x_2$"
