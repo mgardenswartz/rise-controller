@@ -365,6 +365,7 @@ You may wish to put the integrand
 
  in its own state for the sake of the ODE solver.
  Up to you.
+ Be ruthless and decide what's best.
 \begin_inset Formula 
 \[
 \dot{I}=\beta\text{sgn}\left(e\left(s\right)\right)+\left(k_{1}k_{2}+1\right)e\left(s\right)-\Psi\left(\kappa\left(s\right),\widehat{\theta}\left(s\right)\right)\quad I\left(t_{0}\right)=\mathbf{0}_{n}
