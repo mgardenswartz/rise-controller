@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.core.config_schema import ExperimentConfig
+from src.conf.config_schema import ExperimentConfig
 
 def _setup_figure(config: ExperimentConfig) -> tuple[plt.Figure, plt.Axes]:
     fig, ax = plt.subplots(figsize=(config.plot_settings.aspect_ratio_x, config.plot_settings.aspect_ratio_y))

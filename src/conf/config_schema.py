@@ -13,6 +13,7 @@ class DirectoriesConfig:
 
 @dataclass
 class SimulationConfig:
+    controller_type: str
     t0: float
     duration_seconds: float
     save_interval_seconds: float
@@ -26,11 +27,13 @@ class SimulationConfig:
 
 @dataclass
 class MathConstantsConfig:
-    gamma_bar_upper: float
-    gamma_bar_lower: float
+    learning_rate_upper_bound_mult: float
+    learning_rate_lower_bound_mult: float
     nu: float
     k_theta_hat: float
-    k_e: float
+    k_1: float
+    k_2: float
+    beta: float
     initial_gamma_scalar: float
     theta_bar: float
 
@@ -38,10 +41,13 @@ class MathConstantsConfig:
 class NeuralNetworkConfig:
     d_in: int
     d_out: int
-    num_layers: int
+    b: int
+    k_0: int
+    k_i: int
     hidden_width: int
     hidden_activation: str
     output_activation: str
+    shortcut_activation: str
     init_type: str
     init_mean: float
     init_std: float

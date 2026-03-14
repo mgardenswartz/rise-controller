@@ -47,7 +47,7 @@ math_constants:
   initial_gamma_scalar: 1.5
   theta_bar: 20.0
 
-agent_network:
+neural_network:
   d_in: 2
   d_out: 2
   b: 0

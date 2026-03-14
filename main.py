@@ -8,7 +8,7 @@ from hydra.core.hydra_config import HydraConfig
 from hydra.types import RunMode
 from omegaconf import DictConfig
 
-from src.core.config_schema import (
+from src.conf.config_schema import (
     DataLabelsConfig,
     DirectoriesConfig,
     ExperimentConfig,
@@ -30,7 +30,6 @@ if platform.system() == "Darwin":
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig) -> float:
     
-    # Check if we are in an Optuna multirun or a standard single run
     is_multirun = HydraConfig.get().mode == RunMode.MULTIRUN
 
     if not is_multirun:
@@ -52,7 +51,7 @@ def main(cfg: DictConfig) -> float:
         neural_network=NeuralNetworkConfig(**cfg.neural_network),
         data_labels=DataLabelsConfig(**cfg.data_labels),
         plot_settings=PlotSettingsConfig(**cfg.plot_settings),
-         animation=AnimationConfig(**cfg.animation)
+        animation=AnimationConfig(**cfg.animation)
     )
 
     try:
@@ -60,9 +59,9 @@ def main(cfg: DictConfig) -> float:
     except RuntimeError as e:
         if is_multirun:
             print(f"\n[SWEEP WARNING] Finite-time escape detected. Rejecting parameters.")
-            return 1e9  # Massive penalty for Optuna
+            return 1e9 
         else:
-            raise e # Let it crash loudly for a single run
+            raise e 
 
     output_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
     figures_dir = output_dir / config.directories.figures_dir
@@ -70,10 +69,8 @@ def main(cfg: DictConfig) -> float:
     export_to_pickle(sim_data, output_dir, "simulation_data.pkl")
     generate_all_plots(output_dir / "simulation_data.pkl", figures_dir, config)
     
-    # Calculate statistics
     stats = calculate_and_save_statistics(sim_data, output_dir, config)
 
-    # Conditionally print statistics
     if not is_multirun:
         print(f"\n{'='*40}")
         print("SIMULATION STATISTICS")
@@ -83,8 +80,6 @@ def main(cfg: DictConfig) -> float:
             print(f"{formatted_key}: {value:.3f}")
         print(f"{'='*40}\n")
 
-    # --- CUSTOM OPTUNA COST FUNCTION ---
-    # J = RMS(e) + 0.01 * RMS(u)
     cost = stats["rms_tracking_error_norm"] + 0.01 * stats["rms_control_input_norm"]
     
     if is_multirun:

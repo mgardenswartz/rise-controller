@@ -2,105 +2,121 @@ import diffrax
 import jax
 import jax.numpy as jnp
 
-from src.core.config_schema import ExperimentConfig
+from src.conf.config_schema import ExperimentConfig
 from src.math.dynamics import (
     desired_trajectory,
     desired_velocity,
     excitation_signal,
     f_sys,
-    g_sys,
 )
-from src.math.networks import get_total_parameters, phi_network
+from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
 from src.math.update_laws import (
-    compute_control_input,
+    compute_controller_in_integral,
+    compute_controller_outside_integral,
     compute_gamma_dot,
     compute_theta_hat_dot,
 )
 
-def get_jacobian(
-    theta_hat: jax.Array,
-    x: jax.Array,
-    d_in: int,
-    hidden_width: int,
-    d_out: int,
-    num_layers: int,
-    h_act_idx: jax.Array,
-    o_act_idx: jax.Array
-) -> jax.Array:
-    return jax.jacfwd(phi_network, argnums=0)(
-        theta_hat, x, d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx
-    )
-
 def vector_field(
     t: float,
-    y: tuple[jax.Array, jax.Array, jax.Array],
-    args: tuple # Simplified type hint for brevity
-) -> tuple[jax.Array, jax.Array, jax.Array]:
-    x, theta_hat, gamma = y
+    y: tuple[jax.Array, jax.Array, jax.Array, jax.Array],
+    args: tuple 
+) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+    x, theta_hat, gamma, z = y
+    gamma = 0.5 * (gamma + gamma.T)
     
-    (d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx, 
-     excitation_duration, k_e, k_theta_hat, gamma_bar_upper, 
-     gamma_bar_lower, nu, theta_bar, debug_print) = args
+    (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
+     excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate_upper_bound_mult, 
+     learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print, 
+     controller_flag) = args
 
     x_d = desired_trajectory(t)
     x_d_dot = desired_velocity(t)
-    e = x - x_d
+    e = x_d - x
 
-    phi_eval = phi_network(theta_hat, x, d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx)
-    jacobian = get_jacobian(theta_hat, x, d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx)
+    phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+    jacobian = compute_jacobian(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
 
     u_1 = excitation_signal(t, excitation_duration)
-    u = compute_control_input(x, x_d_dot, e, phi_eval, u_1, k_e, g_sys)
 
-    x_dot = f_sys(x) + jnp.dot(g_sys(x), u)
+    def in_integral_branch(_: None) -> tuple[jax.Array, jax.Array]:
+        return compute_controller_in_integral(e, x_d_dot, z, u_1, phi_eval, k_1, k_2, beta)
+
+    def outside_integral_branch(_: None) -> tuple[jax.Array, jax.Array]:
+        return compute_controller_outside_integral(e, x_d_dot, z, u_1, phi_eval, k_1, k_2, beta)
+
+    u, z_dot = jax.lax.cond(
+        controller_flag == 1,
+        in_integral_branch,
+        outside_integral_branch,
+        None
+    )
+
+    x_dot = f_sys(x) + u
     theta_hat_dot = compute_theta_hat_dot(e, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
     
     p = theta_hat.shape[0]
-    gamma_dot = compute_gamma_dot(gamma, jacobian, gamma_bar_upper, gamma_bar_lower, nu, p)
+    gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
     gamma_dot_sym = 0.5 * (gamma_dot + gamma_dot.T)
 
     jax.lax.cond(
         debug_print,
-        lambda _: jax.debug.print("t: {t} | ||x||: {x_norm} | ||u||: {u_norm}", 
-                                  t=t, x_norm=jnp.linalg.norm(x), u_norm=jnp.linalg.norm(u)),
+        lambda _: jax.debug.print("t: {t} | ||e||: {e_norm} | ||u||: {u_norm}", 
+                                  t=t, e_norm=jnp.linalg.norm(e), u_norm=jnp.linalg.norm(u)),
         lambda _: None, None
     )
 
-    return x_dot, theta_hat_dot, gamma_dot_sym
+    return x_dot, theta_hat_dot, gamma_dot_sym, z_dot
 
 def reconstruct_single_step(
     t: float,
     x: jax.Array,
     theta_hat: jax.Array,
+    z: jax.Array,
     args: tuple
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     
-    (d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx, excitation_duration, k_e) = args
+    (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
+     excitation_duration, k_1, k_2, beta, controller_flag) = args
     
     x_d = desired_trajectory(t)
     x_d_dot = desired_velocity(t)
-    e = x - x_d
+    e = x_d - x
 
-    phi_eval = phi_network(theta_hat, x, d_in, hidden_width, d_out, num_layers, h_act_idx, o_act_idx)
+    phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
     u_1 = excitation_signal(t, excitation_duration)
-    u = compute_control_input(x, x_d_dot, e, phi_eval, u_1, k_e, g_sys)
+    
+    def in_integral_branch(_: None) -> tuple[jax.Array, jax.Array]:
+        return compute_controller_in_integral(e, x_d_dot, z, u_1, phi_eval, k_1, k_2, beta)
+
+    def outside_integral_branch(_: None) -> tuple[jax.Array, jax.Array]:
+        return compute_controller_outside_integral(e, x_d_dot, z, u_1, phi_eval, k_1, k_2, beta)
+
+    u, _ = jax.lax.cond(
+        controller_flag == 1,
+        in_integral_branch,
+        outside_integral_branch,
+        None
+    )
+
     f_eval = f_sys(x)
     epsilon = phi_eval - f_eval
 
     return x_d, e, phi_eval, u, epsilon
 
 def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
-    
-    # Map the YAML strings to JAX-compatible integer arrays
     act_map = {"linear": 0, "swish": 1, "tanh": 2}
     h_act_idx = jnp.array(act_map[config.neural_network.hidden_activation.lower()])
     o_act_idx = jnp.array(act_map[config.neural_network.output_activation.lower()])
+    shortcut_act_idx = jnp.array(act_map[config.neural_network.shortcut_activation.lower()])
 
     p = get_total_parameters(
         config.neural_network.d_in, 
         config.neural_network.hidden_width, 
         config.neural_network.d_out,
-        config.neural_network.num_layers
+        config.neural_network.b,
+        config.neural_network.k_0,
+        config.neural_network.k_i
     )
 
     key = jax.random.PRNGKey(config.simulation.random_seed)
@@ -111,24 +127,51 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
 
     x_0 = jnp.array(config.simulation.x0)
     gamma_0 = config.math_constants.initial_gamma_scalar * jnp.eye(p)
-    y0 = (x_0, theta_hat_0, gamma_0)
+    
+    controller_flag = jnp.array(1 if config.simulation.controller_type == "nn_in_integral" else 0)
+    
+    e_0 = desired_trajectory(config.simulation.t0) - x_0
+    x_d_dot_0 = desired_velocity(config.simulation.t0)
+    phi_eval_0 = resnet_network(theta_hat_0, x_0, config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out, config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+    u_1_0 = excitation_signal(config.simulation.t0, config.simulation.excitation_duration_seconds)
 
-    # Expand math_args to include the network topology and activations
+    def init_in_integral(_: None) -> jax.Array:
+        return - (config.math_constants.k_1 + config.math_constants.k_2) * e_0 - x_d_dot_0 - u_1_0
+
+    def init_outside_integral(_: None) -> jax.Array:
+        return - x_d_dot_0 - phi_eval_0 - (config.math_constants.k_1 + config.math_constants.k_2) * e_0 - u_1_0
+
+    z_0 = jax.lax.cond(
+        controller_flag == 1,
+        init_in_integral,
+        init_outside_integral,
+        None
+    )
+
+    y0 = (x_0, theta_hat_0, gamma_0, z_0)
+
     math_args = (
         config.neural_network.d_in,
         config.neural_network.hidden_width,
         config.neural_network.d_out,
-        config.neural_network.num_layers,
+        config.neural_network.b,
+        config.neural_network.k_0,
+        config.neural_network.k_i,
         h_act_idx,
         o_act_idx,
+        shortcut_act_idx,
         config.simulation.excitation_duration_seconds,
-        config.math_constants.k_e,
+        config.math_constants.k_1,
+        config.math_constants.k_2,
+        config.math_constants.beta,
         config.math_constants.k_theta_hat,
-        config.math_constants.gamma_bar_upper,
-        config.math_constants.gamma_bar_lower,
+        config.math_constants.learning_rate_upper_bound_mult,
+        config.math_constants.learning_rate_lower_bound_mult,
+        config.math_constants.initial_gamma_scalar,
         config.math_constants.nu,
         config.math_constants.theta_bar,
-        config.simulation.debug_print
+        config.simulation.debug_print,
+        controller_flag
     )
 
     term = diffrax.ODETerm(vector_field)
@@ -151,21 +194,27 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         raise RuntimeError(f"SIMULATION FAILED: Diffrax Error {sol.result}")
 
     t_out = sol.ts
-    x_out, theta_hat_out, gamma_out = sol.ys
+    x_out, theta_hat_out, gamma_out, z_out = sol.ys
 
     recon_args = (
         config.neural_network.d_in,
         config.neural_network.hidden_width,
         config.neural_network.d_out,
-        config.neural_network.num_layers,
+        config.neural_network.b,
+        config.neural_network.k_0,
+        config.neural_network.k_i,
         h_act_idx,
         o_act_idx,
+        shortcut_act_idx,
         config.simulation.excitation_duration_seconds,
-        config.math_constants.k_e
+        config.math_constants.k_1,
+        config.math_constants.k_2,
+        config.math_constants.beta,
+        controller_flag
     )
 
-    vmap_reconstruct = jax.vmap(reconstruct_single_step, in_axes=(0, 0, 0, None))
-    x_d_out, e_out, phi_eval_out, u_out, epsilon_out = vmap_reconstruct(t_out, x_out, theta_hat_out, recon_args)
+    vmap_reconstruct = jax.vmap(reconstruct_single_step, in_axes=(0, 0, 0, 0, None))
+    x_d_out, e_out, phi_eval_out, u_out, epsilon_out = vmap_reconstruct(t_out, x_out, theta_hat_out, z_out, recon_args)
 
     return {
         config.data_labels.time: t_out,

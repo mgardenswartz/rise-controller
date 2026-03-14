@@ -1,4 +1,3 @@
-from typing import Callable
 import jax
 import jax.numpy as jnp
 
@@ -29,20 +28,24 @@ def cai_projection(
 def compute_gamma_dot(
     gamma: jax.Array,
     jacobian: jax.Array,
-    gamma_bar_upper: float,
-    gamma_bar_lower: float,
+    learning_rate_upper_bound_mult: float,
+    learning_rate_lower_bound_mult: float,
+    initial_gamma_scalar: float,
     nu: float,
     p: int
 ) -> jax.Array:
-    alpha = (gamma_bar_upper * (gamma_bar_lower ** 3)) / (gamma_bar_upper ** 2 - gamma_bar_lower ** 2)
-    beta = gamma_bar_lower
-    gamma_scalar = (gamma_bar_lower * gamma_bar_upper) / (gamma_bar_upper ** 2 - gamma_bar_lower ** 2)
+    gamma_bar = initial_gamma_scalar * learning_rate_upper_bound_mult
+    gamma_under = initial_gamma_scalar * learning_rate_lower_bound_mult
+
+    alpha = (gamma_bar * (gamma_under ** 3)) / (gamma_bar ** 2 - gamma_under ** 2)
+    beta_gamma = gamma_under
+    gamma_scalar = (gamma_under * gamma_bar) / (gamma_bar ** 2 - gamma_under ** 2)
 
     norm_j_sq = jnp.linalg.norm(jacobian) ** 2
     j_t_j = jnp.dot(jacobian.T, jacobian)
 
     term1 = alpha * jnp.eye(p)
-    term2 = beta * gamma
+    term2 = beta_gamma * gamma
     term3 = gamma_scalar * jnp.dot(gamma, gamma)
     matrix_fraction = jnp.dot(gamma, jnp.dot(j_t_j, gamma)) / (1.0 + nu * norm_j_sq)
     
@@ -59,15 +62,30 @@ def compute_theta_hat_dot(
     unprojected = jnp.dot(gamma, jnp.dot(jacobian.T, error) - k_theta_hat * theta_hat)
     return cai_projection(unprojected, theta_hat, theta_bar, gamma)
 
-def compute_control_input(
-    x: jax.Array,
+def compute_controller_in_integral(
+    e: jax.Array,
     x_d_dot: jax.Array,
-    error: jax.Array,
-    phi_eval: jax.Array,
+    z: jax.Array,
     u_1: jax.Array,
-    k_e: float,
-    g_func: Callable[[jax.Array], jax.Array]
-) -> jax.Array:
-    g_val = g_func(x)
-    g_pseudo = jnp.linalg.pinv(g_val)
-    return jnp.dot(g_pseudo, x_d_dot - k_e * error - phi_eval) + u_1
+    phi_eval: jax.Array,
+    k_1: float,
+    k_2: float,
+    beta: float
+) -> tuple[jax.Array, jax.Array]:
+    u = (k_1 + k_2) * e + x_d_dot + z + u_1
+    z_dot = beta * jnp.sign(e) + (k_1 * k_2 + 1.0) * e - phi_eval
+    return u, z_dot
+
+def compute_controller_outside_integral(
+    e: jax.Array,
+    x_d_dot: jax.Array,
+    z: jax.Array,
+    u_1: jax.Array,
+    phi_eval: jax.Array,
+    k_1: float,
+    k_2: float,
+    beta: float
+) -> tuple[jax.Array, jax.Array]:
+    u = x_d_dot + phi_eval + (k_1 + k_2) * e + z + u_1
+    z_dot = (k_1 * k_2 + 1.0) * e + beta * jnp.sign(e)
+    return u, z_dot

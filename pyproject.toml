@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ultimate-adaptive-workspace"
+name = "rise-workspace"
 version = "0.1.0"
-description = "JAX/Diffrax framework for continuous-time adaptive control and neural network integration."
+description = "JAX/Diffrax framework for continuous-time RISE controllers."
 authors = [
     { name = "Max Gardenswartz", email = "mgardenswartz@ufl.edu" }
 ]
