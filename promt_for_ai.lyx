@@ -90,7 +90,12 @@ New controller to compare against: (where
 \begin_inset Formula $r\triangleq\dot{e}+k_{1}e$
 \end_inset
 
-)
+) Let 
+\begin_inset Formula $\kappa\triangleq\left[\begin{array}{cc}
+x^{\top} & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{2n}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -296,6 +301,91 @@ No default arguments for functions.
  No doc strings.
  Ever.
  Type hints always.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Let 
+\begin_inset Formula $\kappa\triangleq\left[\begin{array}{cc}
+x^{\top} & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{2n}$
+\end_inset
+
+.
+ The 
+\begin_inset Quotes eld
+\end_inset
+
+new
+\begin_inset Quotes erd
+\end_inset
+
+ controller is
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+u=\left(k_{1}+k_{2}\right)e+u_{1}+\dot{x}_{d}+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\left(s\right)\right)+\left(k_{1}k_{2}+1\right)e\left(s\right)-\Psi\left(\kappa\left(s\right),\widehat{\theta}\left(s\right)\right)\right)ds
+\]
+
+\end_inset
+
+It may be easier to implement in the ensemble state as the original ODE.
+ Just pretend you know 
+\begin_inset Formula $r$
+\end_inset
+
+ (which you wouldn't in implementation but it doesn't matter here because
+ you can integral an unknown derivative to get a known signal)
+\begin_inset Formula 
+\[
+\dot{u}=k_{1}\dot{e}+\ddot{x}_{d}-\Psi\left(\kappa,\widehat{\theta}\right)+\beta\text{sgn}\left(e\right)+e+k_{2}r
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The baseline controller is
+\begin_inset Formula 
+\[
+u=\dot{x}_{d}+\Psi\left(x,\widehat{\theta}\right)+\left(k_{1}+k_{2}\right)e+\intop_{t_{0}}^{t}\left(\left(k_{1}k_{2}+1\right)e\left(s\right)+\beta\text{sgn}\left(e\left(s\right)\right)\right)ds+u_{1}
+\]
+
+\end_inset
+
+You may wish to put the integrand 
+\begin_inset Formula $\beta\text{sgn}\left(e\left(s\right)\right)+\left(k_{1}k_{2}+1\right)e\left(s\right)-\Psi\left(\kappa\left(s\right),\widehat{\theta}\left(s\right)\right)$
+\end_inset
+
+ in its own state for the sake of the ODE solver.
+ Up to you.
+\begin_inset Formula 
+\[
+\dot{I}=\beta\text{sgn}\left(e\left(s\right)\right)+\left(k_{1}k_{2}+1\right)e\left(s\right)-\Psi\left(\kappa\left(s\right),\widehat{\theta}\left(s\right)\right)\quad I\left(t_{0}\right)=\mathbf{0}_{n}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+u=\left(k_{1}+k_{2}\right)e+\dot{x}_{d}+I
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
