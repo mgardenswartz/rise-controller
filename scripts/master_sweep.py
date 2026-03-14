@@ -16,7 +16,6 @@ def run_cmd(cmd: str):
     print(f"\n[EXEC] {cmd}")
     
     # Clone the current environment and disable JAX's aggressive memory preallocation
-    # This is critical for Apple Silicon (M-series) unified memory when running n_jobs > 1
     env = os.environ.copy()
     env["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
     
@@ -46,6 +45,8 @@ def phase_1_tune_baselines():
         cmd = (
             f"python main.py -m "
             f"simulation.sys_id={sys_id} "
+            f"simulation.controller_type='baseline' "
+            f"neural_network.d_in=2 "
             f"math_constants.k_theta_hat=0.0 "
             f"neural_network.init_mean=0.0 "
             f"neural_network.init_std=0.0 "
@@ -53,7 +54,7 @@ def phase_1_tune_baselines():
             f"math_constants.k_2='interval(0.1, 15.0)' "
             f"math_constants.beta='interval(0.0, 10.0)' "
             f"hydra.sweeper.n_trials=50 "
-            f"hydra.sweeper.n_jobs=2" # Parallelize Optuna trials
+            f"hydra.sweeper.n_jobs=2" 
         )
         run_cmd(cmd)
         
@@ -69,7 +70,6 @@ def phase_2_massive_sweep(gains_dict: dict):
     ]
     
     for sys_id in SYSTEMS:
-        # Failsafe if you forgot to update the gains dictionary
         if sys_id not in gains_dict:
             print(f"Skipping System {sys_id}: No gains defined in dictionary.")
             continue
@@ -97,12 +97,12 @@ def phase_2_massive_sweep(gains_dict: dict):
                     f"neural_network.k_0={arch['k_0']} "
                     f"neural_network.k_i={arch['k_i']} "
                     f"neural_network.hidden_width={arch['hidden_width']} "
-                    f"hydra.sweeper.n_jobs=2" # Parallelize Monte Carlo trials
+                    f"hydra.sweeper.n_jobs=2" 
                 )
                 run_cmd(cmd)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Master Orchestrator for the RISE ResNet Control Sweep")
+    parser = argparse.ArgumentParser(description="Master Orchestrator for the DNN Adaptive Control Sweep")
     parser.add_argument("--tune", action="store_true", help="Run Phase 1: Tune baseline robust gains with NN off.")
     parser.add_argument("--sweep", action="store_true", help="Run Phase 2: Execute the massive Monte Carlo sweep.")
     args = parser.parse_args()
