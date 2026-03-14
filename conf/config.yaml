@@ -26,6 +26,7 @@ directories:
 simulation:
   controller_type: "nn_in_integral"
   t0: 0.0
+  sys_id: 1
   duration_seconds: 30.0
   save_interval_seconds: 0.05
   excitation_duration_seconds: 15.0

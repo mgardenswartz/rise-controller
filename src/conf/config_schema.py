@@ -15,6 +15,7 @@ class DirectoriesConfig:
 class SimulationConfig:
     controller_type: str
     t0: float
+    sys_id: int
     duration_seconds: float
     save_interval_seconds: float
     excitation_duration_seconds: float
