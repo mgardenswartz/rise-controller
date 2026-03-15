@@ -4,7 +4,7 @@ import jax.numpy as jnp
 from pathlib import Path
 
 # Adjust imports based on your repository structure
-from src.core.config_schema import ExperimentConfig, SimulationConfig, MathConstantsConfig
+from src.conf.config_schema import ExperimentConfig, SimulationConfig, MathConstantsConfig
 from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
@@ -28,8 +28,8 @@ def objective(trial: optuna.Trial, base_config: ExperimentConfig, f_sys_choice: 
     base_config.math_constants.k_2 = k_2
     base_config.math_constants.beta = beta
     base_config.math_constants.k_theta_hat = 0.0
-    base_config.agent_network.init_mean = 0.0
-    base_config.agent_network.init_std = 0.0
+    base_config.neural_network.init_mean = 0.0
+    base_config.neural_network.init_std = 0.0
     
     # Freeze the learning rate to prevent unnecessary computation
     base_config.math_constants.learning_rate_upper_bound_mult = 1.0

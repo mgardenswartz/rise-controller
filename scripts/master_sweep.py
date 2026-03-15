@@ -1,15 +1,17 @@
 import subprocess
+import sys
 import argparse
 import os
 from pathlib import Path
 
-# Imports for Phase 2 in-process JAX execution
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
 import jax
 from hydra import initialize, compose
 import yaml
 import dataclasses
 
-# Adjust these imports if your core logic schemas are named differently
 from src.conf.config_schema import (
     ExperimentConfig, DirectoriesConfig, SimulationConfig,
     MathConstantsConfig, NeuralNetworkConfig, DataLabelsConfig,
