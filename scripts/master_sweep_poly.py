@@ -7,6 +7,7 @@ import jax.numpy as jnp
 import optuna
 import yaml
 import dataclasses
+from master_sweep import find_matched_architecture, build_config
 from hydra import initialize, compose
 
 # Force Python to see the project root directory
@@ -26,58 +27,6 @@ SYSTEMS = [4, 5, 6]
 MC_TRIALS = 20
 TARGET_PARAMS = {"small": 100, "medium": 200, "large": 400}
 N_STATES_MAP = {4: 2, 5: 3, 6: 4}
-
-def find_matched_architecture(target_p: int, d_in: int, d_out: int) -> dict:
-    from architecture_matcher import get_total_parameters
-    best_diff = float('inf')
-    best = {}
-    for w in range(2, 64):
-        for b in range(0, 10):
-            for k_0 in range(1, 4):
-                for k_i in range(1, 4):
-                    p = get_total_parameters(d_in, w, d_out, b, k_0, k_i)
-                    if abs(p - target_p) < best_diff:
-                        best_diff = abs(p - target_p)
-                        best = {"b": b, "k_0": k_0, "k_i": k_i, "hidden_width": w, "actual_p": p}
-                    if best_diff == 0:
-                        return best
-    return best
-
-def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out):
-    try:
-        with initialize(version_base=None, config_path="../src/conf"):
-            cfg = compose(config_name="config")
-    except Exception:
-        with initialize(version_base=None, config_path="src/conf"):
-            cfg = compose(config_name="config")
-        
-    config = ExperimentConfig(
-        directories=DirectoriesConfig(**cfg.directories),
-        simulation=SimulationConfig(**cfg.simulation),
-        math_constants=MathConstantsConfig(**cfg.math_constants),
-        neural_network=NeuralNetworkConfig(**cfg.neural_network),
-        data_labels=DataLabelsConfig(**cfg.data_labels),
-        plot_settings=PlotSettingsConfig(**cfg.plot_settings),
-        animation=AnimationConfig(**cfg.animation)
-    )
-    
-    config.simulation.sys_id = sys_id
-    config.simulation.controller_type = ctrl_name
-    config.simulation.randomize_x0 = True
-    config.simulation.random_seed = seed
-    
-    config.math_constants.k_1 = gains["k_1"]
-    config.math_constants.k_2 = gains["k_2"]
-    config.math_constants.beta = gains["beta"]
-    
-    config.neural_network.d_in = d_in
-    config.neural_network.d_out = d_out
-    config.neural_network.b = arch["b"]
-    config.neural_network.k_0 = arch["k_0"]
-    config.neural_network.k_i = arch["k_i"]
-    config.neural_network.hidden_width = arch["hidden_width"]
-    
-    return config
 
 def phase_1_tune_baselines():
     print("="*50 + "\nPHASE 1: NATIVE OPTUNA TUNING (MULTI-D)\n" + "="*50)
@@ -178,9 +127,9 @@ if __name__ == "__main__":
 
     # Update this after running --tune
     HARDCODED_GAINS = {
-        4: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        5: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        6: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0}
+        1: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        2: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        3: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5}
     }
 
     if not any(vars(args).values()):

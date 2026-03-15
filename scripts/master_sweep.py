@@ -43,12 +43,13 @@ def find_matched_architecture(target_p: int, d_in: int, d_out: int = 2) -> dict:
     return best
 
 def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
-    try:
-        with initialize(version_base=None, config_path="../src/conf"):
-            cfg = compose(config_name="config")
-    except Exception:
-        with initialize(version_base=None, config_path="src/conf"):
-            cfg = compose(config_name="config")
+    from hydra.core.global_hydra import GlobalHydra
+    
+    # Crucial for Optuna: Clear Hydra's global state so it can safely reload 50 times in a row
+    GlobalHydra.instance().clear()
+    
+    with initialize(version_base=None, config_path="../conf"):
+        cfg = compose(config_name="config")
         
     config = ExperimentConfig(
         directories=DirectoriesConfig(**cfg.directories),
@@ -70,7 +71,11 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     config.math_constants.beta = gains["beta"]
     
     config.neural_network.d_in = d_in
-    config.neural_network.d_out = d_out
+    
+    # In master_sweep.py, we can just safely overwrite d_out if it exists in the schema
+    if hasattr(config.neural_network, 'd_out'):
+        config.neural_network.d_out = d_out
+        
     config.neural_network.b = arch["b"]
     config.neural_network.k_0 = arch["k_0"]
     config.neural_network.k_i = arch["k_i"]
@@ -185,9 +190,9 @@ if __name__ == "__main__":
 
     # Default robust baseline. Update this after running --tune.
     HARDCODED_GAINS = {
-        1: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        2: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        3: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0}
+        1: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        2: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        3: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5}
     }
 
     if not any(vars(args).values()):

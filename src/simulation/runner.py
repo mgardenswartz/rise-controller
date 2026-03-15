@@ -130,6 +130,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     y0 = (x_0, theta_hat_0, gamma_0, I_0)
     is_integral = config.simulation.controller_type == "nn_in_integral"
 
+    # 1. REMOVE sys_id from the end of math_args
     math_args = (
         config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
@@ -137,11 +138,11 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
         config.math_constants.k_theta_hat, config.math_constants.learning_rate_upper_bound_mult,
         config.math_constants.learning_rate_lower_bound_mult, config.math_constants.initial_gamma_scalar,
-        config.math_constants.nu, config.math_constants.theta_bar, config.simulation.debug_print,
-        sys_id
+        config.math_constants.nu, config.math_constants.theta_bar, config.simulation.debug_print
     )
 
-    vector_field = create_vector_field(is_integral)
+    # 2. ADD sys_id directly to the factory call
+    vector_field = create_vector_field(is_integral, sys_id)
     term = diffrax.ODETerm(vector_field)
     solver = diffrax.Tsit5()
     
@@ -155,7 +156,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     sol = diffrax.diffeqsolve(
         term, solver, t0=t0, t1=t1, dt0=save_interval, y0=y0, args=math_args,
         saveat=saveat, stepsize_controller=stepsize_controller,
-        progress_meter=diffrax.TqdmProgressMeter(), max_steps=config.simulation.max_solver_steps 
+        progress_meter=diffrax.NoProgressMeter(), max_steps=config.simulation.max_solver_steps 
     )
 
     if sol.result != diffrax.RESULTS.successful:
@@ -164,18 +165,19 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     t_out = sol.ts
     x_out, theta_hat_out, gamma_out, I_out = sol.ys
 
+    # 3. REMOVE sys_id from the end of recon_args
     recon_args = (
         config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
         h_act_idx, o_act_idx, shortcut_act_idx, config.simulation.excitation_duration_seconds,
-        config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
-        sys_id
+        config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta
     )
 
-    reconstruct_single_step = create_reconstruct_single_step(is_integral)
+    # 4. ADD sys_id directly to the reconstruction factory call
+    reconstruct_single_step = create_reconstruct_single_step(is_integral, sys_id)
     vmap_reconstruct = jax.vmap(reconstruct_single_step, in_axes=(0, 0, 0, 0, None))
     x_d_out, e_out, phi_eval_out, u_out, epsilon_out = vmap_reconstruct(t_out, x_out, theta_hat_out, I_out, recon_args)
-
+    
     return {
         config.data_labels.time: t_out,
         config.data_labels.states: x_out,
