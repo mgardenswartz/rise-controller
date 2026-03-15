@@ -127,9 +127,9 @@ if __name__ == "__main__":
 
     # Update this after running --tune
     HARDCODED_GAINS = {
-        1: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
-        2: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
-        3: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5}
+        4: {"k_1": 7.0, "k_2": 7.0, "beta": 4.5},
+        5: {"k_1": 7.0, "k_2": 7.0, "beta": 4.5},
+        6: {"k_1": 7.0, "k_2": 7.0, "beta": 4.5}
     }
 
     if not any(vars(args).values()):
