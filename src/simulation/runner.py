@@ -99,7 +99,7 @@ def create_reconstruct_single_step(is_integral: bool):
             phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
         else:
             phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            u = x_d_dot + phi_eval + (k_1 + k_2) * e + I_state + u_1
+            u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
 
         f_eval = get_f_sys(x, sys_id)
         epsilon = phi_eval - f_eval
