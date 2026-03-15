@@ -4,56 +4,54 @@ import jax.numpy as jnp
 
 from src.conf.config_schema import ExperimentConfig
 from src.math.dynamics import (
-    desired_trajectory,
-    desired_velocity,
-    excitation_signal,
+    get_desired_trajectory,
+    get_desired_velocity,
+    get_excitation_signal,
     f_sys_1,
     f_sys_2,
     f_sys_3,
+    f_sys_4,
+    f_sys_5,
+    f_sys_6
+
 )
 from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
 from src.math.update_laws import compute_gamma_dot, compute_theta_hat_dot
 
 
 def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
-    return jax.lax.switch(
-        sys_id - 1,
-        [f_sys_1, f_sys_2, f_sys_3],
-        x
-    )
+    # Evaluated at trace-time as a static python block
+    if sys_id == 1: return f_sys_1(x)
+    if sys_id == 2: return f_sys_2(x)
+    if sys_id == 3: return f_sys_3(x)
+    if sys_id == 4: return f_sys_4(x)
+    if sys_id == 5: return f_sys_5(x)
+    if sys_id == 6: return f_sys_6(x)
 
-
-def create_vector_field(is_integral: bool):
-    def vector_field(
-        t: float,
-        y: tuple[jax.Array, jax.Array, jax.Array, jax.Array],
-        args: tuple
-    ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array]:
+def create_vector_field(is_integral: bool, sys_id: int): # <--- sys_id moved to factory
+    def vector_field(t: float, y: tuple, args: tuple):
         x, theta_hat, gamma, I_state = y
         gamma = 0.5 * (gamma + gamma.T)
         
+        # sys_id removed from args
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate_upper_bound_mult, 
-         learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print, 
-         sys_id) = args
+         learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print) = args
 
-        x_d = desired_trajectory(t)
-        x_d_dot = desired_velocity(t)
+        x_d = get_desired_trajectory(t, sys_id)
+        x_d_dot = get_desired_velocity(t, sys_id)
         e = x_d - x
-        u_1 = excitation_signal(t, excitation_duration)
+        u_1 = get_excitation_signal(t, excitation_duration, d_out)
 
         if is_integral:
             u = (k_1 + k_2) * e + x_d_dot + I_state + u_1
             kappa = jnp.concatenate([x, u])
-            
             phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            
             I_dot = beta * jnp.sign(e) + (k_1 * k_2 + 1.0) * e - phi_eval
         else:
             phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             jacobian = compute_jacobian(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            
             u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
             I_dot = (k_1 * k_2 + 1.0) * e + beta * jnp.sign(e)
 
@@ -62,36 +60,19 @@ def create_vector_field(is_integral: bool):
         
         p = theta_hat.shape[0]
         gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
-        gamma_dot_sym = 0.5 * (gamma_dot + gamma_dot.T)
-
-        jax.lax.cond(
-            debug_print,
-            lambda _: jax.debug.print("t: {t} | ||e||: {e_norm} | ||u||: {u_norm}", 
-                                      t=t, e_norm=jnp.linalg.norm(e), u_norm=jnp.linalg.norm(u)),
-            lambda _: None, None
-        )
-
-        return x_dot, theta_hat_dot, gamma_dot_sym, I_dot
-
+        
+        return x_dot, theta_hat_dot, 0.5 * (gamma_dot + gamma_dot.T), I_dot
     return vector_field
 
-
-def create_reconstruct_single_step(is_integral: bool):
-    def reconstruct_single_step(
-        t: float,
-        x: jax.Array,
-        theta_hat: jax.Array,
-        I_state: jax.Array,
-        args: tuple
-    ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
-        
+def create_reconstruct_single_step(is_integral: bool, sys_id: int):
+    def reconstruct_single_step(t, x, theta_hat, I_state, args):
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
-         excitation_duration, k_1, k_2, beta, sys_id) = args
+         excitation_duration, k_1, k_2, beta) = args
         
-        x_d = desired_trajectory(t)
-        x_d_dot = desired_velocity(t)
+        x_d = get_desired_trajectory(t, sys_id)
+        x_d_dot = get_desired_velocity(t, sys_id)
         e = x_d - x
-        u_1 = excitation_signal(t, excitation_duration)
+        u_1 = get_excitation_signal(t, excitation_duration, d_out)
 
         if is_integral:
             u = (k_1 + k_2) * e + x_d_dot + I_state + u_1
@@ -101,11 +82,8 @@ def create_reconstruct_single_step(is_integral: bool):
             phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
 
-        f_eval = get_f_sys(x, sys_id)
-        epsilon = phi_eval - f_eval
-
+        epsilon = phi_eval - get_f_sys(x, sys_id)
         return x_d, e, phi_eval, u, epsilon
-
     return reconstruct_single_step
 
 
@@ -138,12 +116,13 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     )
 
     # 3. Initialize state using the boolean flag and the second key
+    d_out = config.neural_network.d_out
     if config.simulation.randomize_x0:
-        # Uniform distribution between -2.5 and 2.5
-        x_0 = jax.random.uniform(key_x0, shape=(2,), minval=-2.5, maxval=2.5)
+        x_0 = jax.random.uniform(key_x0, shape=(d_out,), minval=-2.5, maxval=2.5)
     else:
-        # Strict deterministic coordinate from config.yaml
-        x_0 = jnp.array(config.simulation.x0)
+        # Fallback padding if strict YAML config has fewer dimensions than needed
+        yaml_x0 = jnp.array(config.simulation.x0)
+        x_0 = jnp.pad(yaml_x0, (0, max(0, d_out - len(yaml_x0))))[:d_out]
 
     gamma_0 = config.math_constants.initial_gamma_scalar * jnp.eye(p)
     I_0 = jnp.zeros_like(x_0)

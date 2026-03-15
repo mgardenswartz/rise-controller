@@ -181,9 +181,9 @@ if __name__ == "__main__":
 
     # --- INPUT YOUR OPTUNA RESULTS HERE AFTER RUNNING --tune ---
     HARDCODED_GAINS = {
-        1: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        2: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0},
-        3: {"k_1": 14.0, "k_2": 14.0, "beta": 5.0}
+        1: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        2: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5},
+        3: {"k_1": 7.0, "k_2": 7.0, "beta": 2.5}
     }
 
     if not any(vars(args).values()):
