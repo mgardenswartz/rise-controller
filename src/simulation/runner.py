@@ -54,7 +54,7 @@ def create_vector_field(is_integral: bool):
             phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             jacobian = compute_jacobian(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             
-            u = x_d_dot + phi_eval + (k_1 + k_2) * e + I_state + u_1
+            u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
             I_dot = (k_1 * k_2 + 1.0) * e + beta * jnp.sign(e)
 
         x_dot = get_f_sys(x, sys_id) + u
