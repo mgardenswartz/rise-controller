@@ -176,7 +176,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     sol = diffrax.diffeqsolve(
         term, solver, t0=t0, t1=t1, dt0=save_interval, y0=y0, args=math_args,
         saveat=saveat, stepsize_controller=stepsize_controller,
-        progress_meter=diffrax.TextProgressMeter(), max_steps=config.simulation.max_solver_steps 
+        progress_meter=diffrax.TqdmProgressMeter(), max_steps=config.simulation.max_solver_steps 
     )
 
     if sol.result != diffrax.RESULTS.successful:
