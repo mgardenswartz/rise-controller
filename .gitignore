@@ -568,3 +568,4 @@ $RECYCLE.BIN/
 *.svg
 outputs/
 multirun/
+.DS_Store
