@@ -24,9 +24,9 @@ from src.io.statistics import calculate_and_save_statistics
 SYSTEMS = [1, 2, 3]
 MC_TRIALS = 20
 TARGET_PARAMS = {
-    "small": 150,
-    "medium": 500,
-    "large": 1500
+    "small": 100,
+    "medium": 200,
+    "large": 400
 }
 
 def run_cmd(cmd: str):

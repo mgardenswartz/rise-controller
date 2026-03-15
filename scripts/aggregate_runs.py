@@ -1,42 +1,46 @@
-import os
 import json
-import yaml
+import sys
 from pathlib import Path
 from collections import defaultdict
 import numpy as np
 
-def aggregate_results(base_dir="outputs"):
-    # Group by: (sys_id, controller_type, P)
+# Force Python to see the project root directory
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+def aggregate_results(base_dir="outputs/massive_sweep"):
     aggregated_data = defaultdict(lambda: {"rms_e": [], "rms_u": [], "flops": 0})
 
     base_path = Path(base_dir)
     if not base_path.exists():
-        print(f"Directory {base_dir} not found.")
+        print(f"Directory {base_dir} not found. Ensure you are running from the project root.")
         return
 
     # Crawl all subdirectories looking for completed runs
     for stats_file in base_path.rglob("statistics.json"):
         run_dir = stats_file.parent
-        config_file = run_dir / ".hydra" / "config.yaml"
-
-        if not config_file.exists():
-            continue
 
         with open(stats_file, "r") as f:
             stats = json.load(f)
-        with open(config_file, "r") as f:
-            config = yaml.safe_load(f)
-
+            
         try:
-            sys_id = config["simulation"]["sys_id"]
-            ctrl_type = config["simulation"]["controller_type"]
+            # Extract metadata directly from the directory path
+            # Path looks like: .../sys_3/nn_in_integral/p_200/seed_1009
+            ctrl_type = run_dir.parent.parent.name
+            sys_str = run_dir.parent.parent.parent.name
+            
+            # Safety check to ensure we are parsing the right folder level
+            if not sys_str.startswith("sys_"):
+                continue
+                
+            sys_id = int(sys_str.replace("sys_", ""))
             p = stats["total_trainable_parameters"]
             
             key = (sys_id, ctrl_type, p)
             aggregated_data[key]["rms_e"].append(stats["rms_tracking_error_norm"])
             aggregated_data[key]["rms_u"].append(stats["rms_control_input_norm"])
             aggregated_data[key]["flops"] = stats["forward_pass_flops"]
-        except KeyError:
+        except (IndexError, ValueError, KeyError):
             continue
 
     # Print the Report
@@ -58,4 +62,4 @@ def aggregate_results(base_dir="outputs"):
     print(f"{'='*80}\n")
 
 if __name__ == "__main__":
-    aggregate_results()
+    aggregate_results(base_dir="outputs/massive_sweep")
