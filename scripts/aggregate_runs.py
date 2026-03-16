@@ -8,7 +8,7 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-def aggregate_results(base_dir="outputs/massive_sweep"):
+def aggregate_results(base_dir):
     aggregated_data = defaultdict(lambda: {"rms_e": [], "rms_u": [], "flops": 0})
 
     base_path = Path(base_dir)
@@ -62,4 +62,4 @@ def aggregate_results(base_dir="outputs/massive_sweep"):
     print(f"{'='*80}\n")
 
 if __name__ == "__main__":
-    aggregate_results(base_dir="outputs/massive_sweep")
+    aggregate_results("outputs/poly_sweep")
