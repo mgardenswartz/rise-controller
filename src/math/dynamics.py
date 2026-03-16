@@ -46,21 +46,45 @@ def f_sys_6(x):
         x[1]**2 * x[2] - x[3]**3
     ])
 
+def f_sys_7(x):
+    # 2D Radially Unstable
+    return jnp.array([
+        x[0]**3 + x[0] * x[1]**2,
+        x[1]**3 + x[1] * x[0]**2
+    ])
+
+def f_sys_8(x):
+    # 3D Radially Unstable
+    return jnp.array([
+        x[0]**3 + x[0] * x[1]**2,
+        x[1]**3 + x[1] * x[2]**2,
+        x[2]**3 + x[2] * x[0]**2
+    ])
+
+def f_sys_9(x):
+    # 4D Radially Unstable
+    return jnp.array([
+        x[0]**3 + x[0] * x[3]**2,
+        x[1]**3 + x[1] * x[0]**2,
+        x[2]**3 + x[2] * x[1]**2,
+        x[3]**3 + x[3] * x[2]**2
+    ])    
+
 # --- DIMENSION-AWARE TRAJECTORIES ---
 
 def get_desired_trajectory(t, sys_id):
-    if sys_id in [1, 2, 3, 4]:
+    if sys_id in [1, 2, 3, 4, 7]:
         return jnp.array([
             2.0 * jnp.sin(1.1 * t) + 1.5 * jnp.cos(2.73 * t),
             1.5 * jnp.sin(0.85 * t) - jnp.cos(4.12 * t)
         ])
-    elif sys_id == 5:
+    elif sys_id in [5, 8]:
         return jnp.array([
             2.0 * jnp.sin(1.1 * t),
             1.5 * jnp.cos(0.85 * t),
             1.0 * jnp.sin(2.1 * t) - 0.5 * jnp.cos(1.5 * t)
         ])
-    elif sys_id == 6:
+    elif sys_id in [6, 9]:
         return jnp.array([
             2.0 * jnp.sin(1.1 * t),
             1.5 * jnp.cos(0.85 * t),
@@ -69,18 +93,18 @@ def get_desired_trajectory(t, sys_id):
         ])
 
 def get_desired_velocity(t, sys_id):
-    if sys_id in [1, 2, 3, 4]:
+    if sys_id in [1, 2, 3, 4, 7]:
         return jnp.array([
             2.2 * jnp.cos(1.1 * t) - 4.095 * jnp.sin(2.73 * t),
             1.275 * jnp.cos(0.85 * t) + 4.12 * jnp.sin(4.12 * t)
         ])
-    elif sys_id == 5:
+    elif sys_id in [5, 8]:
         return jnp.array([
             2.2 * jnp.cos(1.1 * t),
             -1.275 * jnp.sin(0.85 * t),
             2.1 * jnp.cos(2.1 * t) + 0.75 * jnp.sin(1.5 * t)
         ])
-    elif sys_id == 6:
+    elif sys_id in [6, 9]:
         return jnp.array([
             2.2 * jnp.cos(1.1 * t),
             -1.275 * jnp.sin(0.85 * t),

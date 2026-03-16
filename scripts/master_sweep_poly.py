@@ -23,10 +23,10 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- MULTIDIMENSIONAL EXPERIMENT SETTINGS ---
-SYSTEMS = [4, 5, 6]
+SYSTEMS = [7, 8, 9]
 MC_TRIALS = 20
-TARGET_PARAMS = {"small": 100, "medium": 200, "large": 400}
-N_STATES_MAP = {4: 2, 5: 3, 6: 4}
+TARGET_PARAMS = {"small": 50, "medium": 100, "large": 200}
+N_STATES_MAP = {4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
 def phase_1_tune_baselines():
     print("="*50 + "\nPHASE 1: NATIVE OPTUNA TUNING (MULTI-D)\n" + "="*50)
@@ -39,9 +39,9 @@ def phase_1_tune_baselines():
         print(f"\n--- Tuning System {sys_id} ({d_out}D) ---")
         
         def objective(trial):
-            k_1 = trial.suggest_float("k_1", 0.1, 15.0)
-            k_2 = trial.suggest_float("k_2", 0.1, 15.0)
-            beta = trial.suggest_float("beta", 0.0, 10.0)
+            k_1 = trial.suggest_float("k_1", 0.1, 45.0)
+            k_2 = trial.suggest_float("k_2", 0.1, 45.0)
+            beta = trial.suggest_float("beta", 0.0, 30.0)
             
             arch = {"b": 0, "k_0": 1, "k_i": 1, "hidden_width": 2, "actual_p": 0}
             config = build_config(sys_id, 'baseline', seed=42, 
@@ -129,7 +129,10 @@ if __name__ == "__main__":
     HARDCODED_GAINS = {
         4: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
         5: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
-        6: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0}
+        6: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
+        7: {'k_1': 43.5, 'k_2': 44.0, 'beta': 22.0},
+        8: {'k_1': 7.0, 'k_2': 42.0, 'beta': 2.0},
+        9: {'k_1': 1.5, 'k_2': 44.5, 'beta': 22.0},
     }
 
     if not any(vars(args).values()):
