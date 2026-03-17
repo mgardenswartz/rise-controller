@@ -25,7 +25,7 @@ from src.io.statistics import calculate_and_save_statistics
 # --- MULTIDIMENSIONAL EXPERIMENT SETTINGS ---
 SYSTEMS = [7, 8, 9]
 MC_TRIALS = 20
-TARGET_PARAMS = {"small": 50, "medium": 100, "large": 200}
+TARGET_PARAMS = {"small": 50, "medium": 100, "large": 400}
 N_STATES_MAP = {4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
 def phase_1_tune_baselines():
@@ -130,8 +130,8 @@ if __name__ == "__main__":
         4: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
         5: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
         6: {"k_1": 14.0, "k_2": 14.0, "beta": 9.0},
-        7: {'k_1': 43.5, 'k_2': 44.0, 'beta': 22.0},
-        8: {'k_1': 7.0, 'k_2': 42.0, 'beta': 2.0},
+        7: {'k_1': 35.0, 'k_2': 35.0, 'beta': 20.0},
+        8: {'k_1': 7.0, 'k_2': 30.0, 'beta': 2.0},
         9: {'k_1': 1.5, 'k_2': 44.5, 'beta': 22.0},
     }
 
