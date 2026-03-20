@@ -4,19 +4,22 @@ from pathlib import Path
 from collections import defaultdict
 import numpy as np
 
-# Force Python to see the project root directory
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-def aggregate_results(base_dir):
-    aggregated_data = defaultdict(lambda: {"rms_e": [], "rms_u": [], "flops": 0})
+def aggregate_results_pivoted(base_dir="outputs/unified_sweep"):
+    # Group by: (sys_id, P)
+    # Store dictionaries for baseline and nn_in_integral
+    aggregated_data = defaultdict(lambda: {
+        "baseline": {"rms_e": [], "rms_u": []},
+        "integral": {"rms_e": [], "rms_u": []}
+    })
 
     base_path = Path(base_dir)
     if not base_path.exists():
-        print(f"Directory {base_dir} not found. Ensure you are running from the project root.")
+        print(f"Directory {base_dir} not found.")
         return
 
-    # Crawl all subdirectories looking for completed runs
     for stats_file in base_path.rglob("statistics.json"):
         run_dir = stats_file.parent
 
@@ -24,42 +27,49 @@ def aggregate_results(base_dir):
             stats = json.load(f)
             
         try:
-            # Extract metadata directly from the directory path
-            # Path looks like: .../sys_3/nn_in_integral/p_200/seed_1009
             ctrl_type = run_dir.parent.parent.name
             sys_str = run_dir.parent.parent.parent.name
             
-            # Safety check to ensure we are parsing the right folder level
             if not sys_str.startswith("sys_"):
                 continue
                 
             sys_id = int(sys_str.replace("sys_", ""))
             p = stats["total_trainable_parameters"]
             
-            key = (sys_id, ctrl_type, p)
-            aggregated_data[key]["rms_e"].append(stats["rms_tracking_error_norm"])
-            aggregated_data[key]["rms_u"].append(stats["rms_control_input_norm"])
-            aggregated_data[key]["flops"] = stats["forward_pass_flops"]
+            target_dict = "baseline" if ctrl_type == "baseline" else "integral"
+            
+            aggregated_data[(sys_id, p)][target_dict]["rms_e"].append(stats["rms_tracking_error_norm"])
+            aggregated_data[(sys_id, p)][target_dict]["rms_u"].append(stats["rms_control_input_norm"])
+            
         except (IndexError, ValueError, KeyError):
             continue
 
-    # Print the Report
-    print(f"\n{'='*80}")
-    print(f"{'Sys':<5} | {'Controller':<18} | {'Params (P)':<12} | {'Trials':<8} | {'Avg RMS(e)':<12} | {'Avg RMS(u)':<12}")
-    print(f"{'-'*80}")
+    # Print the Pivoted Report
+    print(f"\n{'='*105}")
+    print(f"{'Sys':<4} | {'Params':<8} | {'Base RMS(e)':<14} | {'Int. RMS(e)':<14} | {'Base RMS(u)':<14} | {'Int. RMS(u)':<14} | {'Status'}")
+    print(f"{'-'*105}")
 
-    # Sort by System, then Controller, then Parameter count
     for key in sorted(aggregated_data.keys()):
-        sys_id, ctrl_type, p = key
+        sys_id, p = key
         data = aggregated_data[key]
         
-        trials = len(data["rms_e"])
-        avg_e = np.mean(data["rms_e"])
-        avg_u = np.mean(data["rms_u"])
+        # Calculate means
+        b_e = np.mean(data["baseline"]["rms_e"]) if data["baseline"]["rms_e"] else float('nan')
+        b_u = np.mean(data["baseline"]["rms_u"]) if data["baseline"]["rms_u"] else float('nan')
+        b_trials = len(data["baseline"]["rms_e"])
         
-        print(f"{sys_id:<5} | {ctrl_type:<18} | {int(p):<12} | {trials:<8} | {avg_e:<12.4f} | {avg_u:<12.4f}")
+        i_e = np.mean(data["integral"]["rms_e"]) if data["integral"]["rms_e"] else float('nan')
+        i_u = np.mean(data["integral"]["rms_u"]) if data["integral"]["rms_u"] else float('nan')
+        i_trials = len(data["integral"]["rms_e"])
+        
+        # Status check for finite-time escapes
+        status = "Complete"
+        if b_trials < 20 or i_trials < 20:
+            status = f"FAIL (B:{b_trials}/20, I:{i_trials}/20)"
+
+        print(f"{sys_id:<4} | {int(p):<8} | {b_e:<14.4f} | {i_e:<14.4f} | {b_u:<14.4f} | {i_u:<14.4f} | {status}")
     
-    print(f"{'='*80}\n")
+    print(f"{'='*105}\n")
 
 if __name__ == "__main__":
-    aggregate_results("outputs/unified_sweep")
+    aggregate_results_pivoted()
