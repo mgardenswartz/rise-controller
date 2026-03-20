@@ -62,4 +62,4 @@ def aggregate_results(base_dir):
     print(f"{'='*80}\n")
 
 if __name__ == "__main__":
-    aggregate_results("outputs/poly_sweep")
+    aggregate_results("outputs/unified_sweep")
