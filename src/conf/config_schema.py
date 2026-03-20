@@ -16,6 +16,7 @@ class SimulationConfig:
     controller_type: str
     t0: float
     randomize_x0: bool
+    random_x0_square_size: float
     sys_id: int
     duration_seconds: float
     save_interval_seconds: float
@@ -26,6 +27,9 @@ class SimulationConfig:
     atol: float
     random_seed: int
     debug_print: bool
+    noise_std: float
+    noise_mean: float
+    noise_freq: float
 
 @dataclass
 class MathConstantsConfig:

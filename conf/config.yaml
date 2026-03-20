@@ -26,6 +26,7 @@ directories:
 simulation:
   controller_type: "nn_in_integral"
   randomize_x0: false
+  random_x0_square_size: 2.5
   t0: 0.0
   sys_id: 1
   duration_seconds: 30.0
@@ -37,6 +38,9 @@ simulation:
   rtol: 1e-4
   random_seed: 582394
   debug_print: false
+  noise_mean: 0.0
+  noise_std: 0.0
+  noise_freq: 100.0
 
 math_constants:
   learning_rate_upper_bound_mult: 2.0

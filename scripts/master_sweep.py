@@ -24,9 +24,9 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(1, 10))  # Systems 1 through 9
+SYSTEMS = list(range(7, 10))  # Systems 7 through 9
 MC_TRIALS = 20
-TARGET_PARAMS = {"micro": 50, "small": 100, "medium": 200, "large": 400}
+TARGET_PARAMS = {"small": 50, "small": 100, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
 def find_matched_architecture(target_p: int, d_in: int, d_out: int = 2) -> dict:

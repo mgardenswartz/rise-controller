@@ -20,9 +20,7 @@ from src.math.dynamics import (
 from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
 from src.math.update_laws import compute_gamma_dot, compute_theta_hat_dot
 
-
 def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
-    # Evaluated at trace-time as a static python block
     if sys_id == 1: return f_sys_1(x)
     if sys_id == 2: return f_sys_2(x)
     if sys_id == 3: return f_sys_3(x)
@@ -34,35 +32,42 @@ def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
     if sys_id == 9: return f_sys_9(x)
     raise ValueError(f"Invalid sys_id: {sys_id}")
 
-def create_vector_field(is_integral: bool, sys_id: int): # <--- sys_id moved to factory
+def create_vector_field(is_integral: bool, sys_id: int, noise_interpolant):
     def vector_field(t: float, y: tuple, args: tuple):
-        x, theta_hat, gamma, I_state = y
+        x_true, theta_hat, gamma, I_state = y
         gamma = 0.5 * (gamma + gamma.T)
         
-        # sys_id removed from args
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate_upper_bound_mult, 
          learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print) = args
 
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)
-        e = x_d - x
+        
+        # Inject measurement noise
+        n_t = noise_interpolant.evaluate(t)
+        x_meas = x_true + n_t
+        e_meas = x_d - x_meas
+        
         u_1 = get_excitation_signal(t, excitation_duration, d_out)
 
         if is_integral:
-            u = (k_1 + k_2) * e + x_d_dot + I_state + u_1
-            kappa = jnp.concatenate([x, u])
+            u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+            kappa = jnp.concatenate([x_meas, u])
             phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
             jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            I_dot = beta * jnp.sign(e) + (k_1 * k_2 + 1.0) * e - phi_eval
+            I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
         else:
-            phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            jacobian = compute_jacobian(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
-            I_dot = (k_1 * k_2 + 1.0) * e + beta * jnp.sign(e)
+            phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+            jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+            u = x_d_dot - phi_eval + (k_1 + k_2) * e_meas + I_state + u_1
+            I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
 
-        x_dot = get_f_sys(x, sys_id) + u
-        theta_hat_dot = compute_theta_hat_dot(e, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
+        # Physical propagation strictly uses uncorrupted state
+        x_dot = get_f_sys(x_true, sys_id) + u
+        
+        # Adaptation is driven by the corrupted measurement error
+        theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
         
         p = theta_hat.shape[0]
         gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
@@ -71,27 +76,29 @@ def create_vector_field(is_integral: bool, sys_id: int): # <--- sys_id moved to 
     return vector_field
 
 def create_reconstruct_single_step(is_integral: bool, sys_id: int):
-    def reconstruct_single_step(t, x, theta_hat, I_state, args):
+    def reconstruct_single_step(t, x_true, theta_hat, I_state, n_t, args):
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta) = args
         
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)
-        e = x_d - x
+        
+        x_meas = x_true + n_t
+        e_meas = x_d - x_meas
         u_1 = get_excitation_signal(t, excitation_duration, d_out)
 
         if is_integral:
-            u = (k_1 + k_2) * e + x_d_dot + I_state + u_1
-            kappa = jnp.concatenate([x, u])
+            u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+            kappa = jnp.concatenate([x_meas, u])
             phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
         else:
-            phi_eval = resnet_network(theta_hat, x, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            u = x_d_dot - phi_eval + (k_1 + k_2) * e + I_state + u_1
+            phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+            u = x_d_dot - phi_eval + (k_1 + k_2) * e_meas + I_state + u_1
 
-        epsilon = phi_eval - get_f_sys(x, sys_id)
-        return x_d, e, phi_eval, u, epsilon
+        # Evaluate final reconstruction accuracy against true dynamics
+        epsilon = phi_eval - get_f_sys(x_true, sys_id)
+        return x_d, e_meas, phi_eval, u, epsilon
     return reconstruct_single_step
-
 
 def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     sys_id = getattr(config.simulation, "sys_id", 1)
@@ -110,33 +117,44 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.neural_network.k_i
     )
 
-    # 1. Split the seed into two independent PRNG keys
+    # Split seeds
     key = jax.random.PRNGKey(config.simulation.random_seed)
-    key_theta, key_x0 = jax.random.split(key)
+    key, key_theta, key_x0, key_noise = jax.random.split(key, 4)
 
-    # 2. Initialize weights using the first key
     theta_hat_0 = jnp.where(
         config.neural_network.init_type == "normal",
         config.neural_network.init_mean + config.neural_network.init_std * jax.random.normal(key_theta, (p,)),
         jnp.zeros((p,))
     )
 
-    # 3. Initialize state using the boolean flag and the second key
     d_out = config.neural_network.d_out
     if config.simulation.randomize_x0:
-        x_0 = jax.random.uniform(key_x0, shape=(d_out,), minval=-2.5, maxval=2.5)
+        x_0 = jax.random.uniform(key_x0, shape=(d_out,),
+                                 minval=-config.simulation.random_x0_square_size,
+                                 maxval=config.simulation.random_x0_square_size
+                                 )
     else:
-        # Fallback padding if strict YAML config has fewer dimensions than needed
         yaml_x0 = jnp.array(config.simulation.x0)
         x_0 = jnp.pad(yaml_x0, (0, max(0, d_out - len(yaml_x0))))[:d_out]
 
     gamma_0 = config.math_constants.initial_gamma_scalar * jnp.eye(p)
     I_0 = jnp.zeros_like(x_0)
-    
     y0 = (x_0, theta_hat_0, gamma_0, I_0)
+    
+    t0 = config.simulation.t0
+    t1 = config.simulation.duration_seconds
+    
+    # Generate Band-Limited Noise
+    noise_mean = config.simulation.noise_mean
+    noise_std = config.simulation.noise_std
+    noise_freq = config.simulation.noise_freq
+    num_noise_steps = int(jnp.ceil((t1 - t0) * noise_freq)) + 1
+    noise_ts = jnp.linspace(t0, t1, num_noise_steps)
+    raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_noise_steps, d_out)) + noise_mean
+    noise_interpolant = diffrax.LinearInterpolation(ts=noise_ts, ys=raw_noise)
+
     is_integral = config.simulation.controller_type == "nn_in_integral"
 
-    # 1. REMOVE sys_id from the end of math_args
     math_args = (
         config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
@@ -147,13 +165,10 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.nu, config.math_constants.theta_bar, config.simulation.debug_print
     )
 
-    # 2. ADD sys_id directly to the factory call
-    vector_field = create_vector_field(is_integral, sys_id)
+    vector_field = create_vector_field(is_integral, sys_id, noise_interpolant)
     term = diffrax.ODETerm(vector_field)
     solver = diffrax.Tsit5()
     
-    t0 = config.simulation.t0
-    t1 = config.simulation.duration_seconds
     save_interval = config.simulation.save_interval_seconds
     num_save_steps = int(round((t1 - t0) / save_interval)) + 1
     saveat = diffrax.SaveAt(ts=jnp.linspace(t0, t1, num_save_steps))
@@ -171,7 +186,6 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     t_out = sol.ts
     x_out, theta_hat_out, gamma_out, I_out = sol.ys
 
-    # 3. REMOVE sys_id from the end of recon_args
     recon_args = (
         config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
@@ -179,10 +193,12 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta
     )
 
-    # 4. ADD sys_id directly to the reconstruction factory call
+    # Reconstruct data matching physical times
     reconstruct_single_step = create_reconstruct_single_step(is_integral, sys_id)
-    vmap_reconstruct = jax.vmap(reconstruct_single_step, in_axes=(0, 0, 0, 0, None))
-    x_d_out, e_out, phi_eval_out, u_out, epsilon_out = vmap_reconstruct(t_out, x_out, theta_hat_out, I_out, recon_args)
+    vmap_reconstruct = jax.vmap(reconstruct_single_step, in_axes=(0, 0, 0, 0, 0, None))
+    
+    n_out = jax.vmap(noise_interpolant.evaluate)(t_out)
+    x_d_out, e_out, phi_eval_out, u_out, epsilon_out = vmap_reconstruct(t_out, x_out, theta_hat_out, I_out, n_out, recon_args)
     
     return {
         config.data_labels.time: t_out,
