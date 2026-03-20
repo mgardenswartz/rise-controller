@@ -32,47 +32,59 @@ def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
     if sys_id == 9: return f_sys_9(x)
     raise ValueError(f"Invalid sys_id: {sys_id}")
 
-def create_vector_field(is_integral: bool, sys_id: int, noise_interpolant):
+def create_vector_field(is_integral: bool, sys_id: int, noise_interpolant, enable_learning: bool):
     def vector_field(t: float, y: tuple, args: tuple):
         x_true, theta_hat, gamma, I_state = y
         gamma = 0.5 * (gamma + gamma.T)
         
+        # enable_learning is removed from dynamic args
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate_upper_bound_mult, 
-         learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print) = args
+         learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, debug_print) = args 
 
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)
         
-        # Inject measurement noise
         n_t = noise_interpolant.evaluate(t)
         x_meas = x_true + n_t
         e_meas = x_d - x_meas
         
         u_1 = get_excitation_signal(t, excitation_duration, d_out)
 
-        if is_integral:
-            u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
-            kappa = jnp.concatenate([x_meas, u])
-            phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
+        # STATIC PRUNING: XLA only compiles the active branch
+        if enable_learning:
+            if is_integral:
+                u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+                kappa = jnp.concatenate([x_meas, u])
+                phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
+            else:
+                phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                u = x_d_dot - phi_eval + (k_1 + k_2) * e_meas + I_state + u_1
+                I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
+                
+            theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
+            p = theta_hat.shape[0]
+            gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
+            gamma_dot_sym = 0.5 * (gamma_dot + gamma_dot.T)
+            
         else:
-            phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-            u = x_d_dot - phi_eval + (k_1 + k_2) * e_meas + I_state + u_1
-            I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
+            # Pure Linear Controller (Zero NN overhead)
+            if is_integral:
+                u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
+            else:
+                u = x_d_dot + (k_1 + k_2) * e_meas + I_state + u_1
+                I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
+                
+            theta_hat_dot = jnp.zeros_like(theta_hat)
+            gamma_dot_sym = jnp.zeros_like(gamma)
 
-        # Physical propagation strictly uses uncorrupted state
         x_dot = get_f_sys(x_true, sys_id) + u
         
-        # Adaptation is driven by the corrupted measurement error
-        theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
-        
-        p = theta_hat.shape[0]
-        gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
-        
-        return x_dot, theta_hat_dot, 0.5 * (gamma_dot + gamma_dot.T), I_dot
+        return x_dot, theta_hat_dot, gamma_dot_sym, I_dot
     return vector_field
 
 def create_reconstruct_single_step(is_integral: bool, sys_id: int):
@@ -165,7 +177,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.nu, config.math_constants.theta_bar, config.simulation.debug_print
     )
 
-    vector_field = create_vector_field(is_integral, sys_id, noise_interpolant)
+    enable_learning = config.simulation.enable_learning
+    vector_field = create_vector_field(is_integral, sys_id, noise_interpolant, enable_learning)
     term = diffrax.ODETerm(vector_field)
     solver = diffrax.Tsit5()
     

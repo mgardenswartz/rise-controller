@@ -41,6 +41,7 @@ simulation:
   noise_mean: 0.0
   noise_std: 0.0
   noise_freq: 100.0
+  enable_learning: false
 
 math_constants:
   learning_rate_upper_bound_mult: 2.0

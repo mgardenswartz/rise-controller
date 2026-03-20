@@ -24,9 +24,9 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(7, 10))  # Systems 7 through 9
+SYSTEMS = list(range(1, 10))  # Systems 1 through 9
 MC_TRIALS = 20
-TARGET_PARAMS = {"small": 50, "small": 100, "large": 400}
+TARGET_PARAMS = {"micro": 50, "small": 100, "medium": 200, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
 def find_matched_architecture(target_p: int, d_in: int, d_out: int = 2) -> dict:
@@ -67,7 +67,7 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     
     config.simulation.sys_id = sys_id
     config.simulation.controller_type = ctrl_name
-    config.simulation.randomize_x0 = False # Handled manually in tuning
+    config.simulation.randomize_x0 = False
     config.simulation.random_seed = seed
     
     config.math_constants.k_1 = gains["k_1"]
@@ -75,8 +75,7 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     config.math_constants.beta = gains["beta"]
     
     config.neural_network.d_in = d_in
-    if hasattr(config.neural_network, 'd_out'):
-        config.neural_network.d_out = d_out
+    config.neural_network.d_out = d_out
         
     config.neural_network.b = arch["b"]
     config.neural_network.k_0 = arch["k_0"]
@@ -99,7 +98,6 @@ def phase_1_tune_baselines():
         print(f"\n--- Tuning System {sys_id} ({d_out}D) ---")
         
         def objective(trial):
-            # Wide bounds to accommodate highly unstable polynomial systems
             k_1 = trial.suggest_float("k_1", 0.1, 50.0)
             k_2 = trial.suggest_float("k_2", 0.1, 50.0)
             beta = trial.suggest_float("beta", 0.0, 30.0)
@@ -109,12 +107,10 @@ def phase_1_tune_baselines():
                                   gains={"k_1": k_1, "k_2": k_2, "beta": beta}, 
                                   arch=arch, d_in=d_out, d_out=d_out)
             
-            # Disable neural network learning
-            config.math_constants.k_theta_hat = 0.0
+            # Disable neural network learning strictly for tuning
+            config.simulation.enable_learning = False
             config.neural_network.init_mean = 0.0
             config.neural_network.init_std = 0.0
-            config.math_constants.learning_rate_upper_bound_mult = 1.0
-            config.math_constants.learning_rate_lower_bound_mult = 1.0
             config.simulation.debug_print = False
 
             # Monte Carlo Initial Conditions
@@ -140,7 +136,6 @@ def phase_1_tune_baselines():
                 except RuntimeError:
                     raise optuna.TrialPruned()
 
-            # Aggregate and calculate composite cost
             avg_rms_e = jnp.mean(jnp.array(mc_tracking_errors))
             avg_rms_u = jnp.mean(jnp.array(mc_control_efforts))
             
@@ -191,7 +186,8 @@ def phase_2_unified_sweep(gains_dict: dict):
                 for i in range(MC_TRIALS):
                     seed = 1000 + i
                     config = build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out)
-                    config.simulation.randomize_x0 = True # Enable random x0 for final sweep
+                    config.simulation.randomize_x0 = True 
+                    config.simulation.enable_learning = True # Ensure network is active for Phase 2
                     
                     run_dir = base_output_dir / f"sys_{sys_id}" / ctrl_name / f"p_{arch['actual_p']}" / f"seed_{seed}"
                     run_dir.mkdir(parents=True, exist_ok=True)
@@ -219,7 +215,6 @@ if __name__ == "__main__":
     parser.add_argument("--sweep", action="store_true", help="Run Phase 2: Massive Monte Carlo Sweep")
     args = parser.parse_args()
 
-    # Populate this dictionary with Phase 1 outputs prior to executing Phase 2
     HARDCODED_GAINS = {
         1: {'k_1': 14.0, 'k_2': 14.0, 'beta': 5.0},
         2: {'k_1': 14.0, 'k_2': 14.0, 'beta': 5.0},

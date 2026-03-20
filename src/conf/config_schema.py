@@ -30,6 +30,7 @@ class SimulationConfig:
     noise_std: float
     noise_mean: float
     noise_freq: float
+    enable_learning: bool
 
 @dataclass
 class MathConstantsConfig:
