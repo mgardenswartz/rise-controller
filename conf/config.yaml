@@ -39,9 +39,9 @@ simulation:
   random_seed: 582394
   debug_print: false
   noise_mean: 0.0
-  noise_std: 0.0
+  noise_std: 0.003
   noise_freq: 100.0
-  enable_learning: false
+  enable_learning: true
 
 math_constants:
   learning_rate_upper_bound_mult: 2.0

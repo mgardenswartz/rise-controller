@@ -113,7 +113,7 @@ def create_reconstruct_single_step(is_integral: bool, sys_id: int):
     return reconstruct_single_step
 
 def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
-    sys_id = getattr(config.simulation, "sys_id", 1)
+    sys_id = config.simulation.system_id
     
     act_map = {"linear": 0, "swish": 1, "tanh": 2}
     h_act_idx = jnp.array(act_map[config.neural_network.hidden_activation.lower()])

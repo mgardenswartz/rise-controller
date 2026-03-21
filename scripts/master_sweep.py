@@ -24,9 +24,9 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(1, 10))  # Systems 1 through 9
-MC_TRIALS = 20
-TARGET_PARAMS = {"micro": 50, "small": 100, "medium": 200, "large": 400}
+SYSTEMS = list(range(7, 10))  # Systems 1 through 9
+MC_TRIALS = 10
+TARGET_PARAMS = { "small": 50, "medium": 100, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
 def find_matched_architecture(target_p: int, d_in: int, d_out: int = 2) -> dict:
@@ -116,7 +116,10 @@ def phase_1_tune_baselines():
             # Monte Carlo Initial Conditions
             num_mc_samples = 5
             key = jax.random.PRNGKey(trial.number)
-            x0_batch = generate_monte_carlo_x0(num_mc_samples, key, bounds=2.0, d_out=d_out)
+            x0_batch = generate_monte_carlo_x0(num_mc_samples,
+                                               key,
+                                               bounds=2.5, # Must match the random_x0_square_size in config.yaml
+                                               d_out=d_out)
             
             mc_tracking_errors = []
             mc_control_efforts = []
@@ -182,6 +185,7 @@ def phase_2_unified_sweep(gains_dict: dict):
             for size_name, target_p in TARGET_PARAMS.items():
                 arch = find_matched_architecture(target_p, d_in=d_in, d_out=d_out)
                 print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Size: {size_name} (P={arch['actual_p']})")
+                print(f"        Arch Details -> Width: {arch['hidden_width']}, Blocks (b): {arch['b']}, k_0: {arch['k_0']}, k_i: {arch['k_i']}")
                 
                 for i in range(MC_TRIALS):
                     seed = 1000 + i
