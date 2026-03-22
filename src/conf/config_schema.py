@@ -19,7 +19,6 @@ class SimulationConfig:
     random_x0_square_size: float
     sys_id: int
     duration_seconds: float
-    save_interval_seconds: float
     excitation_duration_seconds: float
     x0: list[float]
     max_solver_steps: int
@@ -29,8 +28,8 @@ class SimulationConfig:
     debug_print: bool
     noise_std: float
     noise_mean: float
-    noise_freq: float
     enable_learning: bool
+    control_frequency_hz: float # also controls save interval
 
 @dataclass
 class MathConstantsConfig:

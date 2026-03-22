@@ -30,18 +30,17 @@ simulation:
   t0: 0.0
   sys_id: 1
   duration_seconds: 30.0
-  save_interval_seconds: 0.05
   excitation_duration_seconds: 0.0
   x0: [1.5, -0.5]
-  max_solver_steps: 50000
+  max_solver_steps: 500000
   atol: 1e-4
   rtol: 1e-4
   random_seed: 582394
   debug_print: false
   noise_mean: 0.0
   noise_std: 0.003
-  noise_freq: 100.0
   enable_learning: true
+  control_frequency_hz: 100.0
 
 math_constants:
   learning_rate_upper_bound_mult: 2.0

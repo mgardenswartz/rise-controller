@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 import numpy as np
+from master_sweep import MC_TRIALS
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -64,8 +65,8 @@ def aggregate_results_pivoted(base_dir="outputs/unified_sweep"):
         
         # Status check for finite-time escapes
         status = "Complete"
-        if b_trials < 20 or i_trials < 20:
-            status = f"FAIL (B:{b_trials}/20, I:{i_trials}/20)"
+        if b_trials < MC_TRIALS or i_trials < MC_TRIALS:
+            status = f"FAIL (B:{b_trials}/{MC_TRIALS}, I:{i_trials}/{MC_TRIALS})"
 
         print(f"{sys_id:<4} | {int(p):<8} | {b_e:<14.4f} | {i_e:<14.4f} | {b_u:<14.4f} | {i_u:<14.4f} | {status}")
     
