@@ -1,76 +1,89 @@
 import json
-import sys
+import numpy as np
 from pathlib import Path
 from collections import defaultdict
-import numpy as np
-from master_sweep import MC_TRIALS
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+def get_nearest_target(p):
+    """Snaps the actual parameter count to the intended target bin."""
+    targets = [50, 100, 200, 400]
+    return min(targets, key=lambda x: abs(x - p))
 
-def aggregate_results_pivoted(base_dir="outputs/unified_sweep"):
-    # Group by: (sys_id, P)
-    # Store dictionaries for baseline and nn_in_integral
-    aggregated_data = defaultdict(lambda: {
-        "baseline": {"rms_e": [], "rms_u": []},
-        "integral": {"rms_e": [], "rms_u": []}
-    })
-
-    base_path = Path(base_dir)
-    if not base_path.exists():
-        print(f"Directory {base_dir} not found.")
+def main():
+    base_dir = Path("outputs/unified_sweep")
+    if not base_dir.exists():
+        print("No sweep data found in outputs/unified_sweep.")
         return
 
-    for stats_file in base_path.rglob("statistics.json"):
-        run_dir = stats_file.parent
+    # Structure: results[sys_id][target_p][ctrl_name] = {'rms_e': [], 'rms_u': [], 'actual_p': 0}
+    results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {'rms_e': [], 'rms_u': [], 'actual_p': 0})))
 
-        with open(stats_file, "r") as f:
-            stats = json.load(f)
-            
+    # 1. Crawl the directories and parse JSONs
+    for sys_dir in sorted(base_dir.glob("sys_*")):
         try:
-            ctrl_type = run_dir.parent.parent.name
-            sys_str = run_dir.parent.parent.parent.name
-            
-            if not sys_str.startswith("sys_"):
-                continue
-                
-            sys_id = int(sys_str.replace("sys_", ""))
-            p = stats["total_trainable_parameters"]
-            
-            target_dict = "baseline" if ctrl_type == "baseline" else "integral"
-            
-            aggregated_data[(sys_id, p)][target_dict]["rms_e"].append(stats["rms_tracking_error_norm"])
-            aggregated_data[(sys_id, p)][target_dict]["rms_u"].append(stats["rms_control_input_norm"])
-            
-        except (IndexError, ValueError, KeyError):
+            sys_id = int(sys_dir.name.split("_")[1])
+        except ValueError:
             continue
+            
+        for ctrl_dir in sys_dir.iterdir():
+            if not ctrl_dir.is_dir(): continue
+            ctrl = ctrl_dir.name
+            
+            for p_dir in ctrl_dir.glob("p_*"):
+                try:
+                    actual_p = int(p_dir.name.split("_")[1])
+                except ValueError:
+                    continue
+                    
+                target_p = get_nearest_target(actual_p)
+                
+                for seed_dir in p_dir.glob("seed_*"):
+                    stat_file = seed_dir / "statistics.json"
+                    if stat_file.exists():
+                        with open(stat_file, 'r') as f:
+                            stats = json.load(f)
 
-    # Print the Pivoted Report
-    print(f"\n{'='*105}")
-    print(f"{'Sys':<4} | {'Params':<8} | {'Base RMS(e)':<14} | {'Int. RMS(e)':<14} | {'Base RMS(u)':<14} | {'Int. RMS(u)':<14} | {'Status'}")
-    print(f"{'-'*105}")
+                            e = stats.get('rms_tracking_error_norm', np.nan)
+                            u = stats.get('rms_control_input_norm', np.nan)
+                            
+                            results[sys_id][target_p][ctrl]['rms_e'].append(e)
+                            results[sys_id][target_p][ctrl]['rms_u'].append(u)
+                            results[sys_id][target_p][ctrl]['actual_p'] = actual_p
 
-    for key in sorted(aggregated_data.keys()):
-        sys_id, p = key
-        data = aggregated_data[key]
-        
-        # Calculate means
-        b_e = np.mean(data["baseline"]["rms_e"]) if data["baseline"]["rms_e"] else float('nan')
-        b_u = np.mean(data["baseline"]["rms_u"]) if data["baseline"]["rms_u"] else float('nan')
-        b_trials = len(data["baseline"]["rms_e"])
-        
-        i_e = np.mean(data["integral"]["rms_e"]) if data["integral"]["rms_e"] else float('nan')
-        i_u = np.mean(data["integral"]["rms_u"]) if data["integral"]["rms_u"] else float('nan')
-        i_trials = len(data["integral"]["rms_e"])
-        
-        # Status check for finite-time escapes
-        status = "Complete"
-        if b_trials < MC_TRIALS or i_trials < MC_TRIALS:
-            status = f"FAIL (B:{b_trials}/{MC_TRIALS}, I:{i_trials}/{MC_TRIALS})"
+    # 2. Print the cleanly formatted table
+    print("\n" + "="*110)
+    print(f"{'Sys':<4} | {'Target Size':<11} | {'Actual P (B / I)':<16} | {'Base RMS(e) [Surv]':<18} | {'Int. RMS(e) [Surv]':<18} | {'Base RMS(u)':<11} | {'Int. RMS(u)':<11}")
+    print("-" * 110)
 
-        print(f"{sys_id:<4} | {int(p):<8} | {b_e:<14.4f} | {i_e:<14.4f} | {b_u:<14.4f} | {i_u:<14.4f} | {status}")
-    
-    print(f"{'='*105}\n")
+    for sys_id in sorted(results.keys()):
+        for target_p in sorted(results[sys_id].keys()):
+            data = results[sys_id][target_p]
+            
+            b_data = data.get('baseline', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
+            i_data = data.get('nn_in_integral', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
+            
+            # Clean out NaNs to calculate survival and means
+            b_e_clean = [x for x in b_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
+            b_u_clean = [x for x in b_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
+            i_e_clean = [x for x in i_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
+            i_u_clean = [x for x in i_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
+            
+            b_surv = len(b_e_clean)
+            i_surv = len(i_e_clean)
+            
+            # Formatted Means
+            b_e_mean = f"{np.mean(b_e_clean):.4f}" if b_surv > 0 else "FAILED"
+            i_e_mean = f"{np.mean(i_e_clean):.4f}" if i_surv > 0 else "FAILED"
+            b_u_mean = f"{np.mean(b_u_clean):.2f}" if b_surv > 0 else "FAILED"
+            i_u_mean = f"{np.mean(i_u_clean):.2f}" if i_surv > 0 else "FAILED"
+            
+            # Formatted Strings
+            p_str = f"{b_data['actual_p']:>3}  / {i_data['actual_p']:>3}"
+            b_e_str = f"{b_e_mean:>9}  [{b_surv}/10]"
+            i_e_str = f"{i_e_mean:>9}  [{i_surv}/10]"
+            
+            print(f" {sys_id:<3} |    ~{target_p:<7} |  {p_str:<14} | {b_e_str:<18} | {i_e_str:<18} | {b_u_mean:>11} | {i_u_mean:>11}")
+            
+    print("="*110 + "\n")
 
 if __name__ == "__main__":
-    aggregate_results_pivoted()
+    main()
