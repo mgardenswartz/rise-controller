@@ -27,8 +27,8 @@ import matplotlib.pyplot as plt
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
 MC_TRIALS = 10
-SYSTEMS = list(range(1, 9))
-N_STATES_MAP = {1: 2, 2: 2, 3: 3, 4: 2, 5: 4, 6: 6, 7: 2, 8: 3}
+SYSTEMS = list(range(1, 5))
+N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 6}
 
 # Persistent Gains File
 GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
@@ -203,45 +203,45 @@ def phase_1_tune_all():
         sys_gains.update(study_kin.best_params)
         print(f"     Locked Kinematic Gains: {study_kin.best_params}")
         
-        # -----------------------------------------------------------------
-        # STAGE 2: TUNE BASELINE LEARNING RATE (NN ENABLED)
-        # -----------------------------------------------------------------
-        print(f"  -> Stage 2/3: Tuning Baseline Learning Rate...")
-        def obj_lr_base(trial):
-            # Logarithmic search is critical for learning rates
-            lr = trial.suggest_float("lr", 1e-4, 50.0, log=True) 
+        # # -----------------------------------------------------------------
+        # # STAGE 2: TUNE BASELINE LEARNING RATE (NN ENABLED)
+        # # -----------------------------------------------------------------
+        # print(f"  -> Stage 2/3: Tuning Baseline Learning Rate...")
+        # def obj_lr_base(trial):
+        #     # Logarithmic search is critical for learning rates
+        #     lr = trial.suggest_float("lr", 1e-4, 50.0, log=True) 
             
-            arch = TARGET_ARCHS["small"].copy() # Tune on a realistic small network
-            config = build_config(sys_id, 'baseline', seed=42, gains=sys_gains, arch=arch, d_in=d_out, d_out=d_out)
-            config.simulation.enable_learning = False #
-            config.math_constants.learning_rate = lr
+        #     arch = TARGET_ARCHS["small"].copy() # Tune on a realistic small network
+        #     config = build_config(sys_id, 'baseline', seed=42, gains=sys_gains, arch=arch, d_in=d_out, d_out=d_out)
+        #     config.simulation.enable_learning = True
+        #     config.math_constants.learning_rate = lr
             
-            return evaluate_trial(config, trial)
+        #     return evaluate_trial(config, trial)
 
-        study_base = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=43))
-        study_base.optimize(obj_lr_base, n_trials=30, show_progress_bar=True)
-        sys_gains["lr_baseline"] = study_base.best_params["lr"]
-        print(f"     Locked Baseline LR: {sys_gains['lr_baseline']:.4f}")
+        # study_base = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=43))
+        # study_base.optimize(obj_lr_base, n_trials=30, show_progress_bar=True)
+        # sys_gains["lr_baseline"] = study_base.best_params["lr"]
+        # print(f"     Locked Baseline LR: {sys_gains['lr_baseline']:.4f}")
 
-        # -----------------------------------------------------------------
-        # STAGE 3: TUNE INTEGRAL LEARNING RATE (NN ENABLED)
-        # -----------------------------------------------------------------
-        print(f"  -> Stage 3/3: Tuning Integral Learning Rate...")
-        def obj_lr_int(trial):
-            lr = trial.suggest_float("lr", 1e-4, 50.0, log=True)
+        # # -----------------------------------------------------------------
+        # # STAGE 3: TUNE INTEGRAL LEARNING RATE (NN ENABLED)
+        # # -----------------------------------------------------------------
+        # print(f"  -> Stage 3/3: Tuning Integral Learning Rate...")
+        # def obj_lr_int(trial):
+        #     lr = trial.suggest_float("lr", 1e-4, 50.0, log=True)
             
-            arch = TARGET_ARCHS["small"].copy()
-            d_in_int = d_out * 2
-            config = build_config(sys_id, 'nn_in_integral', seed=42, gains=sys_gains, arch=arch, d_in=d_in_int, d_out=d_out)
-            config.simulation.enable_learning = True
-            config.math_constants.learning_rate = lr
+        #     arch = TARGET_ARCHS["small"].copy()
+        #     d_in_int = d_out * 2
+        #     config = build_config(sys_id, 'nn_in_integral', seed=42, gains=sys_gains, arch=arch, d_in=d_in_int, d_out=d_out)
+        #     config.simulation.enable_learning = True
+        #     config.math_constants.learning_rate = lr
             
-            return evaluate_trial(config, trial)
+        #     return evaluate_trial(config, trial)
 
-        study_int = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=44))
-        study_int.optimize(obj_lr_int, n_trials=30, show_progress_bar=True)
-        sys_gains["lr_integral"] = study_int.best_params["lr"]
-        print(f"     Locked Integral LR: {sys_gains['lr_integral']:.4f}")
+        # study_int = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=44))
+        # study_int.optimize(obj_lr_int, n_trials=30, show_progress_bar=True)
+        # sys_gains["lr_integral"] = study_int.best_params["lr"]
+        # print(f"     Locked Integral LR: {sys_gains['lr_integral']:.4f}")
         
         # Save complete dictionary for this system
         save_tuned_gains({sys_id: sys_gains})
@@ -281,7 +281,7 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
                     seed = 1000 + i
                     config = build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out)
                     config.simulation.randomize_x0 = True 
-                    config.simulation.enable_learning = True 
+                    config.simulation.enable_learning = False
                     
                     # Inject the tuned learning rate into the config
                     config.math_constants.learning_rate = target_lr
