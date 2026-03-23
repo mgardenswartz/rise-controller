@@ -38,7 +38,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar, 
-         enable_learning, e_0, x_d_dot_0) = args  # <-- Unpack e_0 and x_d_dot_0
+         enable_learning, e_0, x_d_dot_0) = args
 
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)

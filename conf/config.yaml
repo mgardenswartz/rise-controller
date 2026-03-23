@@ -38,13 +38,12 @@ simulation:
   random_seed: 582394
   debug_print: false
   noise_mean: 0.0
-  noise_std: 0.0
+  noise_std: 0.005
   enable_learning: true
   control_frequency_hz: 100.0
 
 math_constants:
   learning_rate: 0.5
-  nu: 1.0
   k_theta_hat: 0.001
   k_1: 5.0
   k_2: 5.0
@@ -61,9 +60,8 @@ neural_network:
   hidden_activation: "swish"
   output_activation: "tanh"
   shortcut_activation: "linear"
-  init_type: "normal"
-  init_mean: 0.1
-  init_std: 0.05
+  init_mean: 0
+  init_std: 0.1
 
 data_labels:
   tracking_error: "tracking_errors"

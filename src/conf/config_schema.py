@@ -34,7 +34,6 @@ class SimulationConfig:
 @dataclass
 class MathConstantsConfig:
     learning_rate: float
-    nu: float
     k_theta_hat: float
     k_1: float
     k_2: float
@@ -52,7 +51,6 @@ class NeuralNetworkConfig:
     hidden_activation: str
     output_activation: str
     shortcut_activation: str
-    init_type: str
     init_mean: float
     init_std: float
 

@@ -3,6 +3,17 @@ import numpy as np
 from pathlib import Path
 from collections import defaultdict
 
+def format_stats(clean_array):
+    """Returns a formatted string 'Median (Max)' and the raw median for math."""
+    if not clean_array:
+        return "FAILED", np.nan
+    
+    med = np.median(clean_array)
+    mx = np.max(clean_array)
+    
+    mx_str = f"{mx:.2e}" if mx > 9999 else f"{mx:.4f}"
+    return f"{med:.4f} ({mx_str})", med
+
 def main():
     base_dir = Path("outputs/unified_sweep")
     if not base_dir.exists():
@@ -43,9 +54,9 @@ def main():
                             results[sys_id][size_name][ctrl]['actual_p'] = int(p)
 
     # 2. Print the cleanly formatted table
-    print("\n" + "="*112)
-    print(f"{'Sys':<4} | {'Arch Size':<11} | {'Params (B/I)':<14} | {'Base RMS(e) [Surv]':<18} | {'Int. RMS(e) [Surv]':<18} | {'Base RMS(u)':<11} | {'Int. RMS(u)':<11}")
-    print("-" * 112)
+    print("\n" + "="*162)
+    print(f"{'Sys':<3} | {'Arch Size':<10} | {'Params (B/I)':<12} | {'Base RMS(e): Med (Max) [Surv]':<32} | {'Int. RMS(e): Med (Max) [Surv]':<32} | {'% Imp (e)':<10} | {'Base RMS(u): Med (Max)':<22} | {'Int. RMS(u): Med (Max)':<22}")
+    print("-" * 162)
 
     for sys_id in sorted(results.keys()):
         for size_name in ["micro", "small", "medium", "large"]:
@@ -62,21 +73,32 @@ def main():
             i_e_clean = [x for x in i_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
             i_u_clean = [x for x in i_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
             
-            b_surv = len(b_e_clean)
-            i_surv = len(i_e_clean)
+            b_surv, i_surv = len(b_e_clean), len(i_e_clean)
             
-            b_e_mean = f"{np.mean(b_e_clean):.4f}" if b_surv > 0 else "FAILED"
-            i_e_mean = f"{np.mean(i_e_clean):.4f}" if i_surv > 0 else "FAILED"
-            b_u_mean = f"{np.mean(b_u_clean):.2f}" if b_surv > 0 else "FAILED"
-            i_u_mean = f"{np.mean(i_u_clean):.2f}" if i_surv > 0 else "FAILED"
+            # Format Strings and Extract Medians
+            b_e_str, b_e_med = format_stats(b_e_clean)
+            i_e_str, i_e_med = format_stats(i_e_clean)
+            b_u_str, _ = format_stats(b_u_clean)
+            i_u_str, _ = format_stats(i_u_clean)
+            
+            # Calculate Percentage Improvement (Positive = Integral is better)
+            if b_surv > 0 and i_surv > 0:
+                improvement = ((b_e_med - i_e_med) / b_e_med) * 100.0
+                imp_str = f"{improvement:+.1f}%"
+            else:
+                imp_str = "N/A"
             
             p_str = f"{b_data['actual_p']:>4} / {i_data['actual_p']:<4}"
-            b_e_str = f"{b_e_mean:>9}  [{b_surv}/10]"
-            i_e_str = f"{i_e_mean:>9}  [{i_surv}/10]"
             
-            print(f" {sys_id:<3} | {size_name:<11} | {p_str:<14} | {b_e_str:<18} | {i_e_str:<18} | {b_u_mean:>11} | {i_u_mean:>11}")
+            # Combine Error with Survival Counts
+            b_e_full = f"{b_e_str:>19}  [{b_surv:2d}/10]" if b_surv > 0 else f"{'FAILED':>19}  [ 0/10]"
+            i_e_full = f"{i_e_str:>19}  [{i_surv:2d}/10]" if i_surv > 0 else f"{'FAILED':>19}  [ 0/10]"
+            b_u_full = f"{b_u_str:>22}" if b_surv > 0 else f"{'FAILED':>22}"
+            i_u_full = f"{i_u_str:>22}" if i_surv > 0 else f"{'FAILED':>22}"
             
-    print("="*112 + "\n")
+            print(f" {sys_id:<3} | {size_name:<10} | {p_str:<12} | {b_e_full:<32} | {i_e_full:<32} | {imp_str:>10} | {b_u_full:<22} | {i_u_full:<22}")
+            
+    print("="*162 + "\n")
 
 if __name__ == "__main__":
     main()
