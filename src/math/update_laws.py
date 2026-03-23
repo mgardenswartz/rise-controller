@@ -25,32 +25,6 @@ def cai_projection(
         None
     )
 
-def compute_gamma_dot(
-    gamma: jax.Array,
-    jacobian: jax.Array,
-    learning_rate_upper_bound_mult: float,
-    learning_rate_lower_bound_mult: float,
-    initial_gamma_scalar: float,
-    nu: float,
-    p: int
-) -> jax.Array:
-    gamma_bar = initial_gamma_scalar * learning_rate_upper_bound_mult
-    gamma_under = initial_gamma_scalar * learning_rate_lower_bound_mult
-
-    alpha = (gamma_bar * (gamma_under ** 3)) / (gamma_bar ** 2 - gamma_under ** 2)
-    beta_gamma = gamma_under
-    gamma_scalar = (gamma_under * gamma_bar) / (gamma_bar ** 2 - gamma_under ** 2)
-
-    norm_j_sq = jnp.linalg.norm(jacobian) ** 2
-    j_t_j = jnp.dot(jacobian.T, jacobian)
-
-    term1 = alpha * jnp.eye(p)
-    term2 = beta_gamma * gamma
-    term3 = gamma_scalar * jnp.dot(gamma, gamma)
-    matrix_fraction = jnp.dot(gamma, jnp.dot(j_t_j, gamma)) / (1.0 + nu * norm_j_sq)
-    
-    return term1 + term2 - term3 - matrix_fraction
-
 def compute_theta_hat_dot(
     error: jax.Array,
     theta_hat: jax.Array,

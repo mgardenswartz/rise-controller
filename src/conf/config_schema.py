@@ -33,14 +33,12 @@ class SimulationConfig:
 
 @dataclass
 class MathConstantsConfig:
-    learning_rate_upper_bound_mult: float
-    learning_rate_lower_bound_mult: float
+    learning_rate: float
     nu: float
     k_theta_hat: float
     k_1: float
     k_2: float
     beta: float
-    initial_gamma_scalar: float
     theta_bar: float
 
 @dataclass

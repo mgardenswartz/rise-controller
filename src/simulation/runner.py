@@ -10,7 +10,7 @@ from src.math.dynamics import (
     f_sys_1, f_sys_2, f_sys_3, f_sys_4, f_sys_5, f_sys_6, f_sys_7, f_sys_8, f_sys_9
 )
 from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
-from src.math.update_laws import compute_gamma_dot, compute_theta_hat_dot
+from src.math.update_laws import compute_theta_hat_dot
 
 def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
     if sys_id == 1: return f_sys_1(x)
@@ -35,12 +35,10 @@ def create_plant_vector_field(sys_id: int):
 # --- 2. THE DISCRETE CONTROLLER STEP ---
 def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
     def discrete_step(carry, noise_sample, args):
-        t, x_true, theta_hat, gamma, I_state = carry
-        gamma = 0.5 * (gamma + gamma.T)
+        t, x_true, theta_hat, I_state = carry
         
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
-         excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate_upper_bound_mult, 
-         learning_rate_lower_bound_mult, initial_gamma_scalar, nu, theta_bar, 
+         excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar, 
          enable_learning) = args 
 
         x_d = get_desired_trajectory(t, sys_id)
@@ -50,6 +48,10 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         x_meas = x_true + noise_sample
         e_meas = x_d - x_meas
         u_1 = get_excitation_signal(t, excitation_duration, d_out)
+        
+        # Construct Constant Diagonal Learning Rate Matrix
+        p = theta_hat.shape[0]
+        gamma = learning_rate * jnp.eye(p)
 
         # Active Network Branch
         if enable_learning:
@@ -66,9 +68,6 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
                 I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
                 
             theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
-            p = theta_hat.shape[0]
-            gamma_dot = compute_gamma_dot(gamma, jacobian, learning_rate_upper_bound_mult, learning_rate_lower_bound_mult, initial_gamma_scalar, nu, p)
-            gamma_dot_sym = 0.5 * (gamma_dot + gamma_dot.T)
             
         # Linear Baseline Branch
         else:
@@ -81,11 +80,9 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
                 I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
                 
             theta_hat_dot = jnp.zeros_like(theta_hat)
-            gamma_dot_sym = jnp.zeros_like(gamma)
 
         # Discrete Euler Integration for Controller States
         theta_next = theta_hat + dt_ctrl * theta_hat_dot
-        gamma_next = gamma + dt_ctrl * gamma_dot_sym
         I_next = I_state + dt_ctrl * I_dot
 
         # Evaluate final reconstruction accuracy against true dynamics
@@ -93,7 +90,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         
         # Pack data for logging
         log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u, epsilon)
-        return (theta_next, gamma_next, I_next, u), log_data
+        return (theta_next, I_next, u), log_data
     
     return discrete_step
 
@@ -130,8 +127,6 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         yaml_x0 = jnp.array(config.simulation.x0)
         x_0 = jnp.pad(yaml_x0, (0, max(0, d_out - len(yaml_x0))))[:d_out]
 
-    gamma_0 = config.math_constants.initial_gamma_scalar * jnp.eye(p)
-    
     # ---------------------------------------------------------
     # BOUNDARY CONDITION INITIALIZATION: Prevent u(t0) spike
     # ---------------------------------------------------------
@@ -143,13 +138,13 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         # zeta(t0) = -(k1+k2)e(t0) - x_d_dot(t0)  --> forces u(t0) = 0
         I_0 = -(config.math_constants.k_1 + config.math_constants.k_2) * e_0 - x_d_dot_0
     else:
-        I_0 = jnp.zeros_like(x_0) # Baseline math is slightly different, leaving 0 for now
+        I_0 = jnp.zeros_like(x_0) 
     
     t0 = config.simulation.t0
     t1 = config.simulation.duration_seconds
     
     # ---------------------------------------------------------
-    # DIGITAL CLOCK SETUP (Using strict YAML parameters)
+    # DIGITAL CLOCK SETUP
     # ---------------------------------------------------------
     dt_ctrl = 1.0 / config.simulation.control_frequency_hz
     num_steps = int(jnp.ceil((t1 - t0) / dt_ctrl))
@@ -158,10 +153,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     # Generate Band-Limited Noise
     noise_mean = config.simulation.noise_mean
     noise_std = config.simulation.noise_std
-    num_steps = int(jnp.ceil((t1 - t0) / dt_ctrl))
-    # Generate raw noise
     raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_steps, d_out)) + noise_mean
-    # Apply Industry-Standard 3-Sigma Sensor Clipping
     clip_limit = 3.0 * noise_std
     noise_array = jnp.clip(raw_noise, noise_mean - clip_limit, noise_mean + clip_limit)
 
@@ -173,9 +165,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
         h_act_idx, o_act_idx, shortcut_act_idx, config.simulation.excitation_duration_seconds,
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
-        config.math_constants.k_theta_hat, config.math_constants.learning_rate_upper_bound_mult,
-        config.math_constants.learning_rate_lower_bound_mult, config.math_constants.initial_gamma_scalar,
-        config.math_constants.nu, config.math_constants.theta_bar, enable_learning
+        config.math_constants.k_theta_hat, config.math_constants.learning_rate, 
+        config.math_constants.theta_bar, enable_learning
     )
 
     discrete_controller = create_discrete_controller(is_integral, sys_id, dt_ctrl)
@@ -184,15 +175,15 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     solver = diffrax.Tsit5()
 
     # ---------------------------------------------------------
-    # THE HYBRID SIMULATION LOOP (With NaN Short-Circuit)
+    # THE HYBRID SIMULATION LOOP
     # ---------------------------------------------------------
     def hybrid_scan_step(carry, step_data):
-        t_current, x_current, theta_hat_curr, gamma_curr, I_curr = carry
+        t_current, x_current, theta_hat_curr, I_curr = carry
         noise_samp = step_data
         
         # 1. Evaluate discrete controller
-        ctrl_carry = (t_current, x_current, theta_hat_curr, gamma_curr, I_curr)
-        (theta_next, gamma_next, I_next, u_held), log_data = discrete_controller(ctrl_carry, noise_samp, math_args)
+        ctrl_carry = (t_current, x_current, theta_hat_curr, I_curr)
+        (theta_next, I_next, u_held), log_data = discrete_controller(ctrl_carry, noise_samp, math_args)
         
         # 2. Check for numerical explosions
         is_invalid = (
@@ -207,26 +198,25 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
                 y0=x_current, args=(u_held,),
                 stepsize_controller=diffrax.PIDController(rtol=config.simulation.rtol, atol=config.simulation.atol),
                 max_steps=config.simulation.max_solver_steps,
-                throw=False # Silence fatal callbacks
+                throw=False
             )
             return sol.ys[-1]
             
         def skip_integration(_):
-            # If already exploded, just pass NaN forward instantly
             return jnp.full_like(x_current, jnp.nan)
 
         x_next = jax.lax.cond(is_invalid, skip_integration, integrate_plant, None)
         
-        next_carry = (t_current + dt_ctrl, x_next, theta_next, gamma_next, I_next)
+        next_carry = (t_current + dt_ctrl, x_next, theta_next, I_next)
         return next_carry, log_data
 
-    # Initial carry state
-    init_carry = (t0, x_0, theta_hat_0, gamma_0, I_0)
+    # Initial carry state (Gamma removed)
+    init_carry = (t0, x_0, theta_hat_0, I_0)
     
     # Run the massive discrete loop using XLA compilation
     _, log_history = jax.lax.scan(hybrid_scan_step, init_carry, noise_array)
     
-    # Unpack logged data
+    # Unpack logged data (Gamma is still populated dynamically per step for output compatibility)
     (t_out, x_out, theta_hat_out, gamma_out, x_d_out, e_out, phi_eval_out, u_out, epsilon_out) = log_history
     
     return {
