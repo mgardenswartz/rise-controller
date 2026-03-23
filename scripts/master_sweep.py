@@ -1,9 +1,10 @@
 import sys
-import os
 import argparse
 from pathlib import Path
 import yaml
 import dataclasses
+from collections import defaultdict
+import numpy as np
 
 import jax
 import jax.numpy as jnp
@@ -24,26 +25,51 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(7,9))  # Systems 1 through 9
+SYSTEMS = list(range(7, 10))  # Systems 7, 8, 9
 MC_TRIALS = 10
-TARGET_PARAMS = { "small": 50, "medium": 100, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
 
-def find_matched_architecture(target_p: int, d_in: int, d_out: int = 2) -> dict:
-    from architecture_matcher import get_total_parameters
-    best_diff = float('inf')
-    best = {}
-    for w in range(2, 64):
-        for b in range(0, 10):
-            for k_0 in range(1, 4):
-                for k_i in range(1, 4):
-                    p = get_total_parameters(d_in, w, d_out, b, k_0, k_i)
-                    if abs(p - target_p) < best_diff:
-                        best_diff = abs(p - target_p)
-                        best = {"b": b, "k_0": k_0, "k_i": k_i, "hidden_width": w, "actual_p": p}
-                    if best_diff == 0:
-                        return best
-    return best
+# Persistent Gains File
+GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
+
+# Explicitly locked architectures (Width, Blocks, k_0, k_i)
+TARGET_ARCHS = {
+    "micro":  {"hidden_width": 4,  "b": 0, "k_0": 1, "k_i": 1},
+    "small":  {"hidden_width": 8,  "b": 1, "k_0": 1, "k_i": 2},
+    "medium": {"hidden_width": 16, "b": 2, "k_0": 1, "k_i": 2},
+    "large":  {"hidden_width": 32, "b": 4, "k_0": 1, "k_i": 2}
+}
+
+# --- YAML GAINS MANAGEMENT ---
+def load_tuned_gains() -> dict:
+    """Loads gains from YAML and converts string keys back to integers."""
+    if GAINS_FILE.exists():
+        with open(GAINS_FILE, "r") as f:
+            raw_gains = yaml.safe_load(f) or {}
+            return {int(k): v for k, v in raw_gains.items()}
+    return {}
+
+def save_tuned_gains(new_gains: dict):
+    """Merges new gains with existing YAML data without overwriting untuned systems."""
+    existing_gains = load_tuned_gains()
+    existing_gains.update(new_gains)
+    
+    # Convert integer keys to strings for clean YAML formatting
+    yaml_ready_gains = {str(k): v for k, v in existing_gains.items()}
+    
+    GAINS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(GAINS_FILE, "w") as f:
+        yaml.dump(yaml_ready_gains, f, default_flow_style=False, sort_keys=True)
+    print(f"\n[SAVED] Tuned gains successfully merged into {GAINS_FILE}")
+
+# --- ARCHITECTURE MATCHING ---
+def get_actual_p(d_in: int, w: int, d_out: int, b: int, k_0: int, k_i: int) -> int:
+    """Calculates exact parameter count based on fixed architecture."""
+    p_in = (d_in * w) + w
+    p_out = (w * d_out) + d_out
+    p_k0 = (k_0 - 1) * ((w * w) + w)
+    p_blocks = b * k_i * ((w * w) + w)
+    return p_in + p_out + p_k0 + p_blocks
 
 def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     GlobalHydra.instance().clear()
@@ -85,11 +111,11 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     return config
 
 def generate_monte_carlo_x0(num_samples: int, key: jax.Array, bounds: float = 2.5, d_out: int = 2) -> jax.Array:
-    """Generates a batch of random initial conditions uniformly distributed within [-bounds, bounds]."""
     return jax.random.uniform(key, shape=(num_samples, d_out), minval=-bounds, maxval=bounds)
 
+# --- PHASE 1: TUNING ---
 def phase_1_tune_baselines():
-    print("="*60 + "\nPHASE 1: MONTE CARLO OPTUNA TUNING (ALL SYSTEMS)\n" + "="*60)
+    print("="*60 + "\nPHASE 1: MONTE CARLO OPTUNA TUNING\n" + "="*60)
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     best_gains = {}
     
@@ -98,28 +124,23 @@ def phase_1_tune_baselines():
         print(f"\n--- Tuning System {sys_id} ({d_out}D) ---")
         
         def objective(trial):
-            k_1 = trial.suggest_float("k_1", 0.1, 50.0)
-            k_2 = trial.suggest_float("k_2", 0.1, 50.0)
-            beta = trial.suggest_float("beta", 0.0, 30.0)
+            k_1 = trial.suggest_float("k_1", 0.1, 100.0)
+            k_2 = trial.suggest_float("k_2", 0.1, 100.0)
+            beta = trial.suggest_float("beta", 0.0, 50.0)
             
-            arch = {"b": 0, "k_0": 1, "k_i": 1, "hidden_width": 2, "actual_p": 0}
+            arch = {"hidden_width": 2, "b": 0, "k_0": 1, "k_i": 1}
             config = build_config(sys_id, 'baseline', seed=42, 
                                   gains={"k_1": k_1, "k_2": k_2, "beta": beta}, 
                                   arch=arch, d_in=d_out, d_out=d_out)
             
-            # Disable neural network learning strictly for tuning
             config.simulation.enable_learning = False
             config.neural_network.init_mean = 0.0
             config.neural_network.init_std = 0.0
             config.simulation.debug_print = False
 
-            # Monte Carlo Initial Conditions
             num_mc_samples = 5
             key = jax.random.PRNGKey(trial.number)
-            x0_batch = generate_monte_carlo_x0(num_mc_samples,
-                                               key,
-                                               bounds=2.5, # Must match the random_x0_square_size in config.yaml
-                                               d_out=d_out)
+            x0_batch = generate_monte_carlo_x0(num_mc_samples, key, bounds=2.5, d_out=d_out)
             
             mc_tracking_errors = []
             mc_control_efforts = []
@@ -134,32 +155,22 @@ def phase_1_tune_baselines():
                     rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
                     rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
                     
-                    # If the solver failed quietly, prune the trial immediately
                     if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
                         raise optuna.TrialPruned()
                         
                     mc_tracking_errors.append(rms_e)
                     mc_control_efforts.append(rms_u)
-                except Exception:  # <--- Broadened to catch any JAX/Equinox callbacks
+                except Exception:
                     raise optuna.TrialPruned()
 
-            # Aggregate Monte Carlo results
             avg_rms_e = float(jnp.mean(jnp.array(mc_tracking_errors)))
             avg_rms_u = float(jnp.mean(jnp.array(mc_control_efforts)))
             
-            # 1. Exponential Error Penalty (Smoothly builds a massive wall near e > 0.5)
-            # Using base 'e' scaled so that an error of 0.5 returns a significant penalty
-            error_cost = jnp.exp(8.0 * avg_rms_e) - 1.0 
-            
-            # 2. Quartic Control Effort Penalty (Crushes violent control spikes)
-            # Scaled way down (1e-6) because effort in the millions will overflow float64
+            error_cost = float(jnp.exp(8.0 * avg_rms_e) - 1.0)
             effort_cost = 1e-6 * (avg_rms_u ** 4)
-            
-            # 3. L2 Gain Regularization (Forces Optuna to keep gains as low as possible)
-            # Scaled gently so tracking performance remains the primary goal
             gain_cost = 0.05 * (k_1**2 + k_2**2 + beta**2)
             
-            return float(error_cost + effort_cost + gain_cost)
+            return error_cost + effort_cost + gain_cost
 
         study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=42))
         study.optimize(objective, n_trials=50, show_progress_bar=True)
@@ -172,21 +183,22 @@ def phase_1_tune_baselines():
         
         jax.clear_caches()
         
-    print("\n[PHASE 1 COMPLETE] Update your script's HARDCODED_GAINS dictionary to:")
-    print("HARDCODED_GAINS = {")
-    for k, v in best_gains.items():
-        print(f"    {k}: {v},")
-    print("}")
+    # Merge and save the tuned gains directly to YAML
+    save_tuned_gains(best_gains)
 
+# --- PHASE 2: SWEEP ---
 def phase_2_unified_sweep(gains_dict: dict):
-    print("\n" + "="*60 + "\nPHASE 2: UNIFIED MASSIVE SWEEP (SYSTEMS 1-9)\n" + "="*60)
+    print("\n" + "="*60 + "\nPHASE 2: UNIFIED MASSIVE SWEEP\n" + "="*60)
     
     controllers = ["baseline", "nn_in_integral"]
     base_output_dir = Path("outputs/unified_sweep")
     base_output_dir.mkdir(parents=True, exist_ok=True)
     
+    results_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {'rms_e': [], 'rms_u': [], 'actual_p': 0})))
+    
     for sys_id in SYSTEMS:
         if sys_id not in gains_dict:
+            print(f"[WARNING] Skipping System {sys_id} - No tuned gains found in YAML.")
             continue
             
         d_out = N_STATES_MAP[sys_id]
@@ -195,18 +207,19 @@ def phase_2_unified_sweep(gains_dict: dict):
         for ctrl_name in controllers:
             d_in = d_out if ctrl_name == "baseline" else d_out * 2
             
-            for size_name, target_p in TARGET_PARAMS.items():
-                arch = find_matched_architecture(target_p, d_in=d_in, d_out=d_out)
-                print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Size: {size_name} (P={arch['actual_p']})")
-                print(f"        Arch Details -> Width: {arch['hidden_width']}, Blocks (b): {arch['b']}, k_0: {arch['k_0']}, k_i: {arch['k_i']}")
+            for size_name, arch_params in TARGET_ARCHS.items():
+                arch = arch_params.copy()
+                arch['actual_p'] = get_actual_p(d_in, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
+                
+                print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Arch: {size_name.upper()} (P={arch['actual_p']})")
                 
                 for i in range(MC_TRIALS):
                     seed = 1000 + i
                     config = build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out)
                     config.simulation.randomize_x0 = True 
-                    config.simulation.enable_learning = True # Ensure network is active for Phase 2
+                    config.simulation.enable_learning = True 
                     
-                    run_dir = base_output_dir / f"sys_{sys_id}" / ctrl_name / f"p_{arch['actual_p']}" / f"seed_{seed}"
+                    run_dir = base_output_dir / f"sys_{sys_id}" / ctrl_name / size_name / f"seed_{seed}"
                     run_dir.mkdir(parents=True, exist_ok=True)
                     (run_dir / ".hydra").mkdir(exist_ok=True)
                     
@@ -219,12 +232,65 @@ def phase_2_unified_sweep(gains_dict: dict):
                         sim_data = run_simulation(config)
                         calculate_and_save_statistics(sim_data, run_dir, config)
                         
+                        e = sim_data[config.data_labels.tracking_error]
+                        u = sim_data[config.data_labels.control_effort]
+                        
+                        if jnp.any(jnp.isnan(e)) or jnp.any(jnp.isnan(u)) or jnp.any(jnp.isinf(e)) or jnp.any(jnp.isinf(u)):
+                            print(f"  -> Trial {i+1} FAILED (Invalid numerical output)")
+                            rms_e, rms_u = float('nan'), float('nan')
+                        else:
+                            rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
+                            rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
+                            
+                        results_dict[sys_id][size_name][ctrl_name]['rms_e'].append(rms_e)
+                        results_dict[sys_id][size_name][ctrl_name]['rms_u'].append(rms_u)
+                        results_dict[sys_id][size_name][ctrl_name]['actual_p'] = arch['actual_p']
+                        
                         with open(run_dir / ".hydra" / "config.yaml", "w") as f:
                             yaml.dump(dataclasses.asdict(config), f)
-                    except RuntimeError:
-                        print(f"  -> Trial {i+1} FAILED (Finite Escape / Numerical Instability)")
+                            
+                    except Exception as e:
+                        print(f"  -> Trial {i+1} FAILED (Exception: {type(e).__name__})")
+                        results_dict[sys_id][size_name][ctrl_name]['rms_e'].append(float('nan'))
+                        results_dict[sys_id][size_name][ctrl_name]['rms_u'].append(float('nan'))
+                        results_dict[sys_id][size_name][ctrl_name]['actual_p'] = arch['actual_p']
                 
                 jax.clear_caches()
+
+    # =========================================================================
+    # PHASE 2 PRINT SUMMARY TABLE
+    # =========================================================================
+    print("\n\n" + "="*112)
+    print(f"{'Sys':<4} | {'Arch Size':<11} | {'Params (B/I)':<14} | {'Base RMS(e) [Surv]':<18} | {'Int. RMS(e) [Surv]':<18} | {'Base RMS(u)':<11} | {'Int. RMS(u)':<11}")
+    print("-" * 112)
+
+    for sys_id in sorted(results_dict.keys()):
+        for size_name in ["micro", "small", "medium", "large"]:
+            if size_name not in results_dict[sys_id]:
+                continue
+            
+            data = results_dict[sys_id][size_name]
+            b_data = data.get('baseline', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
+            i_data = data.get('nn_in_integral', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
+            
+            b_e_clean = [x for x in b_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
+            b_u_clean = [x for x in b_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
+            i_e_clean = [x for x in i_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
+            i_u_clean = [x for x in i_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
+            
+            b_surv, i_surv = len(b_e_clean), len(i_e_clean)
+            
+            b_e_mean = f"{np.mean(b_e_clean):.4f}" if b_surv > 0 else "FAILED"
+            i_e_mean = f"{np.mean(i_e_clean):.4f}" if i_surv > 0 else "FAILED"
+            b_u_mean = f"{np.mean(b_u_clean):.2f}" if b_surv > 0 else "FAILED"
+            i_u_mean = f"{np.mean(i_u_clean):.2f}" if i_surv > 0 else "FAILED"
+            
+            p_str = f"{b_data['actual_p']:>4} / {i_data['actual_p']:<4}"
+            b_e_str = f"{b_e_mean:>9}  [{b_surv}/{MC_TRIALS}]"
+            i_e_str = f"{i_e_mean:>9}  [{i_surv}/{MC_TRIALS}]"
+            
+            print(f" {sys_id:<3} | {size_name:<11} | {p_str:<14} | {b_e_str:<18} | {i_e_str:<18} | {b_u_mean:>11} | {i_u_mean:>11}")
+    print("="*112 + "\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Unified Master Sweep for Systems 1-9")
@@ -232,16 +298,16 @@ if __name__ == "__main__":
     parser.add_argument("--sweep", action="store_true", help="Run Phase 2: Massive Monte Carlo Sweep")
     args = parser.parse_args()
 
-    HARDCODED_GAINS = {
-        7: {'k_1': 16.127252887506252, 'k_2': 26.365647502596307, 'beta': 2.945109439470441},
-        8: {'k_1': 10.391869869104866, 'k_2': 5.666348083450405, 'beta': 4.862055884209417},
-    }
-
     if not any(vars(args).values()):
         parser.print_help()
         exit()
 
     if args.tune:
         phase_1_tune_baselines()
+        
     if args.sweep:
-        phase_2_unified_sweep(HARDCODED_GAINS)
+        loaded_gains = load_tuned_gains()
+        if not loaded_gains:
+            print("\n[ERROR] No tuned gains found. Please run with --tune first to populate the YAML.\n")
+            exit()
+        phase_2_unified_sweep(loaded_gains)
