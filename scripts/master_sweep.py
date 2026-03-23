@@ -34,10 +34,9 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 
 # Explicitly locked architectures (Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
-    "micro":  {"hidden_width": 4,  "b": 0, "k_0": 1, "k_i": 1},
-    "small":  {"hidden_width": 8,  "b": 1, "k_0": 1, "k_i": 2},
-    "medium": {"hidden_width": 16, "b": 2, "k_0": 1, "k_i": 2},
-    "large":  {"hidden_width": 32, "b": 4, "k_0": 1, "k_i": 2}
+    "small":  {"hidden_width": 4,  "b": 1, "k_0": 1, "k_i": 2},
+    "medium": {"hidden_width": 4, "b": 2, "k_0": 1, "k_i": 2},
+    "large":  {"hidden_width": 4, "b": 4, "k_0": 1, "k_i": 2}
 }
 
 # --- YAML GAINS MANAGEMENT ---
