@@ -24,7 +24,7 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(8,9))  # Systems 1 through 9
+SYSTEMS = list(range(7,9))  # Systems 1 through 9
 MC_TRIALS = 10
 TARGET_PARAMS = { "small": 50, "medium": 100, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
@@ -143,14 +143,23 @@ def phase_1_tune_baselines():
                 except Exception:  # <--- Broadened to catch any JAX/Equinox callbacks
                     raise optuna.TrialPruned()
 
-            avg_rms_e = jnp.mean(jnp.array(mc_tracking_errors))
-            avg_rms_u = jnp.mean(jnp.array(mc_control_efforts))
+            # Aggregate Monte Carlo results
+            avg_rms_e = float(jnp.mean(jnp.array(mc_tracking_errors)))
+            avg_rms_u = float(jnp.mean(jnp.array(mc_control_efforts)))
             
-            target_rms_e = 1.25
-            error_penalty = float(abs(avg_rms_e - target_rms_e))
-            u_penalty = float(0.01 * avg_rms_u)
+            # 1. Exponential Error Penalty (Smoothly builds a massive wall near e > 0.5)
+            # Using base 'e' scaled so that an error of 0.5 returns a significant penalty
+            error_cost = jnp.exp(8.0 * avg_rms_e) - 1.0 
             
-            return error_penalty + u_penalty
+            # 2. Quartic Control Effort Penalty (Crushes violent control spikes)
+            # Scaled way down (1e-6) because effort in the millions will overflow float64
+            effort_cost = 1e-6 * (avg_rms_u ** 4)
+            
+            # 3. L2 Gain Regularization (Forces Optuna to keep gains as low as possible)
+            # Scaled gently so tracking performance remains the primary goal
+            gain_cost = 0.05 * (k_1**2 + k_2**2 + beta**2)
+            
+            return float(error_cost + effort_cost + gain_cost)
 
         study = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=42))
         study.optimize(objective, n_trials=50, show_progress_bar=True)
@@ -224,9 +233,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     HARDCODED_GAINS = {
-        7: {'k_1': 19.802105494571755, 'k_2': 15.712528763338739, 'beta': 22.529917080375782},
-        8: {'k_1': 10, 'k_2': 15, 'beta': 25},
-        9: {'k_1': 12.397190696798852, 'k_2': 5.7411837263980985, 'beta': 25.147360859488924},
+        7: {'k_1': 16.127252887506252, 'k_2': 26.365647502596307, 'beta': 2.945109439470441},
+        8: {'k_1': 10.391869869104866, 'k_2': 5.666348083450405, 'beta': 4.862055884209417},
     }
 
     if not any(vars(args).values()):
