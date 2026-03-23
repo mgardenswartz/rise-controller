@@ -133,11 +133,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     x_d_dot_0 = get_desired_velocity(config.simulation.t0, sys_id)
     e_0 = x_d_0 - x_0
     
-    if config.simulation.controller_type == "nn_in_integral":
-        # zeta(t0) = -(k1+k2)e(t0) - x_d_dot(t0)  --> forces u(t0) = 0
-        I_0 = -(config.math_constants.k_1 + config.math_constants.k_2) * e_0 - x_d_dot_0
-    else:
-        I_0 = jnp.zeros_like(x_0) 
+    # If you don't set it to zero, it performs bad
+    I_0 = jnp.zeros_like(x_0) 
     
     t0 = config.simulation.t0
     t1 = config.simulation.duration_seconds
