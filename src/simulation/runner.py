@@ -7,7 +7,7 @@ from src.math.dynamics import (
     get_desired_trajectory,
     get_desired_velocity,
     get_excitation_signal,
-    f_sys_1, f_sys_2, f_sys_3, f_sys_4, f_sys_5, f_sys_6, f_sys_7, f_sys_8, f_sys_9
+    f_sys_1, f_sys_2, f_sys_3, f_sys_4, f_sys_5, f_sys_6, f_sys_7, f_sys_8
 )
 from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
 from src.math.update_laws import compute_theta_hat_dot
@@ -21,7 +21,6 @@ def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
     if sys_id == 6: return f_sys_6(x)
     if sys_id == 7: return f_sys_7(x)
     if sys_id == 8: return f_sys_8(x)
-    if sys_id == 9: return f_sys_9(x)
     raise ValueError(f"Invalid sys_id: {sys_id}")
 
 # --- 1. THE CONTINUOUS PHYSICAL PLANT ---

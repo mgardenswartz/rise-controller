@@ -26,7 +26,7 @@ directories:
 simulation:
   controller_type: "nn_in_integral"
   randomize_x0: false
-  random_x0_square_size: 2.5
+  random_x0_square_size: 1.0
   t0: 0.0
   sys_id: 1
   duration_seconds: 30.0

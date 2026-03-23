@@ -26,9 +26,9 @@ from src.io.statistics import calculate_and_save_statistics
 import matplotlib.pyplot as plt
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(8, 10))  # Systems 7, 8, 9
 MC_TRIALS = 10
-N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
+SYSTEMS = list(range(1, 9))
+N_STATES_MAP = {1: 2, 2: 2, 3: 3, 4: 2, 5: 4, 6: 6, 7: 2, 8: 3}
 
 # Persistent Gains File
 GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
@@ -213,7 +213,7 @@ def phase_1_tune_all():
             
             arch = TARGET_ARCHS["small"].copy() # Tune on a realistic small network
             config = build_config(sys_id, 'baseline', seed=42, gains=sys_gains, arch=arch, d_in=d_out, d_out=d_out)
-            config.simulation.enable_learning = True
+            config.simulation.enable_learning = False #
             config.math_constants.learning_rate = lr
             
             return evaluate_trial(config, trial)
