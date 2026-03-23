@@ -24,7 +24,7 @@ from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
-SYSTEMS = list(range(7, 10))  # Systems 1 through 9
+SYSTEMS = list(range(8,9))  # Systems 1 through 9
 MC_TRIALS = 10
 TARGET_PARAMS = { "small": 50, "medium": 100, "large": 400}
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 4, 7: 2, 8: 3, 9: 4}
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     HARDCODED_GAINS = {
         7: {'k_1': 19.802105494571755, 'k_2': 15.712528763338739, 'beta': 22.529917080375782},
-        8: {'k_1': 3.6994692362351236, 'k_2': 12.90967625457445, 'beta': 16.911674074240306},
+        8: {'k_1': 10, 'k_2': 15, 'beta': 25},
         9: {'k_1': 12.397190696798852, 'k_2': 5.7411837263980985, 'beta': 25.147360859488924},
     }
 
