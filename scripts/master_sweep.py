@@ -134,9 +134,13 @@ def phase_1_tune_baselines():
                     rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
                     rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
                     
+                    # If the solver failed quietly, prune the trial immediately
+                    if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
+                        raise optuna.TrialPruned()
+                        
                     mc_tracking_errors.append(rms_e)
                     mc_control_efforts.append(rms_u)
-                except RuntimeError:
+                except Exception:  # <--- Broadened to catch any JAX/Equinox callbacks
                     raise optuna.TrialPruned()
 
             avg_rms_e = jnp.mean(jnp.array(mc_tracking_errors))
@@ -220,9 +224,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     HARDCODED_GAINS = {
-        7: {'k_1': 11.651943420452318, 'k_2': 26.625284925816324, 'beta': 0.5152656240561082},
-        8: {'k_1': 10.689333302924657, 'k_2': 13.413989334000508, 'beta': 21.41790624925313},
-        9: {'k_1': 16.510296954720918, 'k_2': 3.240320603515338, 'beta': 16.559336778358023},
+        7: {'k_1': 19.802105494571755, 'k_2': 15.712528763338739, 'beta': 22.529917080375782},
+        8: {'k_1': 3.6994692362351236, 'k_2': 12.90967625457445, 'beta': 16.911674074240306},
+        9: {'k_1': 12.397190696798852, 'k_2': 5.7411837263980985, 'beta': 25.147360859488924},
     }
 
     if not any(vars(args).values()):

@@ -155,8 +155,15 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     num_steps = int(jnp.ceil((t1 - t0) / dt_ctrl))
     ts = jnp.linspace(t0, t1, num_steps)
     
-    # Pre-generate discrete noise array (noise updates at control frequency for the ZOH)
-    noise_array = config.simulation.noise_std * jax.random.normal(key_noise, shape=(num_steps, d_out)) + config.simulation.noise_mean
+    # Generate Band-Limited Noise
+    noise_mean = config.simulation.noise_mean
+    noise_std = config.simulation.noise_std
+    num_steps = int(jnp.ceil((t1 - t0) / dt_ctrl))
+    # Generate raw noise
+    raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_steps, d_out)) + noise_mean
+    # Apply Industry-Standard 3-Sigma Sensor Clipping
+    clip_limit = 3.0 * noise_std
+    noise_array = jnp.clip(raw_noise, noise_mean - clip_limit, noise_mean + clip_limit)
 
     is_integral = config.simulation.controller_type == "nn_in_integral"
     enable_learning = getattr(config.simulation, "enable_learning", True)
@@ -177,7 +184,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     solver = diffrax.Tsit5()
 
     # ---------------------------------------------------------
-    # THE HYBRID SIMULATION LOOP
+    # THE HYBRID SIMULATION LOOP (With NaN Short-Circuit)
     # ---------------------------------------------------------
     def hybrid_scan_step(carry, step_data):
         t_current, x_current, theta_hat_curr, gamma_curr, I_curr = carry
@@ -187,16 +194,28 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         ctrl_carry = (t_current, x_current, theta_hat_curr, gamma_curr, I_curr)
         (theta_next, gamma_next, I_next, u_held), log_data = discrete_controller(ctrl_carry, noise_samp, math_args)
         
-        # 2. Simulate physical plant continuously with u_held
-        sol = diffrax.diffeqsolve(
-            term, solver, t0=t_current, t1=t_current + dt_ctrl, dt0=dt_ctrl/10.0, 
-            y0=x_current, args=(u_held,),
-            stepsize_controller=diffrax.PIDController(rtol=config.simulation.rtol, atol=config.simulation.atol),
-            max_steps=config.simulation.max_solver_steps
+        # 2. Check for numerical explosions
+        is_invalid = (
+            jnp.any(jnp.isnan(x_current)) | jnp.any(jnp.isinf(x_current)) |
+            jnp.any(jnp.isnan(u_held)) | jnp.any(jnp.isinf(u_held))
         )
         
-        # 3. Extract final state for next discrete step
-        x_next = sol.ys[-1]
+        # 3. Conditionally bypass the continuous solver
+        def integrate_plant(_):
+            sol = diffrax.diffeqsolve(
+                term, solver, t0=t_current, t1=t_current + dt_ctrl, dt0=dt_ctrl/10.0, 
+                y0=x_current, args=(u_held,),
+                stepsize_controller=diffrax.PIDController(rtol=config.simulation.rtol, atol=config.simulation.atol),
+                max_steps=config.simulation.max_solver_steps,
+                throw=False # Silence fatal callbacks
+            )
+            return sol.ys[-1]
+            
+        def skip_integration(_):
+            # If already exploded, just pass NaN forward instantly
+            return jnp.full_like(x_current, jnp.nan)
+
+        x_next = jax.lax.cond(is_invalid, skip_integration, integrate_plant, None)
         
         next_carry = (t_current + dt_ctrl, x_next, theta_next, gamma_next, I_next)
         return next_carry, log_data
