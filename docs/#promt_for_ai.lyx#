@@ -95,7 +95,6 @@ Let
 \end_inset
 
  be a placeholder for excitation.
- NN-in-the-integral controller (New)
 \begin_inset Note Note
 status collapsed
 
@@ -140,7 +139,7 @@ u & =[k_{1}e+\dot{x}_{d}]_{t_{0}}^{t}+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\le
 
 \end_inset
 
-
+ NN-in-the-integral controller (New)
 \begin_inset Formula 
 \begin{align*}
 u & =u_{1}+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+I\left(t\right)\\

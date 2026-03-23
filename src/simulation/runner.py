@@ -38,7 +38,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar, 
-         enable_learning) = args 
+         enable_learning, e_0, x_d_dot_0) = args  # <-- Unpack e_0 and x_d_dot_0
 
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)
@@ -55,16 +55,18 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         # Active Network Branch
         if enable_learning:
             if is_integral:
-                u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+                # Integral Controller (Psi inside the integral)
+                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
                 kappa = jnp.concatenate([x_meas, u])
                 phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
             else:
+                # Baseline Controller (Psi outside the integral)
                 phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                u = x_d_dot - phi_eval + (k_1 + k_2) * e_meas + I_state + u_1
-                I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
+                u = u_1 + phi_eval + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
                 
             theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
             
@@ -72,11 +74,11 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         else:
             phi_eval = jnp.zeros(d_out)
             if is_integral:
-                u = (k_1 + k_2) * e_meas + x_d_dot + I_state + u_1
+                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
             else:
-                u = x_d_dot + (k_1 + k_2) * e_meas + I_state + u_1
-                I_dot = (k_1 * k_2 + 1.0) * e_meas + beta * jnp.sign(e_meas)
+                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
                 
             theta_hat_dot = jnp.zeros_like(theta_hat)
 
@@ -126,14 +128,15 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         yaml_x0 = jnp.array(config.simulation.x0)
         x_0 = jnp.pad(yaml_x0, (0, max(0, d_out - len(yaml_x0))))[:d_out]
 
-    # ---------------------------------------------------------
-    # BOUNDARY CONDITION INITIALIZATION: Prevent u(t0) spike
+# ---------------------------------------------------------
+    # BOUNDARY CONDITION INITIALIZATION: Explicit Offsets
     # ---------------------------------------------------------
     x_d_0 = get_desired_trajectory(config.simulation.t0, sys_id)
     x_d_dot_0 = get_desired_velocity(config.simulation.t0, sys_id)
     e_0 = x_d_0 - x_0
     
-    # If you don't set it to zero, it performs bad
+    # Because the new control laws explicitly subtract e_0 and x_d_dot_0, 
+    # we can safely initialize the integral state to pure zeros.
     I_0 = jnp.zeros_like(x_0) 
     
     t0 = config.simulation.t0
@@ -162,7 +165,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         h_act_idx, o_act_idx, shortcut_act_idx, config.simulation.excitation_duration_seconds,
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
         config.math_constants.k_theta_hat, config.math_constants.learning_rate, 
-        config.math_constants.theta_bar, enable_learning
+        config.math_constants.theta_bar, enable_learning,
+        e_0, x_d_dot_0
     )
 
     discrete_controller = create_discrete_controller(is_integral, sys_id, dt_ctrl)
