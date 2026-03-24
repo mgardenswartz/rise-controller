@@ -53,6 +53,7 @@ class NeuralNetworkConfig:
     shortcut_activation: str
     init_mean: float
     init_std: float
+    init_type: str
 
 @dataclass
 class DataLabelsConfig:

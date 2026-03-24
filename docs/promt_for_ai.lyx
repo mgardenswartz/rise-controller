@@ -95,7 +95,6 @@ Let
 \end_inset
 
  be a placeholder for excitation.
- NN-in-the-integral controller (New)
 \begin_inset Note Note
 status collapsed
 
@@ -140,7 +139,7 @@ u & =[k_{1}e+\dot{x}_{d}]_{t_{0}}^{t}+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\le
 
 \end_inset
 
-
+ NN-in-the-integral controller (New)
 \begin_inset Formula 
 \begin{align*}
 u & =u_{1}+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+I\left(t\right)\\
@@ -193,98 +192,6 @@ where
 \end_inset
 
 .
- Let
-\begin_inset Formula 
-\begin{align*}
-\dot{\Gamma} & =\alpha I_{p}+\beta\Gamma-\gamma\Gamma^{2}-\Gamma\frac{\left(\left|\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\right)^{\top}\left(\left|\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\right)}{1+\nu\left\Vert \left|\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\right\Vert ^{2}}\Gamma\\
-\alpha & =\frac{\overline{\Gamma}\underline{\Gamma}^{3}}{\overline{\Gamma}^{2}-\underline{\Gamma}^{2}}\\
-\beta & =\underline{\Gamma}\\
-\gamma & =\frac{\underline{\Gamma}\overline{\Gamma}}{\overline{\Gamma}^{2}-\underline{\Gamma}^{2}}
-\end{align*}
-
-\end_inset
-
-where 
-\begin_inset Formula $\overline{\Gamma}>\underline{\Gamma}>0$
-\end_inset
-
- are user-specified.
- Symmetric is critical for 
-\begin_inset Formula $\Gamma$
-\end_inset
-
-, so normalize at every step, i.e., with 
-\begin_inset Formula $\Gamma=\frac{1}{2}\Gamma^{\top}+\frac{1}{2}\Gamma$
-\end_inset
-
- or a similar method.
- 
-\end_layout
-
-\begin_layout Section
-Sim Notes
-\end_layout
-
-\begin_layout Standard
-Make 
-\begin_inset Formula $f\in\mathcal{C}^{2}$
-\end_inset
-
- everywhere but not bounded as 
-\begin_inset Formula $\left\Vert x\right\Vert \to\infty$
-\end_inset
-
-.
- Pick 
-\begin_inset Formula $\Gamma\left(t_{0}\right)=1.5\times I_{p}$
-\end_inset
-
- as the initial condition.
- Refactor the upper bounds 
-\begin_inset Formula $\overline{\Gamma}$
-\end_inset
-
- and 
-\begin_inset Formula $\underline{\Gamma}$
-\end_inset
-
- in the config and the code as multiples of the user-selected 
-\begin_inset Formula $\Gamma\left(t_{0}\right)$
-\end_inset
-
-, i.e., learning_rate_upper_bound_mult and learning_rate_lower_bound_mult
- or something like that.
- You can pick the system initial condition (i.e., 
-\begin_inset Formula $x_{0}\in\mathbb{R}^{n}$
-\end_inset
-
-).
- Pick 
-\begin_inset Formula $k_{\widehat{\theta}}=0.001$
-\end_inset
-
-.
- Hard code 
-\begin_inset Formula $u\left(t_{0}\right)=\mathbf{0}_{n}$
-\end_inset
-
- for both.
- Make sure it's still possible to add a custom additional signals to insight
- temporary excitation via 
-\begin_inset Formula $u_{1}$
-\end_inset
-
-.
- Keep all config related this excitation signals.
- Run each sim for 30 seconds (sim time).
- To do this, we may need a new file (maybe .py or maybe just a sweep.sh).
- The research question is in what ways in the NN-in-the-integral controller
- better? Does it achieve better function approximation (not expected because
- neither update law is composite), require less RMS control effort, achieve
- better tracking (ceteris parabis gain, initial conditions, architecture
- size, and dynamics of course), and so on? Data to save, statistics to save,
- plots to save will otherwise be identical to existing code.
- 
 \end_layout
 
 \begin_layout Section

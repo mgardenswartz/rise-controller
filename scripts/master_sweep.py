@@ -5,6 +5,7 @@ import yaml
 import dataclasses
 from collections import defaultdict
 import numpy as np
+import matplotlib.pyplot as plt
 
 import jax
 import jax.numpy as jnp
@@ -23,7 +24,7 @@ from src.conf.config_schema import (
 )
 from src.simulation.runner import run_simulation
 from src.io.statistics import calculate_and_save_statistics
-import matplotlib.pyplot as plt
+from src.math.networks import get_total_parameters
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
 MC_TRIALS = 10
@@ -36,9 +37,9 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 
 # Explicitly locked architectures (Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
-    "small":  {"hidden_width": 4,  "b": 0, "k_0": 1, "k_i": 1},
-    "medium":  {"hidden_width": 4,  "b": 1, "k_0": 1, "k_i": 1},
-    "large": {"hidden_width": 4, "b": 2, "k_0": 1, "k_i": 1},
+    "small":  {"width_multiplier": 4,  "b": 0, "k_0": 2, "k_i": 2},
+    "medium": {"width_multiplier": 4,  "b": 1, "k_0": 2, "k_i": 2},
+    "large":  {"width_multiplier": 4,  "b": 2, "k_0": 2, "k_i": 2},
 }
 
 # --- YAML GAINS MANAGEMENT ---
@@ -61,14 +62,6 @@ def save_tuned_gains(new_gains: dict):
     with open(GAINS_FILE, "w") as f:
         yaml.dump(yaml_ready_gains, f, default_flow_style=False, sort_keys=True)
     print(f"\n[SAVED] Tuned gains successfully merged into {GAINS_FILE}")
-
-# --- HELPER FUNCTIONS ---
-def get_actual_p(d_in: int, w: int, d_out: int, b: int, k_0: int, k_i: int) -> int:
-    p_in = (d_in * w) + w
-    p_out = (w * d_out) + d_out
-    p_k0 = (k_0 - 1) * ((w * w) + w)
-    p_blocks = b * k_i * ((w * w) + w)
-    return p_in + p_out + p_k0 + p_blocks
 
 def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     GlobalHydra.instance().clear()
@@ -145,21 +138,20 @@ def evaluate_trial(config: ExperimentConfig, trial: optuna.Trial, num_mc_samples
     
     for i in range(num_mc_samples):
         config.simulation.x0 = x0_batch[i].tolist()
-        try:
-            sim_data = run_simulation(config)
-            e = sim_data[config.data_labels.tracking_error]
-            u = sim_data[config.data_labels.control_effort]
-            
-            rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
-            rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
-            
-            if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
-                raise optuna.TrialPruned()
-                
-            mc_tracking_errors.append(rms_e)
-            mc_control_efforts.append(rms_u)
-        except Exception:
+        
+        # REMOVED TRY-EXCEPT TO UNMASK ERRORS
+        sim_data = run_simulation(config)
+        e = sim_data[config.data_labels.tracking_error]
+        u = sim_data[config.data_labels.control_effort]
+        
+        rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
+        rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
+        
+        if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
             raise optuna.TrialPruned()
+            
+        mc_tracking_errors.append(rms_e)
+        mc_control_efforts.append(rms_u)
 
     avg_rms_e = float(jnp.mean(jnp.array(mc_tracking_errors)))
     avg_rms_u = float(jnp.mean(jnp.array(mc_control_efforts)))
@@ -274,7 +266,8 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
             
             for size_name, arch_params in TARGET_ARCHS.items():
                 arch = arch_params.copy()
-                arch['actual_p'] = get_actual_p(d_in, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
+                arch['hidden_width'] = int(d_in * arch.pop('width_multiplier'))
+                arch['actual_p'] = get_total_parameters(d_in, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
                 
                 print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Arch: {size_name.upper()} (P={arch['actual_p']} | LR={target_lr:.4f})")
                 

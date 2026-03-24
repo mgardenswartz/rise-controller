@@ -62,6 +62,7 @@ neural_network:
   shortcut_activation: "linear"
   init_mean: 0
   init_std: 0.1
+  init_type: "normal"
 
 data_labels:
   tracking_error: "tracking_errors"
