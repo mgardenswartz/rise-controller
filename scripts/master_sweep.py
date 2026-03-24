@@ -37,9 +37,9 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 
 # Explicitly locked architectures (Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
-    "small":  {"width_multiplier": 4,  "b": 0, "k_0": 2, "k_i": 2},
-    "medium": {"width_multiplier": 4,  "b": 1, "k_0": 2, "k_i": 2},
-    "large":  {"width_multiplier": 4,  "b": 2, "k_0": 2, "k_i": 2},
+    "small":  {"width_multiplier": 2,  "b": 0, "k_0": 2, "k_i": 2},
+    "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
+    "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
 }
 
 # --- YAML GAINS MANAGEMENT ---
@@ -204,7 +204,8 @@ def phase_1_tune_all():
             # Logarithmic search is critical for learning rates
             lr = trial.suggest_float("lr", 1e-4, 50.0, log=True) 
             
-            arch = TARGET_ARCHS["small"].copy() # Tune on a realistic small network
+            arch = TARGET_ARCHS["small"].copy() 
+            arch["hidden_width"] = int(d_out * arch.pop("width_multiplier")) # Calculate width!
             config = build_config(sys_id, 'baseline', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_out, d_out=d_out)
             config.simulation.enable_learning = True
             config.math_constants.learning_rate = lr
@@ -225,6 +226,7 @@ def phase_1_tune_all():
             
             arch = TARGET_ARCHS["small"].copy()
             d_in_int = d_out * 2
+            arch["hidden_width"] = int(d_in_int * arch.pop("width_multiplier")) # Calculate width! 
             config = build_config(sys_id, 'nn_in_integral', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_in_int, d_out=d_out)
             config.simulation.enable_learning = True
             config.math_constants.learning_rate = lr

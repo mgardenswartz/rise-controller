@@ -53,9 +53,9 @@ math_constants:
 neural_network:
   d_in: 2
   d_out: 2
-  b: 0
-  k_0: 1
-  k_i: 2
+  b: 0 # Blocks
+  k_0: 1  # Depth
+  k_i: 2  # Depth  
   hidden_width: 8
   hidden_activation: "swish"
   output_activation: "tanh"
