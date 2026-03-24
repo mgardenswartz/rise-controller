@@ -12,15 +12,15 @@ from src.math.dynamics import (
 from src.math.networks import compute_jacobian, get_total_parameters, resnet_network
 from src.math.update_laws import compute_theta_hat_dot
 
-def get_f_sys(x: jax.Array, sys_id: int) -> jax.Array:
-    if sys_id == 1: return f_sys_1(x)
-    if sys_id == 2: return f_sys_2(x)
-    if sys_id == 3: return f_sys_3(x)
-    if sys_id == 4: return f_sys_4(x)
-    if sys_id == 5: return f_sys_5(x)
-    if sys_id == 6: return f_sys_6(x)
-    if sys_id == 7: return f_sys_7(x)
-    if sys_id == 8: return f_sys_8(x)
+def get_f_sys(t: float, x: jax.Array, sys_id: int) -> jax.Array:
+    if sys_id == 1: return f_sys_1(t, x)
+    if sys_id == 2: return f_sys_2(t, x)
+    if sys_id == 3: return f_sys_3(t, x)
+    if sys_id == 4: return f_sys_4(t, x)
+    if sys_id == 5: return f_sys_5(t, x)
+    if sys_id == 6: return f_sys_6(t, x)
+    if sys_id == 7: return f_sys_7(t, x)
+    if sys_id == 8: return f_sys_8(t, x)
     raise ValueError(f"Invalid sys_id: {sys_id}")
 
 # --- 1. THE CONTINUOUS PHYSICAL PLANT ---
@@ -28,7 +28,7 @@ def create_plant_vector_field(sys_id: int):
     """Pure physical dynamics: x_dot = f(x) + u_held"""
     def plant_vector_field(t: float, x: jax.Array, args: tuple):
         u_held = args[0]
-        return get_f_sys(x, sys_id) + u_held
+        return get_f_sys(t, x, sys_id) + u_held
     return plant_vector_field
 
 # --- 2. THE DISCRETE CONTROLLER STEP ---
