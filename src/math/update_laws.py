@@ -35,31 +35,3 @@ def compute_theta_hat_dot(
 ) -> jax.Array:
     unprojected = jnp.dot(gamma, jnp.dot(jacobian.T, error) - k_theta_hat * theta_hat)
     return cai_projection(unprojected, theta_hat, theta_bar, gamma)
-
-def compute_controller_in_integral(
-    e: jax.Array,
-    x_d_dot: jax.Array,
-    z: jax.Array,
-    u_1: jax.Array,
-    phi_eval: jax.Array,
-    k_1: float,
-    k_2: float,
-    beta: float
-) -> tuple[jax.Array, jax.Array]:
-    u = (k_1 + k_2) * e + x_d_dot + z + u_1
-    z_dot = beta * jnp.sign(e) + (k_1 * k_2 + 1.0) * e - phi_eval
-    return u, z_dot
-
-def compute_controller_outside_integral(
-    e: jax.Array,
-    x_d_dot: jax.Array,
-    z: jax.Array,
-    u_1: jax.Array,
-    phi_eval: jax.Array,
-    k_1: float,
-    k_2: float,
-    beta: float
-) -> tuple[jax.Array, jax.Array]:
-    u = x_d_dot + phi_eval + (k_1 + k_2) * e + z + u_1
-    z_dot = (k_1 * k_2 + 1.0) * e + beta * jnp.sign(e)
-    return u, z_dot
