@@ -26,6 +26,7 @@ class SimulationConfig:
     atol: float
     random_seed: int
     debug_print: bool
+    state_space_dim: int
     noise_std: float
     noise_mean: float
     enable_learning: bool
@@ -62,7 +63,6 @@ class DataLabelsConfig:
     states: str
     control_effort: str
     desired_states: str
-    reconstruction_error: str
     learning_rate_matrix: str
     nn_output: str
     time: str
@@ -80,7 +80,6 @@ class PlotSettingsConfig:
     filename_states: str
     filename_theta_hat: str
     filename_gamma: str
-    filename_reconstruction_error: str
 
 @dataclass
 class AnimationConfig:

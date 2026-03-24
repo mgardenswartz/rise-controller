@@ -53,8 +53,6 @@ def generate_all_plots(
     x_d = np.asarray(data[config.data_labels.desired_states])
     theta_hat = np.asarray(data[config.data_labels.parameter_estimate])
     gamma = np.asarray(data[config.data_labels.learning_rate_matrix])
-    epsilon = np.asarray(data[config.data_labels.reconstruction_error])
-
     fig, ax = _setup_figure(config)
     e_norm = np.linalg.norm(e, axis=1)
     ax.plot(t, e_norm, label="||e||")
@@ -86,8 +84,3 @@ def generate_all_plots(
         ax.plot(t, eigenvalues[:, i], label=f"Eigenvalue {i+1}")
     _save_and_close(fig, ax, figures_dir, config.plot_settings.filename_gamma, config, "Gamma Eigenvalues")
 
-    fig, ax = _setup_figure(config)
-    num_epsilon_dims = epsilon.shape[1]
-    for i in range(num_epsilon_dims):
-        ax.plot(t, epsilon[:, i], label=f"Epsilon {i+1}")
-    _save_and_close(fig, ax, figures_dir, config.plot_settings.filename_reconstruction_error, config, "Reconstruction Error")

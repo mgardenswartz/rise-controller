@@ -86,11 +86,8 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         theta_next = theta_hat + dt_ctrl * theta_hat_dot
         I_next = I_state + dt_ctrl * I_dot
 
-        # Evaluate final reconstruction accuracy against true dynamics
-        epsilon = phi_eval - get_f_sys(x_true, sys_id)
-        
         # Pack data for logging
-        log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u, epsilon)
+        log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u)
         return (theta_next, I_next, u), log_data
     
     return discrete_step
@@ -120,15 +117,16 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     )
 
     d_out = config.neural_network.d_out
+    n = config.simulation.state_space_dim
     if config.simulation.randomize_x0:
-        x_0 = jax.random.uniform(key_x0, shape=(d_out,),
+        x_0 = jax.random.uniform(key_x0, shape=(n,),
                                  minval=-config.simulation.random_x0_square_size,
                                  maxval=config.simulation.random_x0_square_size)
     else:
         yaml_x0 = jnp.array(config.simulation.x0)
-        x_0 = jnp.pad(yaml_x0, (0, max(0, d_out - len(yaml_x0))))[:d_out]
+        x_0 = jnp.pad(yaml_x0, (0, max(0, n - len(yaml_x0))))[:n]
 
-# ---------------------------------------------------------
+    # ---------------------------------------------------------
     # BOUNDARY CONDITION INITIALIZATION: Explicit Offsets
     # ---------------------------------------------------------
     x_d_0 = get_desired_trajectory(config.simulation.t0, sys_id)
@@ -152,7 +150,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     # Generate Band-Limited Noise
     noise_mean = config.simulation.noise_mean
     noise_std = config.simulation.noise_std
-    raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_steps, d_out)) + noise_mean
+    raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_steps, n)) + noise_mean
     clip_limit = 3.0 * noise_std
     noise_array = jnp.clip(raw_noise, noise_mean - clip_limit, noise_mean + clip_limit)
 
@@ -217,8 +215,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     _, log_history = jax.lax.scan(hybrid_scan_step, init_carry, noise_array)
     
     # Unpack logged data (Gamma is still populated dynamically per step for output compatibility)
-    (t_out, x_out, theta_hat_out, gamma_out, x_d_out, e_out, phi_eval_out, u_out, epsilon_out) = log_history
-    
+    (t_out, x_out, theta_hat_out, gamma_out, x_d_out, e_out, phi_eval_out, u_out) = log_history
+
     return {
         config.data_labels.time: t_out,
         config.data_labels.states: x_out,
@@ -228,5 +226,4 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.data_labels.tracking_error: e_out,
         config.data_labels.nn_output: phi_eval_out,
         config.data_labels.control_effort: u_out,
-        config.data_labels.reconstruction_error: epsilon_out
     }

@@ -24,19 +24,20 @@ directories:
   statistics_filename: "statistics.json"
 
 simulation:
-  controller_type: "nn_in_integral"
+  controller_type: "nn_in_integral" # "baseline" or "nn_in_integral"
   randomize_x0: false
   random_x0_square_size: 1.0
   t0: 0.0
-  sys_id: 1
+  sys_id: 4
   duration_seconds: 30.0
   excitation_duration_seconds: 0.0
-  x0: [1.5, -0.5]
+  x0: [2.0, -2.0]
   max_solver_steps: 100
   atol: 1e-4
   rtol: 1e-4
   random_seed: 582394
   debug_print: false
+  state_space_dim: 2
   noise_mean: 0.0
   noise_std: 0.005
   enable_learning: true
@@ -45,16 +46,16 @@ simulation:
 math_constants:
   learning_rate: 0.5
   k_theta_hat: 0.001
-  k_1: 5.0
-  k_2: 5.0
+  k_1: 8.0
+  k_2: 8.0
   beta: 0.5
   theta_bar: 400.0
 
 neural_network:
-  d_in: 2
+  d_in: 4
   d_out: 2
-  b: 0 # Blocks
-  k_0: 1  # Depth
+  b: 2 # Blocks
+  k_0: 2  # Depth
   k_i: 2  # Depth  
   hidden_width: 8
   hidden_activation: "swish"
@@ -70,7 +71,6 @@ data_labels:
   states: "states"
   control_effort: "control_efforts"
   desired_states: "desired_states"
-  reconstruction_error: "reconstruction_errors"
   learning_rate_matrix: "learning_rate_matrix"
   nn_output: "nn_output"
   time: "Time"
@@ -87,7 +87,6 @@ plot_settings:
   filename_states: "states_and_desired"
   filename_theta_hat: "theta_hat"
   filename_gamma: "gamma"
-  filename_reconstruction_error: "reconstruction_error"
 
 animation:
   fps: 60

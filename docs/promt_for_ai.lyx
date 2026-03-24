@@ -89,12 +89,25 @@ Controllers
 Controllers
 \end_layout
 
-\begin_layout Standard
-Let 
-\begin_inset Formula $u_{1}$
+\begin_layout Subsection
+RISE
+\size normal
+
+\begin_inset Formula 
+\[
+u(t)=\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+k_{4}\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau.
+\]
+
 \end_inset
 
- be a placeholder for excitation.
+
+\end_layout
+
+\begin_layout Standard
+f
+\end_layout
+
+\begin_layout Standard
 \begin_inset Note Note
 status collapsed
 
@@ -170,7 +183,7 @@ Moreover, we are comparing whether or not putting the adaptive feedforward
  Use the same update laws for both.
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(\Gamma\left(\left(\left|\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\right)^{\top}\left(e\right)-k_{\widehat{\theta}}\widehat{\theta}\right)\right)
+\dot{\widehat{\theta}}=\text{proj}\left(\Gamma\left(\left(\left|\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\right)^{\top}e-k_{\widehat{\theta}}\widehat{\theta}\right)\right)
 \]
 
 \end_inset
