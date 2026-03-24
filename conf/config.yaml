@@ -24,12 +24,12 @@ directories:
   statistics_filename: "statistics.json"
 
 simulation:
-  controller_type: "baseline" # "baseline" or "nn_in_integral"
+  controller_type: "nn_in_integral" # "baseline" or "nn_in_integral"
   randomize_x0: false
   random_x0_square_size: 1.0
   t0: 0.0
-  sys_id: 5
-  duration_seconds: 120.0
+  sys_id: 8
+  duration_seconds: 30.0
   excitation_duration_seconds: 0.0
   x0: [2.0, -2.0]
   max_solver_steps: 100
@@ -37,31 +37,31 @@ simulation:
   rtol: 1e-4
   random_seed: 582394
   debug_print: false
-  state_space_dim: 3
+  state_space_dim: 6
   noise_mean: 0.0
-  noise_std: 0.05
+  noise_std: 0.1
   enable_learning: true
   control_frequency_hz: 100.0
 
 math_constants:
-  learning_rate: 10.0
-  k_theta_hat: 0.01
-  k_1: 20.0
-  k_2: 20.0
-  beta: 20.0
-  theta_bar: 1000.0
+  learning_rate: 50.0
+  k_theta_hat: 1.0
+  k_1: 2.0
+  k_2: 2.0
+  beta: 6.0
+  theta_bar: 100.0
 
 neural_network:
-  d_in: 3
-  d_out: 3
-  b: 2  # Blocks
+  d_in: 12
+  d_out: 6
+  b: 0  # Blocks
   k_0: 2  # Depth
   k_i: 2  # Depth  
-  hidden_width: 8
+  hidden_width: 6
   hidden_activation: "swish"
-  output_activation: "swish"
+  output_activation: "tanh"
   shortcut_activation: "linear"
-  init_mean: 0
+  init_mean: 0.1
   init_std: 0.1
   init_type: "normal"
 

@@ -28,7 +28,7 @@ from src.math.networks import get_total_parameters
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
 MC_TRIALS = 10
-SYSTEMS = list(range(5,7))
+SYSTEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 6}
 NUMERICAL_SEED = 42
 
