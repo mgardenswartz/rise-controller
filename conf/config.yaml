@@ -23,6 +23,7 @@ directories:
   config_filename: "config.yaml"
   statistics_filename: "statistics.json"
 
+
 simulation:
   controller_type: "nn_in_integral" # "baseline" or "nn_in_integral"
   randomize_x0: false
@@ -52,7 +53,7 @@ math_constants:
   theta_bar: 100.0
 
 neural_network:
-  d_in: 12
+  d_in: 6
   d_out: 6
   b: 0  # Blocks
   k_0: 2  # Depth

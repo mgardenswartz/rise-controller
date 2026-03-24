@@ -57,9 +57,8 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
             if is_integral:
                 # Integral Controller (Psi inside the integral)
                 u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
-                kappa = jnp.concatenate([x_meas, u])
-                phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
             else:
                 # Baseline Controller (Psi outside the integral)
