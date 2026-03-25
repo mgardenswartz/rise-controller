@@ -51,6 +51,10 @@ math_constants:
   k_2: 2.0
   beta: 6.0
   theta_bar: 100.0
+  rho_k1: 10.0
+  rho_k2: 10.0
+  rho_k3: 6.0
+  rho_k4: 0.5
 
 neural_network:
   b: 0  # Blocks

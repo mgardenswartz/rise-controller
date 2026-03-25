@@ -6,6 +6,7 @@ import dataclasses
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+import gc
 
 import jax
 import jax.numpy as jnp
@@ -39,8 +40,8 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 # Explicitly locked architectures (Scaling Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
     "small":  {"width_multiplier": 2,  "b": 0, "k_0": 2, "k_i": 2},
-    # "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
-    # "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
+    "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
+    "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
 }
 
 # --- YAML GAINS MANAGEMENT ---
@@ -99,6 +100,10 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, state_space_dim):
     config.neural_network.k_i = arch["k_i"]
     config.neural_network.hidden_width = arch["hidden_width"]
     
+    # Strictly enforce physics dimensions
+    config.neural_network.d_in = state_space_dim
+    config.neural_network.d_out = state_space_dim
+    
     return config
 
 def generate_monte_carlo_x0(num_samples: int, key: jax.Array, bounds: float = 2.5, dim: int = 2) -> jax.Array:
@@ -153,7 +158,6 @@ def evaluate_trial(config: ExperimentConfig, trial: optuna.Trial, num_mc_samples
             mc_tracking_errors.append(rms_e)
             mc_control_efforts.append(rms_u)
         except Exception as e:
-            # Print the error so Python typos aren't silently buried
             print(f"Trial pruned due to exception: {e}")
             raise optuna.TrialPruned()
 
@@ -232,6 +236,7 @@ def phase_1_tune_all():
             k_theta = trial.suggest_float("k_theta_hat", 0.0, 5.0)
 
             arch = TARGET_ARCHS["small"].copy()
+            # SEVERED LOOP: Integral only takes state_space_dim input
             arch["hidden_width"] = int(d_out * arch.pop("width_multiplier"))
 
             config = build_config(sys_id, 'nn_in_integral', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, state_space_dim=d_out)
@@ -282,7 +287,7 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
                 
                 for i in range(MC_TRIALS):
                     seed = 1000 + i
-                    config = build_config(sys_id, ctrl_name, seed, gains, arch, d_out)
+                    config = build_config(sys_id, ctrl_name, seed, gains, arch, state_space_dim=d_out)
                     config.simulation.randomize_x0 = True 
                     config.simulation.enable_learning = True
                     
@@ -328,6 +333,12 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
                         results_dict[sys_id][size_name][ctrl_name]['rms_e'].append(float('nan'))
                         results_dict[sys_id][size_name][ctrl_name]['rms_u'].append(float('nan'))
                         results_dict[sys_id][size_name][ctrl_name]['actual_p'] = arch['actual_p']
+
+                    # AGGRESSIVE MEMORY MANAGEMENT (CRITICAL FOR SYSTEM 8)
+                    if 'sim_data' in locals(): del sim_data
+                    if 'e' in locals(): del e
+                    if 'u' in locals(): del u
+                    gc.collect()
                 
                 jax.clear_caches()
 
