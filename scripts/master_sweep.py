@@ -6,6 +6,7 @@ import dataclasses
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+import gc
 
 import jax
 import jax.numpy as jnp
@@ -28,14 +29,15 @@ from src.math.networks import get_total_parameters
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
 MC_TRIALS = 10
-SYSTEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+SYSTEMS = list(range(1, 9))
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 6}
 NUMERICAL_SEED = 42
+STAGE_1_NUM_TRIALS = 40
 
 # Persistent Gains File
 GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 
-# Explicitly locked architectures (Width, Blocks, k_0, k_i)
+# Explicitly locked architectures (Scaling Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
     "small":  {"width_multiplier": 2,  "b": 0, "k_0": 2, "k_i": 2},
     "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
@@ -63,7 +65,7 @@ def save_tuned_gains(new_gains: dict):
         yaml.dump(yaml_ready_gains, f, default_flow_style=False, sort_keys=True)
     print(f"\n[SAVED] Tuned gains successfully merged into {GAINS_FILE}")
 
-def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
+def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, state_space_dim):
     GlobalHydra.instance().clear()
     try:
         with initialize(version_base=None, config_path="../conf"):
@@ -87,12 +89,16 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out=2):
     config.simulation.randomize_x0 = False
     config.simulation.random_seed = seed
     
+    # Enforce physical dimensions
+    config.simulation.state_space_dim = state_space_dim
+    
     config.math_constants.k_1 = gains.get("k_1", 5.0)
     config.math_constants.k_2 = gains.get("k_2", 5.0)
     config.math_constants.beta = gains.get("beta", 0.5)
     
     config.neural_network.d_in = d_in
-    config.neural_network.d_out = d_out
+    config.neural_network.d_out = state_space_dim 
+    
     config.neural_network.b = arch["b"]
     config.neural_network.k_0 = arch["k_0"]
     config.neural_network.k_i = arch["k_i"]
@@ -138,20 +144,22 @@ def evaluate_trial(config: ExperimentConfig, trial: optuna.Trial, num_mc_samples
     
     for i in range(num_mc_samples):
         config.simulation.x0 = x0_batch[i].tolist()
-        
-        # REMOVED TRY-EXCEPT TO UNMASK ERRORS
-        sim_data = run_simulation(config)
-        e = sim_data[config.data_labels.tracking_error]
-        u = sim_data[config.data_labels.control_effort]
-        
-        rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
-        rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
-        
-        if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
-            raise optuna.TrialPruned()
+        try:
+            sim_data = run_simulation(config)
+            e = sim_data[config.data_labels.tracking_error]
+            u = sim_data[config.data_labels.control_effort]
             
-        mc_tracking_errors.append(rms_e)
-        mc_control_efforts.append(rms_u)
+            rms_e = float(jnp.sqrt(jnp.mean(jnp.sum(e**2, axis=-1))))
+            rms_u = float(jnp.sqrt(jnp.mean(jnp.sum(u**2, axis=-1))))
+            
+            if jnp.isnan(rms_e) or jnp.isnan(rms_u) or jnp.isinf(rms_e):
+                raise optuna.TrialPruned()
+                
+            mc_tracking_errors.append(rms_e)
+            mc_control_efforts.append(rms_u)
+        except Exception as e:
+            print(f"Trial pruned due to exception: {e}")
+            raise optuna.TrialPruned()
 
     avg_rms_e = float(jnp.mean(jnp.array(mc_tracking_errors)))
     avg_rms_u = float(jnp.mean(jnp.array(mc_control_efforts)))
@@ -159,8 +167,7 @@ def evaluate_trial(config: ExperimentConfig, trial: optuna.Trial, num_mc_samples
     error_cost = float(jnp.exp(8.0 * avg_rms_e) - 1.0)
     effort_cost = 1e-6 * (avg_rms_u ** 4)
     
-    # Gain regularization is only applied to k_1, k_2, beta (not learning rate)
-    gain_cost = 0.05 * (config.math_constants.k_1**2 + config.math_constants.k_2**2 + config.math_constants.beta**2 )
+    gain_cost = 0.05 * (config.math_constants.k_1**2 + config.math_constants.k_2**2 + config.math_constants.beta**2)
     
     return error_cost + effort_cost + gain_cost
 
@@ -184,7 +191,7 @@ def phase_1_tune_all():
             beta = trial.suggest_float("beta", 0.0, 50.0)
             
             arch = {"hidden_width": 2, "b": 0, "k_0": 1, "k_i": 1}
-            config = build_config(sys_id, 'baseline', seed=NUMERICAL_SEED, gains={"k_1": k_1, "k_2": k_2, "beta": beta}, arch=arch, d_in=d_out, d_out=d_out)
+            config = build_config(sys_id, 'baseline', seed=NUMERICAL_SEED, gains={"k_1": k_1, "k_2": k_2, "beta": beta}, arch=arch, d_in=d_out, state_space_dim=d_out)
             config.simulation.enable_learning = False
             config.neural_network.init_mean = 0.0
             config.neural_network.init_std = 0.0
@@ -192,51 +199,58 @@ def phase_1_tune_all():
             return evaluate_trial(config, trial)
 
         study_kin = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=NUMERICAL_SEED))
-        study_kin.optimize(obj_kinematic, n_trials=40, show_progress_bar=True)
+        study_kin.optimize(obj_kinematic, n_trials=STAGE_1_NUM_TRIALS, show_progress_bar=True)
         sys_gains.update(study_kin.best_params)
         print(f"     Locked Kinematic Gains: {study_kin.best_params}")
         
         # -----------------------------------------------------------------
-        # STAGE 2: TUNE BASELINE LEARNING RATE (NN ENABLED)
+        # STAGE 2: TUNE BASELINE LR & K_THETA (NN ENABLED)
         # -----------------------------------------------------------------
-        print(f"  -> Stage 2/3: Tuning Baseline Learning Rate...")
+        print(f"  -> Stage 2/3: Tuning Baseline Learning Rate & k_theta_hat...")
         def obj_lr_base(trial):
-            # Logarithmic search is critical for learning rates
             lr = trial.suggest_float("lr", 1e-4, 50.0, log=True) 
+            k_theta = trial.suggest_float("k_theta_hat", 0.0, 5.0)
             
             arch = TARGET_ARCHS["small"].copy() 
-            arch["hidden_width"] = int(d_out * arch.pop("width_multiplier")) # Calculate width!
-            config = build_config(sys_id, 'baseline', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_out, d_out=d_out)
+            arch["hidden_width"] = int(d_out * arch.pop("width_multiplier"))
+            
+            config = build_config(sys_id, 'baseline', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_out, state_space_dim=d_out)
             config.simulation.enable_learning = True
             config.math_constants.learning_rate = lr
+            config.math_constants.k_theta_hat = k_theta
             
             return evaluate_trial(config, trial)
 
         study_base = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=43))
         study_base.optimize(obj_lr_base, n_trials=30, show_progress_bar=True)
         sys_gains["lr_baseline"] = study_base.best_params["lr"]
-        print(f"     Locked Baseline LR: {sys_gains['lr_baseline']:.4f}")
+        sys_gains["k_theta_hat_baseline"] = study_base.best_params["k_theta_hat"]
+        print(f"     Locked Baseline LR: {sys_gains['lr_baseline']:.4f} | k_th: {sys_gains['k_theta_hat_baseline']:.4f}")
 
         # -----------------------------------------------------------------
-        # STAGE 3: TUNE INTEGRAL LEARNING RATE (NN ENABLED)
+        # STAGE 3: TUNE INTEGRAL LR & K_THETA (NN ENABLED)
         # -----------------------------------------------------------------
-        print(f"  -> Stage 3/3: Tuning Integral Learning Rate...")
+        print(f"  -> Stage 3/3: Tuning Integral Learning Rate & k_theta_hat...")
         def obj_lr_int(trial):
             lr = trial.suggest_float("lr", 1e-4, 50.0, log=True)
-            
+            k_theta = trial.suggest_float("k_theta_hat", 0.0, 5.0)
+
             arch = TARGET_ARCHS["small"].copy()
-            d_in_int = d_out * 2
-            arch["hidden_width"] = int(d_in_int * arch.pop("width_multiplier")) # Calculate width! 
-            config = build_config(sys_id, 'nn_in_integral', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_in_int, d_out=d_out)
+            d_in_int = d_out * 2 # RESTORED: Integral takes [x, u]
+            arch["hidden_width"] = int(d_in_int * arch.pop("width_multiplier"))
+            
+            config = build_config(sys_id, 'nn_in_integral', seed=NUMERICAL_SEED, gains=sys_gains, arch=arch, d_in=d_in_int, state_space_dim=d_out)
             config.simulation.enable_learning = True
             config.math_constants.learning_rate = lr
+            config.math_constants.k_theta_hat = k_theta
             
             return evaluate_trial(config, trial)
 
         study_int = optuna.create_study(direction="minimize", sampler=optuna.samplers.TPESampler(seed=44))
         study_int.optimize(obj_lr_int, n_trials=30, show_progress_bar=True)
         sys_gains["lr_integral"] = study_int.best_params["lr"]
-        print(f"     Locked Integral LR: {sys_gains['lr_integral']:.4f}")
+        sys_gains["k_theta_hat_integral"] = study_int.best_params["k_theta_hat"]
+        print(f"     Locked Integral LR: {sys_gains['lr_integral']:.4f} | k_th: {sys_gains['k_theta_hat_integral']:.4f}")
         
         # Save complete dictionary for this system
         save_tuned_gains({sys_id: sys_gains})
@@ -261,26 +275,27 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
         gains = gains_dict[sys_id]
         
         for ctrl_name in controllers:
+            # RESTORED: Baseline takes [x], Integral takes [x, u]
             d_in = d_out if ctrl_name == "baseline" else d_out * 2
             
-            # Fetch the specific learning rate for this controller architecture
             target_lr = gains.get("lr_baseline", 1.0) if ctrl_name == "baseline" else gains.get("lr_integral", 1.0)
+            target_k_theta = gains.get("k_theta_hat_baseline", 0.0) if ctrl_name == "baseline" else gains.get("k_theta_hat_integral", 0.0)
             
             for size_name, arch_params in TARGET_ARCHS.items():
                 arch = arch_params.copy()
                 arch['hidden_width'] = int(d_in * arch.pop('width_multiplier'))
                 arch['actual_p'] = get_total_parameters(d_in, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
                 
-                print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Arch: {size_name.upper()} (P={arch['actual_p']} | LR={target_lr:.4f})")
+                print(f"\n[SWEEP] Sys: {sys_id} ({d_out}D) | Ctrl: {ctrl_name} | Arch: {size_name.upper()} (P={arch['actual_p']} | LR={target_lr:.4f} | k_th={target_k_theta:.4f})")
                 
                 for i in range(MC_TRIALS):
                     seed = 1000 + i
-                    config = build_config(sys_id, ctrl_name, seed, gains, arch, d_in, d_out)
+                    config = build_config(sys_id, ctrl_name, seed, gains, arch, d_in, state_space_dim=d_out)
                     config.simulation.randomize_x0 = True 
                     config.simulation.enable_learning = True
                     
-                    # Inject the tuned learning rae into the config
                     config.math_constants.learning_rate = target_lr
+                    config.math_constants.k_theta_hat = target_k_theta
                     
                     run_dir = base_output_dir / f"sys_{sys_id}" / ctrl_name / size_name / f"seed_{seed}"
                     run_dir.mkdir(parents=True, exist_ok=True)
@@ -321,7 +336,17 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
                         results_dict[sys_id][size_name][ctrl_name]['rms_e'].append(float('nan'))
                         results_dict[sys_id][size_name][ctrl_name]['rms_u'].append(float('nan'))
                         results_dict[sys_id][size_name][ctrl_name]['actual_p'] = arch['actual_p']
+                        
+                    # AGGRESSIVE MEMORY MANAGEMENT FOR SYS 8 OOM PREVENTION
+                    if 'sim_data' in locals():
+                        del sim_data
+                    if 'e' in locals():
+                        del e
+                    if 'u' in locals():
+                        del u
+                    gc.collect()
                 
+                # Clear XLA caches between architectures
                 jax.clear_caches()
 
 if __name__ == "__main__":

@@ -40,6 +40,10 @@ class MathConstantsConfig:
     k_2: float
     beta: float
     theta_bar: float
+    rho_k1: float
+    rho_k2: float
+    rho_k3: float
+    rho_k4: float
 
 @dataclass
 class NeuralNetworkConfig:

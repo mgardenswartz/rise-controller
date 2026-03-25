@@ -39,7 +39,7 @@ simulation:
   debug_print: false
   state_space_dim: 6
   noise_mean: 0.0
-  noise_std: 0.1
+  noise_std: 0.05
   enable_learning: true
   control_frequency_hz: 100.0
 
@@ -50,6 +50,10 @@ math_constants:
   k_2: 2.0
   beta: 6.0
   theta_bar: 100.0
+  rho_k1: 10.0
+  rho_k2: 10.0
+  rho_k3: 6.0
+  rho_k4: 0.5
 
 neural_network:
   d_in: 12
