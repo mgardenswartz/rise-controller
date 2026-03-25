@@ -30,9 +30,9 @@ def calculate_and_save_statistics(
     phi_post = np.asarray(sim_data[config.data_labels.nn_output])[valid_idx]
 
     p = get_total_parameters(
-        config.neural_network.d_in, 
-        config.neural_network.hidden_width, 
-        config.neural_network.d_out,
+        config.simulation.state_space_dim,
+        config.neural_network.hidden_width,
+        config.simulation.state_space_dim,
         config.neural_network.b,
         config.neural_network.k_0,
         config.neural_network.k_i

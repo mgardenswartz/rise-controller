@@ -99,9 +99,10 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     o_act_idx = jnp.array(act_map[config.neural_network.output_activation.lower()])
     shortcut_act_idx = jnp.array(act_map[config.neural_network.shortcut_activation.lower()])
 
+    n = config.simulation.state_space_dim
     p = get_total_parameters(
-        config.neural_network.d_in, config.neural_network.hidden_width, 
-        config.neural_network.d_out, config.neural_network.b,
+        n, config.neural_network.hidden_width,
+        n, config.neural_network.b,
         config.neural_network.k_0, config.neural_network.k_i
     )
 
@@ -115,8 +116,6 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         jnp.zeros((p,))
     )
 
-    d_out = config.neural_network.d_out
-    n = config.simulation.state_space_dim
     if config.simulation.randomize_x0:
         x_0 = jax.random.uniform(key_x0, shape=(n,),
                                  minval=-config.simulation.random_x0_square_size,
@@ -157,7 +156,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     enable_learning = getattr(config.simulation, "enable_learning", True)
 
     math_args = (
-        config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
+        n, config.neural_network.hidden_width, n,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
         h_act_idx, o_act_idx, shortcut_act_idx, config.simulation.excitation_duration_seconds,
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
