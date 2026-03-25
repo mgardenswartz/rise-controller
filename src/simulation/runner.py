@@ -64,6 +64,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
             if is_integral:
                 # Integral Controller (Psi inside the integral)
                 u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+                # SEVERED LOOP: Network input is exclusively x_meas
                 phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
@@ -112,9 +113,10 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     o_act_idx = jnp.array(act_map[config.neural_network.output_activation.lower()])
     shortcut_act_idx = jnp.array(act_map[config.neural_network.shortcut_activation.lower()])
 
+    n = config.simulation.state_space_dim
     p = get_total_parameters(
-        config.neural_network.d_in, config.neural_network.hidden_width, 
-        config.neural_network.d_out, config.neural_network.b,
+        n, config.neural_network.hidden_width, 
+        n, config.neural_network.b,
         config.neural_network.k_0, config.neural_network.k_i
     )
 
@@ -128,8 +130,6 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         jnp.zeros((p,))
     )
 
-    d_out = config.neural_network.d_out
-    n = config.simulation.state_space_dim
     if config.simulation.randomize_x0:
         x_0 = jax.random.uniform(key_x0, shape=(n,),
                                  minval=-config.simulation.random_x0_square_size,
@@ -138,20 +138,28 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         yaml_x0 = jnp.array(config.simulation.x0)
         x_0 = jnp.pad(yaml_x0, (0, max(0, n - len(yaml_x0))))[:n]
 
-    # Boundary Conditions
+    # ---------------------------------------------------------
+    # BOUNDARY CONDITION INITIALIZATION: Explicit Offsets
+    # ---------------------------------------------------------
     x_d_0 = get_desired_trajectory(config.simulation.t0, sys_id)
     x_d_dot_0 = get_desired_velocity(config.simulation.t0, sys_id)
     e_0 = x_d_0 - x_0
+    
+    # Because the new control laws explicitly subtract e_0 and x_d_dot_0, 
+    # we can safely initialize the integral state to pure zeros.
     I_0 = jnp.zeros_like(x_0) 
     
     t0 = config.simulation.t0
     t1 = config.simulation.duration_seconds
     
-    # Digital Clock
+    # ---------------------------------------------------------
+    # DIGITAL CLOCK SETUP
+    # ---------------------------------------------------------
     dt_ctrl = 1.0 / config.simulation.control_frequency_hz
     num_steps = int(jnp.ceil((t1 - t0) / dt_ctrl))
+    ts = jnp.linspace(t0, t1, num_steps)
     
-    # Noise
+    # Generate Band-Limited Noise
     noise_mean = config.simulation.noise_mean
     noise_std = config.simulation.noise_std
     raw_noise = noise_std * jax.random.normal(key_noise, shape=(num_steps, n)) + noise_mean
@@ -232,7 +240,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     # Run the massive discrete loop using XLA compilation
     _, log_history = jax.lax.scan(hybrid_scan_step, init_carry, noise_array)
     
-    # Unpack logged data
+    # Unpack logged data (Gamma is still populated dynamically per step for output compatibility)
     (t_out, x_out, theta_hat_out, gamma_out, x_d_out, e_out, phi_eval_out, u_out) = log_history
 
     return {

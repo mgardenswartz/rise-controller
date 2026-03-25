@@ -40,8 +40,8 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 # Explicitly locked architectures (Scaling Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
     "small":  {"width_multiplier": 2,  "b": 0, "k_0": 2, "k_i": 2},
-    "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
-    "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
+    # "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
+    # "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
 }
 
 # --- YAML GAINS MANAGEMENT ---
@@ -88,7 +88,6 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, state_space_dim):
     config.simulation.controller_type = ctrl_name
     config.simulation.randomize_x0 = False
     config.simulation.random_seed = seed
-    
     config.simulation.state_space_dim = state_space_dim
 
     config.math_constants.k_1 = gains.get("k_1", 5.0)
@@ -100,7 +99,7 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, state_space_dim):
     config.neural_network.k_i = arch["k_i"]
     config.neural_network.hidden_width = arch["hidden_width"]
     
-    # Strictly enforce physics dimensions
+    # SEVERED LOOP: Enforce [x] inputs for everyone
     config.neural_network.d_in = state_space_dim
     config.neural_network.d_out = state_space_dim
     
@@ -158,6 +157,7 @@ def evaluate_trial(config: ExperimentConfig, trial: optuna.Trial, num_mc_samples
             mc_tracking_errors.append(rms_e)
             mc_control_efforts.append(rms_u)
         except Exception as e:
+            # Print the error so Python typos aren't silently buried
             print(f"Trial pruned due to exception: {e}")
             raise optuna.TrialPruned()
 
@@ -334,12 +334,16 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
                         results_dict[sys_id][size_name][ctrl_name]['rms_u'].append(float('nan'))
                         results_dict[sys_id][size_name][ctrl_name]['actual_p'] = arch['actual_p']
 
-                    # AGGRESSIVE MEMORY MANAGEMENT (CRITICAL FOR SYSTEM 8)
-                    if 'sim_data' in locals(): del sim_data
-                    if 'e' in locals(): del e
-                    if 'u' in locals(): del u
+                    # AGGRESSIVE MEMORY MANAGEMENT FOR SYS 8 OOM PREVENTION
+                    if 'sim_data' in locals():
+                        del sim_data
+                    if 'e' in locals():
+                        del e
+                    if 'u' in locals():
+                        del u
                     gc.collect()
                 
+                # Clear XLA caches between architectures
                 jax.clear_caches()
 
 if __name__ == "__main__":
