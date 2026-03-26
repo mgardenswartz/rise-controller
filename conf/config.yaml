@@ -40,7 +40,7 @@ simulation:
   debug_print: false
   state_space_dim: 2
   noise_mean: 0.0
-  noise_std: 0.1
+  noise_std: 0.05
   enable_learning: true
   control_frequency_hz: 100.0
 

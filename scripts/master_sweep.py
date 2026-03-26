@@ -32,7 +32,7 @@ MC_TRIALS = 10
 SYSTEMS = list(range(1,9))
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 6}
 NUMERICAL_SEED = 42
-STAGE_1_NUM_TRIALS = 40
+STAGE_1_NUM_TRIALS = 60
 
 # Persistent Gains File
 GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
@@ -40,8 +40,8 @@ GAINS_FILE = PROJECT_ROOT / "src" / "conf" / "tuned_gains.yaml"
 # Explicitly locked architectures (Scaling Width, Blocks, k_0, k_i)
 TARGET_ARCHS = {
     "small":  {"width_multiplier": 2,  "b": 0, "k_0": 2, "k_i": 2},
-    # "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
-    # "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
+    "medium": {"width_multiplier": 2,  "b": 1, "k_0": 2, "k_i": 2},
+    "large":  {"width_multiplier": 2,  "b": 2, "k_0": 2, "k_i": 2},
 }
 
 # --- YAML GAINS MANAGEMENT ---
@@ -232,7 +232,7 @@ def phase_1_tune_all():
         # -----------------------------------------------------------------
         print(f"  -> Stage 3/3: Tuning Integral Learning Rate & k_theta_hat...")
         def obj_lr_int(trial):
-            lr = trial.suggest_float("lr", 1e-4, 50.0, log=True)
+            lr = trial.suggest_float("lr", 1e-4, 1000.0, log=True)
             k_theta = trial.suggest_float("k_theta_hat", 0.0, 5.0)
 
             arch = TARGET_ARCHS["small"].copy()
