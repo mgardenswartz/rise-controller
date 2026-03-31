@@ -1,0 +1,3509 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass IEEEtran
+\begin_preamble
+\usepackage{cite}
+\thispagestyle{empty}
+\pagenumbering{gobble}
+\usepackage{multirow}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, calc}
+\usetikzlibrary{decorations.pathreplacing}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style ieeetr
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 0.5cm
+\topmargin 0.5cm
+\rightmargin 0.5cm
+\bottommargin 0.5cm
+\headheight 0.5cm
+\headsep 0.5cm
+\footskip 0.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Robust Adaptive Accelerated Control of Nonlinear Systems with Integral of
+ the Residual Neural Network Feedforward and Adaptive RISE Feedback
+\end_layout
+
+\begin_layout Author
+Cristian F.
+ Nino, Omkar Sudhir Patil, , Zachary I.
+ Bell and Warren E.
+ Dixon
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Cristian F.
+ Nino, Omkar Sudhir Patil, and Warren E.
+ Dixon are with the Department of Mechanical and Aerospace Engineering,
+ University of Florida, Gainesville, FL, 32611, USA.
+ Email:{cristian1928, patilomkarsudhir, wdixon}@ufl.edu.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Joseph M.
+ Lullo is with Torch Technologies, Shalimar, FL 32579 USA.
+ Email: joseph.lullo@torchtechnologies.com
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Zachary I.
+ Bell is with the Munitions Directorate, Air Force Research Laboratory,
+ Eglin AFB, FL 32542 USA.
+ Email: zachary.bell.10@us.af.mil.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+This research is supported in part by AFOSR grant FA9550-19-1-0169, and
+ AFRL grant FA8651-24-1-0018.
+ Any opinions, findings and conclusions or recommendations expressed in
+ this material are those of the author(s) and do not necessarily reflect
+ the views of the sponsoring agency.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+T
+\end_layout
+
+\begin_layout Keywords
+Robust control, Adaptive control, Neural networks
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+IEEEPARstart{M}{ulti-agent}
+\end_layout
+
+\end_inset
+
+ systems
+\end_layout
+
+\begin_layout Section
+Preliminaries
+\end_layout
+
+\begin_layout Subsection
+Notation
+\end_layout
+
+\begin_layout Standard
+For a set 
+\begin_inset Formula $A$
+\end_inset
+
+ and an input 
+\begin_inset Formula $x$
+\end_inset
+
+, the indicator function is denoted by 
+\begin_inset Formula $\boldsymbol{1}_{A}\left(x\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\boldsymbol{1}_{A}\left(x\right)=1$
+\end_inset
+
+ if 
+\begin_inset Formula $x\in A$
+\end_inset
+
+, and 
+\begin_inset Formula $\boldsymbol{1}_{A}\left(x\right)=0$
+\end_inset
+
+ otherwise.
+ For a vector 
+\begin_inset Formula $\mathbf{x}\in\mathbb{R}^{n}$
+\end_inset
+
+, the element-wise signum function is given by 
+\begin_inset Formula $\text{sgn}\left(\mathbf{x}\right)=\left[\begin{array}{ccc}
+\text{sgn}\left(x_{1}\right) & \cdots & \text{sgn}\left(x_{n}\right)\end{array}\right]^{\top}\in\mathbb{R}^{n}$
+\end_inset
+
+, where each 
+\begin_inset Formula $x_{i}\in\mathbb{R}$
+\end_inset
+
+ and 
+\begin_inset Formula $\text{sgn}\left(x_{i}\right)=\mathbf{1}_{\left\{ x>0\right\} }\left(x_{i}\right)-\mathbf{1}_{\left\{ x<0\right\} }\left(x_{i}\right)$
+\end_inset
+
+.
+ Denote by 
+\begin_inset Formula $\mathbf{1}_{n}\in\mathbb{R}^{n}$
+\end_inset
+
+ the column vector of length 
+\begin_inset Formula $n>1$
+\end_inset
+
+ whose entries are all ones.
+ Similarly, 
+\begin_inset Formula $\mathbf{0}_{n}\in\mathbb{R}^{n}$
+\end_inset
+
+ denotes the column vector of length 
+\begin_inset Formula $n>1$
+\end_inset
+
+ whose entries are all zeroes.
+ For 
+\begin_inset Formula $m,n>1$
+\end_inset
+
+, 
+\begin_inset Formula $\mathbf{0}_{m\times n}\in\mathbb{R}^{m\times n}$
+\end_inset
+
+ denotes the 
+\begin_inset Formula $m\times n$
+\end_inset
+
+ zero matrix.
+ The 
+\begin_inset Formula $p\times p$
+\end_inset
+
+ identity matrix is denoted by 
+\begin_inset Formula $I_{p}$
+\end_inset
+
+.
+ Given 
+\begin_inset Formula $M\in\mathbb{Z}_{>0}$
+\end_inset
+
+, the enumeration operation 
+\begin_inset Formula $\left[\cdot\right]$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $\left[M\right]\triangleq\left\{ 1,2,\ldots,M\right\} $
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $n,m\in\mathbb{Z}_{>0}$
+\end_inset
+
+ with 
+\begin_inset Formula $m>n$
+\end_inset
+
+.
+ The Euclidean norm of 
+\begin_inset Formula $r\in\mathbb{R}^{n}$
+\end_inset
+
+ is 
+\begin_inset Formula $\left\Vert r\right\Vert \triangleq\sqrt{r^{\top}r}$
+\end_inset
+
+.
+ Given a positive integer 
+\begin_inset Formula $N$
+\end_inset
+
+ and collection 
+\begin_inset Formula $\left\{ x_{i}\right\} _{i\in\left[N\right]}\subset\mathbb{R}^{n}$
+\end_inset
+
+, let 
+\begin_inset Formula $\left(x_{i}\right)_{i\in\left[n\right]}\triangleq\left[\begin{array}{ccc}
+x_{1}^{\top} & \cdots & x_{N}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{nN}$
+\end_inset
+
+.
+ Given 
+\begin_inset Formula $H\in\mathbb{R}^{m\times m}$
+\end_inset
+
+ with columns 
+\begin_inset Formula $\left\{ h_{i}\right\} _{i\in\left[n\right]}\subset\mathbb{R}^{m},\text{vec}\left(H\right)=\left[\begin{array}{ccc}
+h_{1}^{\top} & \cdots & h_{n}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{mn}$
+\end_inset
+
+.
+ Given any matrix 
+\begin_inset Formula $A$
+\end_inset
+
+, the element located in the 
+\begin_inset Formula $i^{\text{th}}$
+\end_inset
+
+ row and 
+\begin_inset Formula $j^{\text{th}}$
+\end_inset
+
+ column is denoted by 
+\begin_inset Formula $a_{ij}$
+\end_inset
+
+.
+ The Kronecker product of 
+\begin_inset Formula $A\in\mathbb{R}^{p\times q}$
+\end_inset
+
+ and 
+\begin_inset Formula $B\in\mathbb{R}^{m\times n}$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $A\otimes B\in\mathbb{R}^{pm\times qn}$
+\end_inset
+
+.
+ Given any 
+\begin_inset Formula $A\in\mathbb{R}^{p\times a}$
+\end_inset
+
+, 
+\begin_inset Formula $B\in\mathbb{R}^{a\times r}$
+\end_inset
+
+, and 
+\begin_inset Formula $C\in\mathbb{R}^{r\times s}$
+\end_inset
+
+, the vectorization operator satisfies the property 
+\begin_inset Formula $\mathrm{vec}\left(ABC\right)=\left(C^{\top}\otimes A\right)\mathrm{vec}\left(B\right)$
+\end_inset
+
+.
+ Differentiating on both sides with respect to 
+\begin_inset Formula $\mathrm{vec}\left(B\right)$
+\end_inset
+
+ yields the property
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Proof of this property:
+\end_layout
+
+\begin_layout Plain Layout
+Given any 
+\begin_inset Formula $A\in\mathbb{R}^{p\times a}$
+\end_inset
+
+, 
+\begin_inset Formula $B\in\mathbb{R}^{a\times r}$
+\end_inset
+
+, and 
+\begin_inset Formula $C\in\mathbb{R}^{r\times s}$
+\end_inset
+
+, Let 
+\begin_inset Formula $C=[c_{1},c_{2},\ldots,c_{s}]$
+\end_inset
+
+ and 
+\begin_inset Formula $B=[b_{1},b_{2},\ldots,b_{r}]$
+\end_inset
+
+.
+ Then, the 
+\begin_inset Formula $k^{\text{th}}$
+\end_inset
+
+ column of 
+\begin_inset Formula $ABC$
+\end_inset
+
+ is 
+\begin_inset Formula 
+\begin{align*}
+(ABC)_{:,k} & =ABc_{k}\\
+ & =A\sum_{i=1}^{r}b_{i}c_{i,k}\\
+ & =\sum_{i=1}^{r}c_{i,k}Ab_{i}\\
+ & =[c_{1,k}A,c_{2,k}A,\ldots,c_{r,k}A]\left[\begin{array}{c}
+b_{1}\\
+b_{2}\\
+\vdots\\
+b_{r}
+\end{array}\right]\\
+ & =\left([c_{1,k},c_{2,k},\ldots,c_{r,k}]\otimes A\right)\text{vec}B\\
+ & =\left(c_{k}^{\top}\otimes A\right)\text{vec}B
+\end{align*}
+
+\end_inset
+
+Stacking the columns together,
+\begin_inset Formula 
+\begin{align*}
+{\rm vec}(ABC) & =\left[\begin{array}{c}
+(ABC)_{:,k}\\
+(ABC)_{:,k}\\
+\vdots\\
+(ABC)_{:,s}
+\end{array}\right]\\
+ & =\left[\begin{array}{c}
+\left(c_{1}^{\top}\otimes A\right)\text{vec}B\\
+\left(c_{2}^{\top}\otimes A\right)\text{vec}B\\
+\vdots\\
+\left(c_{s}^{\top}\otimes A\right)\text{vec}B
+\end{array}\right]\\
+ & =(C^{\top}\otimes A){\rm vec}(B).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray}
+\frac{\partial}{\partial\mathrm{vec}\left(B\right)}\mathrm{vec}\left(ABC\right) & = & \left(C^{\top}\otimes A\right).\label{eq:vec_diff_prop}
+\end{eqnarray}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The maximum and minimum eigenvalues of 
+\begin_inset Formula $A=A^{\top}\in\mathbb{R}^{n\times n}$
+\end_inset
+
+ are denoted by 
+\begin_inset Formula $\lambda_{1}\left(A\right)\in\mathbb{R}$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{n}\left(A\right)\in\mathbb{R}$
+\end_inset
+
+, respectively.
+ The spectral norm of 
+\begin_inset Formula $A\in\mathbb{R}^{n\times n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $\left\Vert A\right\Vert \triangleq\sqrt{\lambda_{n}\left(A^{\top}A\right)}$
+\end_inset
+
+.
+ The right Moore-Penrose inverse of the surjective matrix 
+\begin_inset Formula $A\in\mathbb{R}^{m\times n}$
+\end_inset
+
+ is denoted as 
+\begin_inset Formula $A^{+}:\mathbb{R}^{n}\to\mathbb{R}^{n\times m}$
+\end_inset
+
+ and is defined as 
+\begin_inset Formula $A^{+}\left(\cdot\right)\triangleq A^{\top}\left(\cdot\right)\left(A\left(\cdot\right)A^{\top}\left(\cdot\right)\right)^{-1}$
+\end_inset
+
+.
+ For 
+\begin_inset Formula $A\in\mathbb{R}^{m_{A}\times n_{A}}$
+\end_inset
+
+ and 
+\begin_inset Formula $B\in\mathbb{R}^{m_{B}\times n_{B}}$
+\end_inset
+
+, let the block diagonalization operator be defined as 
+\begin_inset Formula $\text{blkdiag}\left\{ A,B\right\} =\left[\begin{array}{cc}
+A & \mathbf{0}_{m_{A}\times n_{B}}\\
+\mathbf{0}_{m_{B}\times n_{A}} & B
+\end{array}\right]\in\mathbb{R}^{\left(m_{A}+m_{B}\right)\times\left(n_{A}+n_{B}\right)}$
+\end_inset
+
+.
+ The right-to-left matrix product operator is represented by 
+\begin_inset Formula $\stackrel{\curvearrowleft}{\prod}$
+\end_inset
+
+, i.e., 
+\begin_inset Formula $\stackrel{\curvearrowleft}{\stackrel[p=1]{m}{\prod}}A_{p}=A_{m}\ldots A_{2}A_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\stackrel{\curvearrowleft}{\stackrel[p=a]{m}{\prod}}A_{p}=I$
+\end_inset
+
+ if 
+\begin_inset Formula $a>m$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Nonsmooth Analysis
+\end_layout
+
+\begin_layout Standard
+The space of essentially bounded Lebesgue measurable functions is denoted
+ by 
+\begin_inset Formula $\mathcal{L}_{\infty}$
+\end_inset
+
+.
+ A function is of class 
+\begin_inset Formula ${\tt C}^{k}$
+\end_inset
+
+ if it has 
+\begin_inset Formula $k$
+\end_inset
+
+ continuous derivatives.
+ The Lebesgue measure on 
+\begin_inset Formula $\mathbb{R}^{n}$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $\mu$
+\end_inset
+
+.
+ Given some sets 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+, a set-valued map 
+\begin_inset Formula $F$
+\end_inset
+
+ from 
+\begin_inset Formula $A$
+\end_inset
+
+ to subsets of 
+\begin_inset Formula $B$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $F:A\rightrightarrows B$
+\end_inset
+
+.
+ The notation 
+\begin_inset Formula $\overline{\mathrm{co}}A$
+\end_inset
+
+ denotes the closed convex hull of the set 
+\begin_inset Formula $A$
+\end_inset
+
+.
+ The notation 
+\begin_inset Formula $\mathbb{B}_{\delta}\left(x\right)$
+\end_inset
+
+, for 
+\begin_inset Formula $x\in\mathbb{R}^{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\delta>0$
+\end_inset
+
+, is used to denote the set 
+\begin_inset Formula $\left\{ y\in\mathbb{R}^{n}:\left\Vert x-y\right\Vert <\delta\right\} $
+\end_inset
+
+.
+ The interior of a set 
+\begin_inset Formula $S$
+\end_inset
+
+, denoted by 
+\begin_inset Formula $\text{int}\left(S\right)$
+\end_inset
+
+, is the set of all points 
+\begin_inset Formula $x\in S$
+\end_inset
+
+ for which there exists 
+\begin_inset Formula $\delta>0$
+\end_inset
+
+ such that 
+\begin_inset Formula $\mathbb{B}_{\delta}\left(x\right)\subset S$
+\end_inset
+
+.
+ The closure of a set 
+\begin_inset Formula $S$
+\end_inset
+
+, denoted by 
+\begin_inset Formula $\overline{S}$
+\end_inset
+
+, is the union of 
+\begin_inset Formula $S$
+\end_inset
+
+ and its boundary points.
+ A set is compact if it is closed and bounded, and a set is precompact if
+ its closure is compact.
+ Consider a Lebesgue measurable and locally essentially bounded function
+ 
+\begin_inset Formula $h:\mathbb{R}^{n}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+.
+ The Filippov regularization of 
+\begin_inset Formula $h$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $K\left[h\right]\left(y,t\right)\triangleq\bigcap\limits _{\delta>0}\bigcap\limits _{\mu\mathbb{S}=0}\overline{\text{co}}\ h\left(\mathbb{B}_{\delta}\left(y\right)\backslash\mathbb{S},t\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\underset{\mu\mathbb{S}=0}{\bigcap}$
+\end_inset
+
+ denotes the intersection over all sets 
+\begin_inset Formula $\mathbb{S}$
+\end_inset
+
+ of Lebesgue measure zero 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equation 2b"
+key "Paden.Sastry1987"
+literal "false"
+
+\end_inset
+
+.
+ Additionally, given any sets 
+\begin_inset Formula $A,B\subset\mathbb{R}$
+\end_inset
+
+, the notation 
+\begin_inset Formula $A\leq B$
+\end_inset
+
+ is used to state 
+\begin_inset Formula $a\leq b$
+\end_inset
+
+ for all 
+\begin_inset Formula $a\in A$
+\end_inset
+
+ and 
+\begin_inset Formula $b\in B$
+\end_inset
+
+.
+ The notation "a.e." (almost everywhere) means that a property 
+\begin_inset Formula $P$
+\end_inset
+
+ holds for all 
+\begin_inset Formula $x\in X\backslash N$
+\end_inset
+
+, where 
+\begin_inset Formula $N\in\Sigma$
+\end_inset
+
+ and 
+\begin_inset Formula $\mu\left(N\right)=0$
+\end_inset
+
+ in a measure space 
+\begin_inset Formula $\left(X,\Sigma,\mu\right)$
+\end_inset
+
+.
+ A function 
+\begin_inset Formula $y:\mathcal{I}_{y}\to\mathbb{R}^{n}$
+\end_inset
+
+ is called a Filippov solution of 
+\begin_inset Formula $\dot{y}=h\left(y,t\right)$
+\end_inset
+
+ on the interval 
+\begin_inset Formula $\mathcal{I}_{y}\subseteq\mathbb{R}_{\geq0}$
+\end_inset
+
+, if 
+\begin_inset Formula $y$
+\end_inset
+
+ is absolutely continuous on 
+\begin_inset Formula $\mathcal{I}_{y}$
+\end_inset
+
+, and is a solution to the differential inclusion 
+\begin_inset Formula $\dot{y}\stackrel{{\rm a.e.}}{\in}K\left[h\right]\left(y,t\right)$
+\end_inset
+
+.
+ Clarke's generalized gradient for a locally Lipschitz function 
+\begin_inset Formula $V:\mathbb{R}^{n}\times\mathbb{R}_{\geq0}\to\mathbb{R}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $\partial V\left(x,t\right)\triangleq\overline{\text{co}}\left\{ \lim\nabla V\left(x,t\right):\left(x_{i},t_{i}\right)\to\left(x,t\right),\left(x_{i},t_{i}\right)\not\in\Omega_{V}\right\} $
+\end_inset
+
+, where 
+\begin_inset Formula $\Omega_{V}$
+\end_inset
+
+ denotes the set of measure zero wherever 
+\begin_inset Formula $\nabla V$
+\end_inset
+
+ is not defined 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Def. 2.2"
+key "Shevitz.Paden1994"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Deep Neural Network Model
+\end_layout
+
+\begin_layout Standard
+Consider a fully connected feedforward deep neural network (DNN) with input
+ 
+\begin_inset Formula $x\in\mathbb{R}^{L_{\text{in}}}$
+\end_inset
+
+ and output 
+\begin_inset Formula $y\in\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $k\in\mathbb{Z}_{>0}$
+\end_inset
+
+ be the number of hidden layers and let 
+\begin_inset Formula $\theta\in\mathbb{R}^{p}$
+\end_inset
+
+ be the vector of parameters (weights and biases).
+ Furthermore, let 
+\begin_inset Formula $L_{i}\in\mathbb{Z}_{>0}$
+\end_inset
+
+ denote the number of neurons in the 
+\begin_inset Formula $i^{\text{th}}$
+\end_inset
+
+ layer for 
+\begin_inset Formula $i\in\left\{ 0,\ldots,k+1\right\} $
+\end_inset
+
+ (with 
+\begin_inset Formula $L_{0}\triangleq L_{\text{in}}$
+\end_inset
+
+ and 
+\begin_inset Formula $L_{k+1}\triangleq L_{\text{out}}$
+\end_inset
+
+), and define the augmented dimension 
+\begin_inset Formula $L_{i}^{a}\triangleq L_{i}+1$
+\end_inset
+
+ for all 
+\begin_inset Formula $i\in\left\{ 0,\ldots,k\right\} $
+\end_inset
+
+.
+ The DNN 
+\begin_inset Formula $\Phi:\mathbb{R}^{L_{\text{in}}}\times\mathbb{R}^{p}\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+ is defined recursively by
+\begin_inset Formula 
+\begin{equation}
+\varphi_{i}\triangleq\begin{cases}
+V_{i}^{\top}x_{a}, & i=0,\\
+V_{i}^{\top}\phi_{i}\left(\varphi_{i-1}\right), & i\in\left\{ 1,\ldots,k\right\} ,
+\end{cases}\label{eq:DNN}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $x_{a}\triangleq\left[x^{\top},1\right]^{\top}\in\mathbb{R}^{L_{0}^{a}}$
+\end_inset
+
+ denotes the augmented input that accounts for the bias terms and 
+\begin_inset Formula $\Phi\left(x,\theta\right)=\varphi_{k}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For each 
+\begin_inset Formula $i\in\left\{ 0,1,\ldots,k\right\} $
+\end_inset
+
+ the matrix 
+\begin_inset Formula $V_{i}\in\mathbb{R}^{L_{i}^{a}\times L_{i+1}}$
+\end_inset
+
+ contains the weights and biases; in particular, if a layer has 
+\begin_inset Formula $n$
+\end_inset
+
+ (augmented) inputs and the subsequent layer has 
+\begin_inset Formula $m$
+\end_inset
+
+ nodes, then 
+\begin_inset Formula $V\in\mathbb{R}^{n\times m}$
+\end_inset
+
+ is constructed so that its 
+\begin_inset Formula $\left(j,k\right)^{\text{th}}$
+\end_inset
+
+ entry represents the weight from the 
+\begin_inset Formula $j^{\text{th}}$
+\end_inset
+
+ node of the input to the 
+\begin_inset Formula $k^{\text{th}}$
+\end_inset
+
+ node of the output, with the last row corresponding to the bias terms.
+ For the DNN architecture described by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:DNN"
+
+\end_inset
+
+, the vector of DNN weights 
+\begin_inset Formula $\theta\triangleq\left[\begin{array}{ccc}
+\text{vec}\left(V_{0}\right)^{\top} & \cdots & \text{vec}\left(V_{k}\right)^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{p}$
+\end_inset
+
+, where 
+\begin_inset Formula $p\triangleq\sum_{i=0}^{k}L_{i}^{a}L_{i+1}$
+\end_inset
+
+, and 
+\begin_inset Formula $\text{vec}\left(V_{i}\right)$
+\end_inset
+
+ denotes the vectorization of 
+\begin_inset Formula $V_{i}$
+\end_inset
+
+ performed in column-major order (i.e., the columns are stacked sequentially
+ to form a vector).
+ The activation function 
+\begin_inset Formula $\phi_{i}:\mathbb{R}^{L_{i}}\to\mathbb{R}^{L_{i}^{a}}$
+\end_inset
+
+ is given by 
+\begin_inset Formula $\phi_{i}\left(\varphi_{i-1}\right)$
+\end_inset
+
+ 
+\begin_inset Formula $=$
+\end_inset
+
+ 
+\begin_inset Formula $\left[\varsigma_{1}\left(\left(\varphi_{i-1}\right)_{1}\right)\right.$
+\end_inset
+
+ 
+\begin_inset Formula $\begin{array}{c}
+\varsigma_{2}\left(\left(\varphi_{i-1}\right)_{2}\right)\end{array}$
+\end_inset
+
+ 
+\begin_inset Formula $\begin{array}{c}
+\cdots\end{array}$
+\end_inset
+
+ 
+\begin_inset Formula $\begin{array}{c}
+\varsigma_{L_{i}}\left(\left(\varphi_{i-1}\right)_{L_{i}}\right)\end{array}$
+\end_inset
+
+ 
+\begin_inset Formula $\left.1\right]^{\top}$
+\end_inset
+
+ 
+\begin_inset Formula $\in\mathbb{R}^{L_{i}^{a}}$
+\end_inset
+
+ where 
+\begin_inset Formula $\left(\varphi_{i-1}\right)_{\ell}$
+\end_inset
+
+ denotes the 
+\begin_inset Formula $\ell^{\text{th}}$
+\end_inset
+
+ component of 
+\begin_inset Formula $\varphi_{i-1}$
+\end_inset
+
+, each 
+\begin_inset Formula $\varsigma_{i}:\mathbb{R}\to\mathbb{R}$
+\end_inset
+
+ denotes a smooth activation function, and 1 denotes the augmented hidden
+ layer that accounts for the bias term.
+\end_layout
+
+\begin_layout Standard
+The Jacobian of the DNN with respect to the weights is represented as 
+\begin_inset Formula $\frac{\partial}{\partial\theta}\Phi\left(\kappa,\theta\right)=\left[\begin{array}{ccc}
+\frac{\partial}{\partial{\rm vec}\left(V_{0}\right)}\Phi\left(\kappa,\theta\right) & \cdots & \frac{\partial}{\partial{\rm vec}\left(V_{k}\right)}\Phi\left(\kappa,\theta\right)\end{array}\right]$
+\end_inset
+
+
+\begin_inset Formula $\in\mathbb{R}^{L_{k+1}\times p}$
+\end_inset
+
+, where 
+\begin_inset Formula $\frac{\partial}{\partial{\rm vec}\left(V_{j}\right)}\Phi\left(\kappa,\theta\right)$
+\end_inset
+
+
+\begin_inset Formula $\in\mathbb{R}^{L_{k+1}\times L_{j-1}^{a}L_{j}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $j\in\left\{ 0,\ldots,k\right\} $
+\end_inset
+
+.
+ Using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:DNN"
+
+\end_inset
+
+ and the property of the vectorization operator in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:vec_diff_prop"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+We want to compute 
+\begin_inset Formula $\frac{\partial}{\partial\theta}\Phi(\kappa,\theta)$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\Phi(\kappa,\theta)\in\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta\in\mathbb{R}^{p}$
+\end_inset
+
+, 
+\begin_inset Formula $\frac{\partial}{\partial\theta}\Phi(\kappa,\theta)\in\mathbb{R}^{L_{\text{out}}\times p}$
+\end_inset
+
+, where
+\begin_inset Formula 
+\[
+\frac{\partial\Phi}{\partial\theta}=\left[\begin{array}{ccccc}
+\frac{\partial\Phi}{\partial{\rm vec}\left(V_{1}\right)} & \frac{\partial\Phi}{\partial{\rm vec}\left(V_{2}\right)} & \frac{\partial\Phi}{\partial{\rm vec}\left(V_{3}\right)} & \ldots & \frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}\end{array}\right]^{\top}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Recall the chain rule:
+\begin_inset Formula 
+\begin{align*}
+\frac{{\rm d}}{{\rm d}x}f(g(h(x)) & =\frac{\partial}{\partial g}f\cdot\frac{\partial}{\partial h}g\cdot\frac{\partial}{\partial x}h
+\end{align*}
+
+\end_inset
+
+Then
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial\mathrm{vec}(V_{1})} & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}\Phi(\kappa,\theta)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}\varphi_{k}\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(\varphi_{k-2}\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\varphi_{k-3}\right)\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{1})}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{1})}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{1})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{1})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial\phi_{k-2}}{\partial\varphi_{j-3}}\left(\ldots V_{2}^{\top}\frac{\partial\phi_{1}}{\partial\varphi_{0}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}V_{1}^{\top}\kappa_{a}\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}{\rm vec}\left(V_{1}^{\top}\kappa_{a}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}{\rm vec}\left(V_{1}^{\top}\kappa_{a}\right)^{\top}\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{1})}{\rm vec}\left(\kappa_{a}^{\top}V_{1}I_{L_{1}}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{1}}\otimes\kappa_{a}^{\top}\right)
+\end{align*}
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial\mathrm{vec}(V_{2})} & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}\Phi(\kappa,\theta)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}\varphi_{k}\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(\varphi_{k-2}\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\varphi_{k-3}\right)\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{2})}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{2})}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{2})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{2})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial\phi_{k-2}}{\partial\varphi_{j-3}}\left(\ldots V_{3}^{\top}\frac{\partial\phi_{2}}{\partial\varphi_{1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{2}^{\top}\phi_{1}\left(\varphi_{0}\right)\right)\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}V_{2}^{\top}\phi_{1}\left(\varphi_{0}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}{\rm vec}\left(V_{2}^{\top}\phi_{1}\left(\varphi_{0}\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}{\rm vec}\left(V_{2}^{\top}\phi_{1}\left(\varphi_{0}\right)\right)^{\top}\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{2})}{\rm vec}\left(\phi_{1}^{\top}\left(\varphi_{0}\right)V_{2}^{\top}I_{L_{2}}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{2}}\otimes\phi_{1}^{\top}\left(\varphi_{0}\right)\right)
+\end{align*}
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial\mathrm{vec}(V_{3})} & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}\Phi(\kappa,\theta)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}\varphi_{k}\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(\varphi_{k-2}\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\varphi_{k-3}\right)\right)\right)\\
+ & =\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k+1}^{\top}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{3})}\phi_{k}\left(V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k}^{\top}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{3})}\phi_{k-1}\left(V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{k-1}^{\top}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{3})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial}{\partial\mathrm{vec}(V_{3})}\phi_{k-2}\left(\ldots\left(V_{1}^{\top}\kappa_{a}\right)\right)\right)\right)\\
+ & =V_{k+1}^{\top}\frac{\partial\phi_{k}}{\partial\varphi_{j-1}}\left(V_{k}^{\top}\frac{\partial\phi_{k-1}}{\partial\varphi_{j-2}}\left(V_{k-1}^{\top}\frac{\partial\phi_{k-2}}{\partial\varphi_{j-3}}\left(\ldots V_{4}^{\top}\frac{\partial\phi_{3}}{\partial\varphi_{2}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{3}^{\top}\left(\phi_{2}\left(\varphi_{1}\right)\right)\right)\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}V_{3}^{\top}\left(\phi_{2}\left(\varphi_{1}\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}{\rm vec}\left(V_{3}^{\top}\left(\phi_{2}\left(\varphi_{1}\right)\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}{\rm vec}\left(V_{3}^{\top}\left(\phi_{2}\left(\varphi_{1}\right)\right)\right)^{\top}\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(\frac{\partial}{\partial\mathrm{vec}(V_{3})}{\rm vec}\left(\phi_{2}^{\top}\left(\varphi_{1}\right)V_{3}^{\top}I_{L_{3}}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{3}}\otimes\phi_{2}^{\top}\left(\varphi_{1}\right)\right)
+\end{align*}
+
+\end_inset
+
+and
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})} & =\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}\Phi(\kappa,\theta)\\
+ & =\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}\varphi_{k}\\
+ & =\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\\
+ & ={\color{red}I_{L}}\left(\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}\left(\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}\left(\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}{\rm vec}\left(V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}\left(\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}{\rm vec}\left(V_{k+1}^{\top}\phi_{k}\left(\varphi_{k-1}\right)\right)^{\top}\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}\left(\frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}{\rm vec}\left(\phi_{k}^{\top}\left(\varphi_{k-1}\right)V_{k+1}^{\top}I_{L_{k+1}}\right)\right)\\
+ & =\stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}\left(I_{L_{k+1}}\otimes\phi_{k}^{\top}\left(\varphi_{k-1}\right)\right)
+\end{align*}
+
+\end_inset
+
+So 
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial\theta} & =\left[\begin{array}{ccccc}
+\frac{\partial\Phi}{\partial{\rm vec}\left(V_{1}\right)} & \frac{\partial\Phi}{\partial{\rm vec}\left(V_{2}\right)} & \frac{\partial\Phi}{\partial{\rm vec}\left(V_{3}\right)} & \ldots & \frac{\partial\Phi}{\partial\mathrm{vec}(V_{k+1})}\end{array}\right]^{\top}\\
+ & =\left[\begin{array}{ccccc}
+\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{1}}\otimes\kappa_{a}^{\top}\right) & \stackrel{\curvearrowleft}{\stackrel[\ell=2]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{2}}\otimes\phi_{1}^{\top}\left(\varphi_{0}\right)\right) & \stackrel{\curvearrowleft}{\stackrel[\ell=3]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{3}}\otimes\phi_{2}^{\top}\left(\varphi_{1}\right)\right) & \ldots & \stackrel{\curvearrowleft}{\stackrel[\ell=k+1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\left(I_{L_{k+1}}\otimes\phi_{k}^{\top}\left(\varphi_{k-1}\right)\right)\end{array}\right]^{\top}
+\end{align*}
+
+\end_inset
+
+Therefore
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial{\rm vec}(V_{j})}\Phi(\kappa,\theta)=\begin{cases}
+\left(\stackrel{\curvearrowleft}{\stackrel[\ell=1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\right)\left(I_{L_{1}}\otimes\kappa_{a}^{\top}\right), & j=0,\\
+\left(\stackrel{\curvearrowleft}{\stackrel[\ell=j+1]{k}{\prod}}V_{\ell+1}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\right)\left(I_{L_{j+1}}\otimes\phi_{j}^{\top}\left(\varphi_{j-1}\right)\right), & j=\left\{ 1,\ldots,k\right\} .
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+_____________
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align}
+\frac{\partial}{\partial{\rm vec}\left(V_{i}\right)}\Phi\left(\kappa,\theta\right) & =\left(\stackrel{\curvearrowleft}{\stackrel[\ell=i+1]{k}{\prod}}V_{\ell}^{\top}\frac{\partial\phi_{\ell}}{\partial\varphi_{\ell-1}}\right)\left(I_{L_{i+1}}\otimes\varrho_{i}\right),\label{eq:DNN Gradient}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $\varrho_{i}=\kappa_{a}\mathbf{1}_{\left\{ i=0\right\} }+\phi_{i}\left(\varphi_{i-1}\left(\kappa_{a}\right)\right)\mathbf{1}_{\left\{ 1\leq i\leq k\right\} }$
+\end_inset
+
+ for all 
+\begin_inset Formula $i\in\left\{ 0,\ldots,k\right\} $
+\end_inset
+
+.
+ The Jacobian 
+\begin_inset Formula $\frac{\partial\phi_{i}\left(\varphi_{i-1}\right)}{\partial\varphi_{i-1}}:\mathbb{R}^{L_{i}}\to\mathbb{R}^{L_{i}^{a}\times L_{i}}$
+\end_inset
+
+ of the activation function vector at the 
+\begin_inset Formula $i^{\mathrm{th}}$
+\end_inset
+
+ layer is given by 
+\begin_inset Formula $\frac{\partial\phi_{i}\left(\varphi_{i-1}\right)}{\partial\varphi_{i-1}}$
+\end_inset
+
+ 
+\begin_inset Formula $=$
+\end_inset
+
+ 
+\begin_inset Formula $\left[\text{diag}\left\{ \frac{{\rm d}\varsigma_{1}\left(\left(\varphi_{i-1}\right)_{1}\right)}{{\rm d}\left(\varphi_{i-1}\right)_{1}},\ldots,\frac{{\rm d}\varsigma_{L_{i}}\left(\left(\varphi_{i-1}\right)_{L_{i}}\right)}{{\rm d}\left(\varphi_{i-1}\right)_{L_{i}}}\right\} \right.$
+\end_inset
+
+
+\begin_inset Formula $\left.\mathbf{0}_{L_{i}}^{\top}\right]^{\top}$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Let 
+\begin_inset Formula $\varphi_{i,j-1}\left(v\right)\triangleq\left[\begin{array}{cccc}
+\left(\varphi_{i,j-1}\left(v\right)\right)_{1} & \left(\varphi_{i,j-1}\left(v\right)\right)_{2} & \cdots & \left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\end{array}\right]^{\top}\in\mathbb{R}^{L_{i,j}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\phi_{i,j}:\mathbb{R}^{L_{i,j}}\to\mathbb{R}^{L_{i,j}^{a}}$
+\end_inset
+
+, with
+\begin_inset Formula 
+\[
+\phi_{i,j}\left(\varphi_{i,j-1}\left(v\right)\right)=\left[\begin{array}{c}
+\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\\
+\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\\
+\vdots\\
+\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\\
+1.0
+\end{array}\right]
+\]
+
+\end_inset
+
+Then 
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\phi_{i,j}\left(\varphi_{i,j-1}\left(v\right)\right)}{\partial\varphi_{i,j-1}\left(v\right)} & =\frac{\partial}{\partial\varphi_{i,j-1}\left(v\right)}\left[\begin{array}{c}
+\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\\
+\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\\
+\vdots\\
+\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\\
+1.0
+\end{array}\right]\\
+ & =\left[\begin{array}{c}
+\frac{\partial}{\partial\left[\begin{array}{cccc}
+\left(\varphi_{i,j-1}\left(v\right)\right)_{1} & \left(\varphi_{i,j-1}\left(v\right)\right)_{2} & \cdots & \left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\end{array}\right]^{\top}}\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\\
+\frac{\partial}{\partial\left[\begin{array}{cccc}
+\left(\varphi_{i,j-1}\left(v\right)\right)_{1} & \left(\varphi_{i,j-1}\left(v\right)\right)_{2} & \cdots & \left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\end{array}\right]^{\top}}\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\\
+\vdots\\
+\frac{\partial}{\partial\left[\begin{array}{cccc}
+\left(\varphi_{i,j-1}\left(v\right)\right)_{1} & \left(\varphi_{i,j-1}\left(v\right)\right)_{2} & \cdots & \left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\end{array}\right]^{\top}}\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\\
+\frac{\partial}{\partial\left[\begin{array}{cccc}
+\left(\varphi_{i,j-1}\left(v\right)\right)_{1} & \left(\varphi_{i,j-1}\left(v\right)\right)_{2} & \cdots & \left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\end{array}\right]^{\top}}1.0
+\end{array}\right]\\
+ & =\left[\begin{array}{cccc}
+\frac{\partial\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{1}} & \frac{\partial\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{2}} & \cdots & \frac{\partial\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\\
+\frac{\partial\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{1}} & \frac{\partial\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{2}} & \cdots & \frac{\partial\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\\
+\vdots & \vdots & \ddots & \vdots\\
+\frac{\partial\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{1}} & \frac{\partial\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{2}} & \cdots & \frac{\partial\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\\
+\frac{\partial\left(1.0\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{1}} & \frac{\partial\left(1.0\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{2}} & \cdots & \frac{\partial\left(1.0\right)}{\partial\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}
+\end{array}\right]\\
+ & =\left[\begin{array}{cccc}
+\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{1}}\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right) & 0 & \cdots & 0\\
+0 & \frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{2}}\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right) & \cdots & 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \cdots & \frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\\
+0 & 0 & \cdots & 0
+\end{array}\right]\\
+ & =\left[\begin{array}{c}
+\left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{1}}\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\right)\mathbf{e}_{1}^{\top}\\
+\left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{2}}\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\right)\mathbf{e}_{2}^{\top}\\
+\vdots\\
+\left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\right)\mathbf{e}_{L_{i,j}}^{\top}\\
+\mathbf{0}_{L_{i,j}}^{\top}
+\end{array}\right]\\
+ & =\left[\begin{array}{ccccc}
+\left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{1}}\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\right)\mathbf{e}_{1}^{\top} & \left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{2}}\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\right)\mathbf{e}_{2}^{\top} & \cdots & \left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\right)\mathbf{e}_{L_{i,j}}^{\top} & \mathbf{0}_{L_{i,j}}^{\top}\end{array}\right]^{\top}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Problem Formulation
+\end_layout
+
+\begin_layout Subsection
+System Dynamics
+\end_layout
+
+\begin_layout Standard
+Consider the second-order nonlinear system described by the differential
+ equation
+\begin_inset Formula 
+\begin{equation}
+\ddot{q}\left(t\right)=f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)+d\left(t\right),\label{eq:Agent Dynamics}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $q:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the generalized position trajectory, with 
+\begin_inset Formula $q\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{q}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the generalized velocity trajectory, with 
+\begin_inset Formula $\dot{q}\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, 
+\begin_inset Formula $\ddot{q}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the generalized acceleration trajectory, with 
+\begin_inset Formula $\ddot{q}\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, 
+\begin_inset Formula $f\in\mathcal{C}^{2}\left(\mathbb{R}^{n}\times\mathbb{R}^{n};\mathbb{R}^{n}\right)\cap\text{Lip}\left(\mathbb{R}^{n}\times\mathbb{R}^{n};\mathbb{R}^{n}\right)$
+\end_inset
+
+ represents unknown dynamics, 
+\begin_inset Formula $d\in\mathcal{C}^{2}\left(\mathbb{R}_{\geq0};\mathbb{R}^{n}\right)$
+\end_inset
+
+ represents exogenous disturbances, and 
+\begin_inset Formula $u:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the control input trajectory.
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "disturbance bound"
+
+\end_inset
+
+There exist known constants 
+\begin_inset Formula $\overline{d},\overline{\dot{d}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert d\left(t\right)\right\Vert \leq\overline{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \dot{d}\left(t\right)\right\Vert \leq\overline{\dot{d}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The reference trajectory is governed by the autonomous second-order system
+\begin_inset Formula 
+\begin{equation}
+\ddot{q}_{d}\left(t\right)=f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right),\label{eq:Target Dynamics}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $q_{d}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the reference position trajectory, with 
+\begin_inset Formula $q_{d}\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{q}_{d}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the reference velocity trajectory, with 
+\begin_inset Formula $\dot{q}_{d}\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, 
+\begin_inset Formula $\ddot{q}_{d}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the reference acceleration trajectory, with 
+\begin_inset Formula $\ddot{q}_{d}\left(t\right)\in\mathbb{R}^{n}$
+\end_inset
+
+ for each 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, and 
+\begin_inset Formula $f_{d}\in\mathcal{C}^{2}\left(\mathbb{R}^{n}\times\mathbb{R}^{n};\mathbb{R}^{n}\right)$
+\end_inset
+
+ represents the unknown reference dynamics.
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "targetbounds"
+
+\end_inset
+
+There exist known constants 
+\begin_inset Formula $\overline{q}_{d},\overline{\dot{q}}_{d}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert q_{d}\left(t\right)\right\Vert \leq\overline{q}_{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \dot{q}_{d}\left(t\right)\right\Vert \leq\overline{\dot{q}}_{d}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The control objective is to design a robust adaptive DNN-based controller
+ such that the state trajectory 
+\begin_inset Formula $q$
+\end_inset
+
+ is exponentially regulated to a neighborhood of the reference trajectory
+ 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+, despite the presence of unknown dynamics and bounded disturbances.
+ To facilitate the control objective, define the tracking error 
+\begin_inset Formula $e:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ as
+\begin_inset Formula 
+\begin{equation}
+e\left(t\right)\triangleq q_{d}\left(t\right)-q\left(t\right).\label{eq:Tracking Error}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Control Synthesis
+\end_layout
+
+\begin_layout Standard
+To facilitate the control design, the filtered tracking error 
+\begin_inset Formula $r_{1}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+r_{1}\left(t\right)\triangleq\dot{e}\left(t\right)+k_{1}e\left(t\right),\label{eq: Filtered Tracking Error}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{1}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain, and the auxiliary tracking error 
+\begin_inset Formula $r_{2}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+r_{2}\left(t\right)\triangleq\dot{r}_{1}\left(t\right)+k_{2}r_{1}\left(t\right)+e\left(t\right),\label{eq:Auxiliary Tracking Error}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{2}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain.
+ Twice differentiating 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Tracking Error"
+
+\end_inset
+
+ with respect to time and substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Agent Dynamics"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Target Dynamics"
+
+\end_inset
+
+ into the resulting expression yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\ddot{e}\left(t\right) & =\ddot{q}_{d}\left(t\right)-\ddot{q}\left(t\right)\\
+ & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\left(f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)+d\left(t\right)\right)\\
+ & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\ddot{e}\left(t\right) & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)\\
+ & -u\left(t\right)-d\left(t\right).
+\end{aligned}
+\label{eq:Tracking Error Acceleration}
+\end{equation}
+
+\end_inset
+
+Differentiating 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error"
+
+\end_inset
+
+ with respect to time, and substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Tracking Error Acceleration"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{r}_{1}\left(t\right) & =\ddot{e}\left(t\right)+k_{1}\dot{e}\left(t\right)\\
+ & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)+k_{1}\dot{e}\left(t\right)\\
+ & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)+k_{1}\left(r_{1}\left(t\right)-k_{1}e\left(t\right)\right)\\
+ & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)+k_{1}r_{1}\left(t\right)-k_{1}^{2}e\left(t\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{r}_{1}\left(t\right) & =f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)\\
+ & -d\left(t\right)+k_{1}r_{1}\left(t\right)-k_{1}^{2}e\left(t\right).
+\end{aligned}
+\label{eq: Filtered Tracking Error Derivative}
+\end{equation}
+
+\end_inset
+
+Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error Derivative"
+
+\end_inset
+
+ into 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Auxiliary Tracking Error"
+
+\end_inset
+
+, differentiating the resulting expression with respect to time, and using
+ the chain rule and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{r}_{2}\left(t\right) & =\frac{{\rm d}}{{\rm d}t}\left(f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)+k_{1}r_{1}\left(t\right)-k_{1}^{2}e\left(t\right)\right)+k_{2}\dot{r}_{1}\left(t\right)+\dot{e}\left(t\right)\\
+\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}\frac{\partial q_{d}}{\partial t}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}\frac{\partial\dot{q}_{d}}{\partial t}-\frac{\partial f}{\partial q}\frac{\partial q}{\partial t}-\frac{\partial f}{\partial\dot{q}}\frac{\partial\dot{q}}{\partial t}-\dot{u}\left(t\right)-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}\left(t\right)-k_{1}^{2}\dot{e}\left(t\right)+k_{2}\left(r_{2}\left(t\right)-k_{2}r_{1}\left(t\right)\right)+r_{1}\left(t\right)-k_{1}e\left(t\right)\\
+\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}\ddot{q}_{d}-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}\ddot{q}-\dot{u}\left(t\right)-\dot{d}\left(t\right)+k_{1}\left(r_{2}\left(t\right)-k_{2}r_{1}\left(t\right)\right)-k_{1}^{2}\left(r_{1}\left(t\right)-k_{1}e\left(t\right)\right)+k_{2}r_{2}\left(t\right)-k_{2}^{2}r_{1}\left(t\right)+r_{1}\left(t\right)-k_{1}e\left(t\right)\\
+\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}\left(f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)+d\left(t\right)\right)-\dot{u}\left(t\right)-\dot{d}\left(t\right)\\
+ & +k_{1}r_{2}\left(t\right)-k_{1}k_{2}r_{1}\left(t\right)-k_{1}^{2}r_{1}\left(t\right)+k_{1}^{3}e\left(t\right)+k_{2}r_{2}\left(t\right)-k_{2}^{2}r_{1}\left(t\right)+r_{1}\left(t\right)-k_{1}e\left(t\right)\\
+\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}f\left(q\left(t\right),\dot{q}\left(t\right)\right)-\frac{\partial f}{\partial\dot{q}}u\left(t\right)-\frac{\partial f}{\partial\dot{q}}d\left(t\right)-\dot{u}\left(t\right)-\dot{d}\left(t\right)\\
+ & +k_{1}r_{2}\left(t\right)+k_{2}r_{2}\left(t\right)-k_{1}k_{2}r_{1}\left(t\right)-k_{1}^{2}r_{1}\left(t\right)-k_{2}^{2}r_{1}\left(t\right)+r_{1}\left(t\right)+k_{1}^{3}e\left(t\right)-k_{1}e\left(t\right)\\
+\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}\left(f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)\right)\\
+ & -\dot{d}\left(t\right)-\frac{\partial f}{\partial\dot{q}}d\left(t\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)-\dot{u}\left(t\right)\\
+\\
+ & =\underbrace{\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}\left(f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)\right)}_{\triangleq h\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)}\underbrace{-\frac{\partial f}{\partial\dot{q}}d\left(t\right)-\dot{d}\left(t\right)}_{\triangleq D\left(q,\dot{q},t\right)}-\dot{u}\left(t\right)\\
+ & +k_{1}r_{2}\left(t\right)+k_{2}r_{2}\left(t\right)-k_{1}k_{2}r_{1}\left(t\right)-k_{1}^{2}r_{1}\left(t\right)-k_{2}^{2}r_{1}\left(t\right)+r_{1}\left(t\right)+k_{1}^{3}e\left(t\right)-k_{1}e\left(t\right)\\
+ & =h\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)+D\left(q,\dot{q},t\right)-\dot{u}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{r}_{2}\left(t\right) & =h\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)+D\left(q,\dot{q},t\right)-\dot{u}\left(t\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)\\
+ & +k_{1}\left(k_{1}^{2}-1\right)e\left(t\right).
+\end{aligned}
+\label{eq: Auxiliary Tracking Error Derivative}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $h:\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{n}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $h\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)\triangleq\frac{\partial f_{d}}{\partial q_{d}}\dot{q}_{d}+\frac{\partial f_{d}}{\partial\dot{q}_{d}}f_{d}\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-\frac{\partial f}{\partial q}\dot{q}-\frac{\partial f}{\partial\dot{q}}\left(f\left(q\left(t\right),\dot{q}\left(t\right)\right)+u\left(t\right)\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $D:\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $D\left(q,\dot{q},t\right)\triangleq-\frac{\partial f}{\partial\dot{q}}d\left(t\right)-\dot{d}\left(t\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Deep Neural Network Function Approximation
+\end_layout
+
+\begin_layout Standard
+DNNs offer a promising alternative that can learn complex patterns from
+ data without requiring explicit knowledge of the underlying physics.
+ This function approximation capability motivates the use of DNN-based function
+ approximation to develop more accurate and robust models for nonlinear
+ dynamics.
+\end_layout
+
+\begin_layout Standard
+To approximate the unknown dynamics given by 
+\begin_inset Formula $h$
+\end_inset
+
+ in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Auxiliary Tracking Error Derivative"
+
+\end_inset
+
+, 
+\begin_inset Formula $\kappa:\mathbb{R}_{\geq0}\to\mathbb{R}^{5n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $\kappa\left(t\right)\triangleq\left[\begin{array}{ccccc}
+q^{\top}\left(t\right) & \dot{q}^{\top}\left(t\right) & q_{d}^{\top}\left(t\right) & \dot{q}_{d}^{\top}\left(t\right) & u^{\top}\left(t\right)\end{array}\right]^{\top}\in\Omega$
+\end_inset
+
+, where 
+\begin_inset Formula $\Omega\subset\mathbb{R}^{5n}$
+\end_inset
+
+ is a compact set over which the universal approximation property holds.
+ The DNN-based approximation of 
+\begin_inset Formula $h\left(\kappa\right)$
+\end_inset
+
+ is given by 
+\begin_inset Formula $\Phi\left(\kappa,\hat{\theta}\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\Phi:\mathbb{R}^{5n}\times\mathbb{R}^{p}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the DNN architecture mapping and 
+\begin_inset Formula $\hat{\theta}\in\mathbb{R}^{p}$
+\end_inset
+
+ denotes the adaptive parameter estimates.
+\end_layout
+
+\begin_layout Standard
+The approximation objective is to determine optimal estimates 
+\begin_inset Formula $\hat{\theta}$
+\end_inset
+
+ such that the mapping 
+\begin_inset Formula $\kappa\mapsto\Phi\left(\kappa,\hat{\theta}\right)$
+\end_inset
+
+ approximates 
+\begin_inset Formula $\kappa\mapsto h\left(\kappa\right)$
+\end_inset
+
+ with minimal error for all 
+\begin_inset Formula $\kappa\in\Omega$
+\end_inset
+
+.
+ To quantify the approximation objective, an objective function 
+\begin_inset Formula $\mathcal{J}:\mathbb{R}^{p}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+\mathcal{J}\left(\theta\right)\triangleq\int_{\Omega}\left(\left\Vert h\left(\kappa\right)-\Phi\left(\kappa,\theta\right)\right\Vert ^{2}\right){\rm d}\mu\left(\kappa\right),\label{eq:Loss Function}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mu$
+\end_inset
+
+ denotes the Lebesgue measure on 
+\begin_inset Formula $\mathbb{R}^{5n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta\in\mathbb{R}^{p}$
+\end_inset
+
+ is an arbitrary parameter vector.
+ Let 
+\begin_inset Formula $\mho\subset\mathbb{R}^{p}$
+\end_inset
+
+ denote a user-selected compact, convex parameter search space with a 
+\begin_inset Formula $\mathcal{C}^{\infty}$
+\end_inset
+
+ boundary, satisfying 
+\begin_inset Formula $\mathbf{0}_{p}\in\text{int}\left(\mho\right)$
+\end_inset
+
+, and define 
+\begin_inset Formula $\overline{\theta}\triangleq\underset{\theta\in\mho}{\max}\left\Vert \theta\right\Vert .$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "thm:The-loss-function"
+
+\end_inset
+
+For the objective function 
+\begin_inset Formula $\mathcal{J}$
+\end_inset
+
+, there exists a compact, convex set 
+\begin_inset Formula $\mho\subset\mathbb{R}^{p}$
+\end_inset
+
+ containing the origin such that 
+\begin_inset Formula $\mathcal{J}$
+\end_inset
+
+ is essentially strictly convex over 
+\begin_inset Formula $\mho$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This property ensures the uniqueness of the global minimizer.
+ Consequently, due to the continuity of 
+\begin_inset Formula $\mathcal{J}$
+\end_inset
+
+ and compactness of 
+\begin_inset Formula $\mho$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{J}$
+\end_inset
+
+ has a unique global minimizer 
+\begin_inset Formula $\theta^{\ast}\in\mho$
+\end_inset
+
+, defined as
+\begin_inset Formula 
+\begin{eqnarray}
+\theta^{\ast} & \triangleq & \underset{\theta\in\mho}{\arg\min\ }\mathcal{J}\left(\theta\right).\label{eq:theta star}
+\end{eqnarray}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+\begin_inset CommandInset label
+LatexCommand label
+name "rem:Universal Function Approximation"
+
+\end_inset
+
+ The universal function approximation property of DNNs was not invoked in
+ the definition of 
+\begin_inset Formula $\theta^{\ast}$
+\end_inset
+
+.
+ The universal function approximation theorem states that the function space
+ of DNNs is dense in the space of continuous functions 
+\begin_inset Formula $\mathcal{C}\left(\Omega\right)$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Kidger.Lyons2020,Kratsios.Papon2022"
+literal "false"
+
+\end_inset
+
+.
+ Consequently, for any prescribed 
+\begin_inset Formula $\overline{\varepsilon}>0$
+\end_inset
+
+, there exists a DNN 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ and a corresponding parameter vector 
+\begin_inset Formula $\theta$
+\end_inset
+
+ such that 
+\begin_inset Formula $\underset{\kappa\in\Omega}{\sup}\left\Vert h\left(\kappa\right)-\Phi\left(\kappa,\theta\right)\right\Vert <\overline{\varepsilon}$
+\end_inset
+
+.
+ This implies 
+\begin_inset Formula $\int_{\Omega}\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\theta\right)\right\Vert ^{2}{\rm d}\mu\left(\kappa\right)<\overline{\varepsilon}^{2}\mu\left(\Omega\right)$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\int_{\Omega}\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\theta\right)\right\Vert ^{2}{\rm d}\mu\left(\kappa\right) & <\int_{\Omega}\overline{\varepsilon}^{2}{\rm d}\mu\left(\kappa\right)\\
+ & =\overline{\varepsilon}^{2}\int_{\Omega}{\rm d}\mu\left(\kappa\right)\\
+ & =\overline{\varepsilon}^{2}\mu\left(\Omega\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ However, determining a search space 
+\begin_inset Formula $\mho$
+\end_inset
+
+ for arbitrary 
+\begin_inset Formula $\overline{\varepsilon}$
+\end_inset
+
+ remains an open challenge.
+ Therefore, 
+\begin_inset Formula $\mho$
+\end_inset
+
+ is arbitrarily selected, at the expense of guarantees on the approximation
+ accuracy.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Control Design
+\end_layout
+
+\begin_layout Standard
+Following the previous discussion, the unknown dynamics in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Auxiliary Tracking Error Derivative"
+
+\end_inset
+
+ are modeled using a DNN as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+h\left(\kappa\right)=\Phi\left(\kappa\left(t\right),\theta^{\ast}\right)+\varepsilon\left(\kappa\left(t\right)\right),\label{eq:UFAP}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\varepsilon:\mathbb{R}^{5n}\to\mathbb{R}^{n}$
+\end_inset
+
+ is an unknown function representing the reconstruction error that is bounded
+ as
+\begin_inset Formula 
+\begin{equation}
+\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa\right)\right\Vert <\overline{\varepsilon}.\label{eq: reconstruction error bound}
+\end{equation}
+
+\end_inset
+
+Based on 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Auxiliary Tracking Error Derivative"
+
+\end_inset
+
+ and the subsequent stability analysis, the control input is designed as
+ a Filippov solution to
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{u}\left(t\right) & =\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)\\
+ & -\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-2\right)r_{1}\left(t\right)\\
+ & +\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)+\Phi\left(\kappa,\hat{\theta}\right),
+\end{aligned}
+\label{eq: uDot}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{3}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain.
+ Here, 
+\begin_inset Formula $\gamma:\mathbb{R}_{\geq0}\to\mathbb{R}$
+\end_inset
+
+ is an adaptive RISE gain designed as a Filippov solution to
+\begin_inset Formula 
+\begin{equation}
+\dot{\gamma}\left(t\right)=\Gamma_{1}\left(r_{2}^{\top}\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)-k_{4}\gamma\left(t\right)\right),\label{eq:gammaDot}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{4}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain and 
+\begin_inset Formula $\Gamma_{1}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a user-defined RISE learning rate.
+ Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:UFAP"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: uDot"
+
+\end_inset
+
+ into 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Auxiliary Tracking Error Derivative"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{r}_{2}\left(t\right) & =h\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)+D\left(q,\dot{q},t\right)-\dot{u}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-2\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)+\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)\\
+\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(t\right)+\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-2\right)r_{1}\left(t\right)-k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)-\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)-\Phi\left(\kappa,\hat{\theta}\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)+k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)\\
+\\
+ & =-k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)-\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)+\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)+D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}+k_{2}\right)r_{2}\left(t\right)\\
+ & +\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)-\left(k_{1}^{2}+k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}\left(t\right)\\
+ & +k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)-k_{1}\left(k_{1}^{2}-1\right)e\left(t\right)\\
+\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)-\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)-k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)+D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{r}_{2}\left(t\right) & =\Phi\left(\kappa\left(t\right),\theta^{\ast}\right)-\Phi\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)\\
+ & -\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)-k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)\\
+ & +D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\right).
+\end{aligned}
+\label{eq: r2Dot}
+\end{equation}
+
+\end_inset
+
+Based on the subsequent stability analysis, the adaptive update law is designed
+ as
+\size small
+
+\begin_inset Formula 
+\begin{equation}
+\dot{\hat{\theta}}\left(t\right)=\text{proj}\left(\Gamma_{2}\left(\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}\left(t\right)+\left(1+k_{1}k_{2}\right)e\left(t\right)\right)-k_{5}\hat{\theta}\left(t\right)\right)\right),\label{eq:Update Law}
+\end{equation}
+
+\end_inset
+
+
+\size default
+where 
+\begin_inset Formula $k_{5}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain, 
+\begin_inset Formula $\Gamma_{2}\in\mathbb{R}^{p\times p}$
+\end_inset
+
+ is a user-defined positive-definite learning rate matrix, and the projection
+ operator ensures 
+\begin_inset Formula $\widehat{\Theta}\left(t\right)\in\mho$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, defined as in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Appendix E"
+key "Krstic.Kanellakopoulos.ea1995"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Stability Analysis
+\end_layout
+
+\begin_layout Standard
+The DNN described in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:UFAP"
+
+\end_inset
+
+ is inherently nonlinear with respect to its weights.
+ Designing adaptive controllers and performing stability analyses for systems
+ that are nonlinearly parameterizable presents significant theoretical challenge
+s.
+ A method to address the nonlinear structure of the uncertainty, especially
+ for DNNs, is to use a first-order Taylor series approximation.
+ To quantify the approximation, the parameter estimation error 
+\begin_inset Formula $\tilde{\theta}:\mathbb{R}_{\geq0}\to\mathbb{R}^{p}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+\tilde{\theta}\left(t\right)=\theta^{\ast}-\hat{\theta}\left(t\right).\label{eq: parameter estimation error}
+\end{equation}
+
+\end_inset
+
+Applying first-order Taylor's theorem to 
+\begin_inset Formula $\Phi\left(\kappa,\theta^{\ast}\right)$
+\end_inset
+
+ evaluated at 
+\begin_inset Formula $\hat{\theta}$
+\end_inset
+
+ and using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: parameter estimation error"
+
+\end_inset
+
+ yields
+\begin_inset Formula 
+\begin{equation}
+\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)=\frac{\partial\Phi\left(\kappa,\hat{\theta}\right)}{\partial\hat{\theta}}\tilde{\theta}+R\left(\kappa,\tilde{\theta}\right),\label{eq: Taylors Theorem}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $R:\mathbb{R}^{5n}\times\mathbb{R}^{p}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the Lagrange remainder term.
+ Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Taylors Theorem"
+
+\end_inset
+
+ into 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: r2Dot"
+
+\end_inset
+
+ yields
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{r}_{2}\left(t\right) & =\frac{\partial\Phi\left(\kappa,\hat{\theta}\right)}{\partial\hat{\theta}}\tilde{\theta}+R\left(\kappa,\tilde{\theta}\right)-\gamma\left(t\right)\text{sgn}\left(r_{1}\left(t\right)\right)\\
+ & -k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)+D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\right).
+\end{aligned}
+\label{eq:rDot-2}
+\end{equation}
+
+\end_inset
+
+Based on the subsequent stability analysis, the adaptive RISE gain estimation
+ error 
+\begin_inset Formula $\tilde{\gamma}:\mathbb{R}_{\geq0}\to\mathbb{R}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+\tilde{\gamma}\left(t\right)=\gamma^{\ast}-\gamma\left(t\right),\label{eq:gammaTilde}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\gamma^{\ast}\in\mathbb{R}_{\geq0}$
+\end_inset
+
+ denotes the ideal RISE gain.
+ Let 
+\begin_inset Formula $z:\mathbb{R}_{\geq0}\to\mathbb{R}^{\varphi}$
+\end_inset
+
+ denote the concatenated state vector 
+\begin_inset Formula $z\left(t\right)\triangleq\left[\begin{array}{ccccc}
+e^{\top}\left(t\right) & r_{1}^{\top}\left(t\right) & r_{2}^{\top}\left(t\right) & \tilde{\gamma}\left(t\right) & \tilde{\theta}^{\top}\left(t\right)\end{array}\right]^{\top}\in\mathbb{R}^{\varphi}$
+\end_inset
+
+, where 
+\begin_inset Formula $\varphi\triangleq3n+1+p$
+\end_inset
+
+.
+ The trajectory 
+\begin_inset Formula $z\mapsto z\left(t\right)$
+\end_inset
+
+ is a solution to the initial value problem
+\begin_inset Formula 
+\begin{equation}
+\dot{z}\left(t\right)=g\left(z\left(t\right),t\right),\ z\left(t_{0}\right)=z_{0},\label{eq:IVP}
+\end{equation}
+
+\end_inset
+
+where, using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Tracking Error"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:gammaDot"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Update Law"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: parameter estimation error"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-2"
+
+\end_inset
+
+, and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:gammaTilde"
+
+\end_inset
+
+, 
+\begin_inset Formula $g:\mathbb{R}^{\varphi}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{\varphi}$
+\end_inset
+
+ is defined as
+\size small
+
+\begin_inset Formula 
+\begin{equation}
+g\left(z\left(t\right),t\right)=\left[\begin{array}{c}
+r_{1}-k_{1}e\\
+r_{2}-k_{2}r_{1}-e\\
+\left(\begin{array}{c}
+\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}\tilde{\theta}+R\left(\kappa\left(t\right),\tilde{\theta}\right)\\
+-\gamma\left(t\right)\text{sgn}\left(r_{1}\right)-k_{3}r_{2}\\
+-r_{1}+D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\left(t\right)\right).
+\end{array}\right)\\
+-\Gamma_{1}\left(r_{2}^{\top}\text{sgn}\left(r_{1}\right)-k_{4}\gamma\left(t\right)\right)\\
+-\text{proj}\left(\Gamma_{2}\left(\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)-k_{5}\hat{\theta}\right)\right)
+\end{array}\right].\label{eq:CLES}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "Hb bounds"
+
+\end_inset
+
+There exist known constants 
+\begin_inset Formula $\chi_{1},\chi_{2}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert D\left(q,\dot{q},t\right)\right\Vert \leq\chi_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \frac{{\rm d}}{{\rm d}t}D\left(q,\dot{q},t\right)\right\Vert \leq\chi_{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proof
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\left\Vert D\left(q,\dot{q},t\right)\right\Vert  & =\left\Vert -\frac{\partial f}{\partial\dot{q}}d\left(t\right)-\dot{d}\left(t\right)\right\Vert \\
+ & \leq\left\Vert \frac{\partial f}{\partial\dot{q}}d\left(t\right)\right\Vert +\left\Vert \dot{d}\left(t\right)\right\Vert \\
+ & \leq L_{1}\overline{d}+\overline{\dot{d}}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \frac{{\rm d}}{{\rm d}t}D\left(q,\dot{q},t\right)\right\Vert  & =\left\Vert \frac{{\rm d}}{{\rm d}t}\left(-\frac{\partial f}{\partial\dot{q}}d\left(t\right)-\dot{d}\left(t\right)\right)\right\Vert \\
+ & =\left\Vert -\left(\frac{{\rm d}}{{\rm d}t}\frac{\partial f}{\partial\dot{q}}d\left(t\right)+\frac{{\rm d}}{{\rm d}t}\dot{d}\left(t\right)\right)\right\Vert \\
+ & =\left\Vert -\left(\frac{\partial f}{\partial\dot{q}}\left(\frac{{\rm d}}{{\rm d}t}d\left(t\right)\right)+\left(\frac{{\rm d}}{{\rm d}t}\frac{\partial f}{\partial\dot{q}}\right)d\left(t\right)+\frac{{\rm d}}{{\rm d}t}\dot{d}\left(t\right)\right)\right\Vert \\
+ & \leq\left\Vert \frac{\partial f}{\partial\dot{q}}\right\Vert \left\Vert \dot{d}\left(t\right)\right\Vert +\left\Vert \frac{\partial^{2}f}{\partial q\partial\dot{q}}\right\Vert \left\Vert \dot{q}\right\Vert \left\Vert d\left(t\right)\right\Vert +\left\Vert \frac{\partial^{2}f}{\partial\dot{q}^{2}}\right\Vert \left\Vert \ddot{q}\right\Vert \left\Vert d\left(t\right)\right\Vert +\left\Vert \dot{d}\left(t\right)\right\Vert \\
+ & \leq L_{1}\overline{d}+L_{2}\overline{d}\left\Vert \dot{q}_{d}-\dot{e}\right\Vert +L_{3}\overline{d}\left\Vert \ddot{q}_{d}-\ddot{e}\right\Vert +\overline{\dot{d}}\\
+ & \leq L_{1}\overline{d}+L_{2}\overline{d}\left(\left\Vert \dot{q}_{d}\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert \right)+L_{3}\overline{d}\left(\left\Vert \ddot{q}_{d}\right\Vert +\left\Vert \dot{r}_{1}-k_{1}\dot{e}\right\Vert \right)+\overline{\dot{d}}\\
+ & \leq L_{1}\overline{d}+L_{2}\overline{d}\left(\overline{\dot{q}}_{d}+\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \right)+L_{3}\overline{d}\left(\overline{\ddot{q}}_{d}+\left\Vert r_{2}-k_{2}r_{1}-e\right\Vert +k_{1}\left\Vert r_{1}-k_{1}e\right\Vert \right)+\overline{\dot{d}}\\
+ & \leq c_{1}+c_{2}\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\color red
+To establish the convergence properties of the IVP given by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:IVP"
+
+\end_inset
+
+, a 
+\begin_inset Formula $P$
+\end_inset
+
+-function is introduced.
+ This function is used to develop a strict Lyapunov function and is designed
+ to be non-negative under specific gain conditions.
+ The 
+\begin_inset Formula $P$
+\end_inset
+
+-function 
+\begin_inset Formula $P:\mathcal{I}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ is designed as
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Before proceeding, recall the Leibniz rule:
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{{\rm d}}{{\rm d}x}\left(\int_{a(x)}^{b(x)}f(x,t){\rm d}t\right) & = & f\left(x,b(x)\right)\frac{{\rm d}b(x)}{{\rm d}x}-f\left(x,a(x)\right)\frac{{\rm d}a(x)}{{\rm d}x}+\int_{a(x)}^{b(x)}\frac{\partial}{\partial x}f(x,t){\rm d}t
+\end{eqnarray*}
+
+\end_inset
+
+Thus, for any given 
+\begin_inset Formula $\rho:[t_{0},\infty)\to\mathbb{R}$
+\end_inset
+
+, the function 
+\begin_inset Formula $\mathrm{e}^{-\lambda_{P}t}$
+\end_inset
+
+ satisfies
+\begin_inset Formula 
+\begin{align*}
+\frac{{\rm d}}{{\rm d}t}\left(\mathrm{e}^{-\lambda_{P}t}*\rho\right) & =\frac{{\rm d}}{{\rm d}t}\left(\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}\rho(\tau){\rm d}\tau\right),\\
+ & =\mathrm{e}^{-\lambda_{P}(t-t)}\rho(t)\frac{{\rm d}t}{{\rm d}t}-\mathrm{e}^{-\lambda_{P}(t-t_{0})}\rho(t_{0})\frac{{\rm d}t_{0}}{{\rm d}t}+\int_{t_{0}}^{t}\frac{\partial}{\partial t}\left(\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)\right){\rm d}\tau\\
+ & =e^{0}\rho(t)-0-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau){\rm d}\tau\\
+ & =\rho(t)-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}\rho(\tau){\rm d}t,\\
+ & =-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\rho+\rho.
+\end{align*}
+
+\end_inset
+
+Assume 
+\begin_inset Formula 
+\[
+P=k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)\right)
+\]
+
+\end_inset
+
+Then 
+\begin_inset Formula 
+\begin{align*}
+\frac{{\rm d}}{{\rm d}t}P & =\frac{{\rm d}}{{\rm d}t}\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)\right)\right)\\
+ & =\frac{{\rm d}}{{\rm d}t}\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-\left(\mathcal{H}r_{1}\right)^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\mathcal{H}r_{1}\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-\left(\mathcal{H}r_{1}\right)^{\top}h_{B}\right)\right)\right)\\
+ & =\frac{{\rm d}}{{\rm d}t}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\right)\\
+ & =k_{4}\frac{{\rm d}}{{\rm d}t}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\frac{{\rm d}}{{\rm d}t}\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}+\frac{{\rm d}}{{\rm d}t}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+\frac{{\rm d}}{{\rm d}t}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}-\cancel{\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}}-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & +\cancel{\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & +(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & +k_{2}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)-\lambda_{P}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}+k_{2}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\\
+ & -\lambda_{P}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}+k_{2}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\\
+ & -\lambda_{P}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\dot{\eta}+k_{1}\eta\right)^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)\right)\right)\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}+k_{2}\left(k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\right)-\lambda_{P}P\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}+k_{2}k_{4}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}-k_{2}\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}-\lambda_{P}P\\
+ & =k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}+k_{2}k_{4}(\dot{\eta}+k_{1}\eta)^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-k_{2}\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}-\lambda_{P}P\\
+ & =-\lambda_{P}P+k_{4}(\ddot{\eta}+k_{1}\dot{\eta})^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)+k_{2}k_{4}(\dot{\eta}+k_{1}\eta)^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}h_{B}-k_{2}\left(\dot{\eta}+k_{1}\eta\right)^{\top}h_{B}\\
+ & =-\lambda_{P}P+k_{4}\left((\ddot{\eta}+k_{1}\dot{\eta})^{\top}+k_{2}(\dot{\eta}+k_{1}\eta)^{\top}\right)\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}+k_{2}\left(\dot{\eta}+k_{1}\eta\right)^{\top}\right)h_{B}\\
+ & =-\lambda_{P}P+k_{4}\left(\ddot{\eta}+k_{1}\dot{\eta}+k_{2}(\dot{\eta}+k_{1}\eta)\right)^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}+k_{2}(\dot{\eta}+k_{1}\eta)\right)^{\top}h_{B}\\
+ & =-\lambda_{P}P+k_{4}\left(\ddot{\eta}+k_{1}\dot{\eta}+k_{2}\dot{\eta}+k_{1}k_{2}\eta\right)^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+k_{1}\dot{\eta}+k_{2}\dot{\eta}+k_{1}k_{2}\eta\right)^{\top}h_{B}\\
+ & =-\lambda_{P}P+k_{4}\left(\ddot{\eta}+(k_{1}+k_{2})\dot{\eta}+k_{1}k_{2}\eta\right)^{\top}\text{sgn}(\dot{\eta}+k_{1}\eta)-\left(\ddot{\eta}+(k_{1}+k_{2})\dot{\eta}+k_{1}k_{2}\eta\right)^{\top}h_{B}\\
+\\
+\\
+\\
+\\
+\\
+\\
+ & =-\lambda_{P}P-\left(\dot{r}_{1}+k_{2}r_{1}+e\right)^{\top}D\left(q,\dot{q},t\right)+\gamma^{\ast}\left(\dot{r}_{1}+k_{2}r_{1}+e\right)^{\top}\text{sgn}\left(\dot{e}+k_{1}e\right)\\
+ & =-\lambda_{P}P-\left(\dot{r}_{1}+k_{2}r_{1}+e\right)^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}\text{sgn}\left(r_{1}\right)\right)\\
+ & =-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}\text{sgn}\left(r_{1}\right)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align}
+P & \triangleq k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}\nonumber \\
+ & +\mathrm{e}^{-\lambda_{P}t}*\left(k_{4}\left(k_{2}-\lambda_{P}\right)\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-\left(k_{2}-\lambda_{P}\right)r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right),\label{eq: P function}
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $\lambda_{P}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a user-defined constant, and the symbol `
+\begin_inset Formula $*$
+\end_inset
+
+' denotes the convolutional integral, defined for any given function 
+\begin_inset Formula $\alpha\left(t\right):\mathcal{I}\to\mathbb{R}$
+\end_inset
+
+ as 
+\begin_inset Formula $\mathrm{e}^{-\lambda_{P}t}*\alpha\left(t\right)=\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}\left(t-\tau\right)}\alpha\left(t\right){\rm d}\tau$
+\end_inset
+
+.
+ Using Leibniz's rule, the time derivative of a convolution integral satisfies
+ 
+\begin_inset Formula $\frac{{\rm d}}{{\rm d}t}\left(\mathrm{e}^{-\lambda_{P}t}*\alpha\right)=\alpha\left(t\right)-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}\left(t-\tau\right)}\alpha\left(\tau\right){\rm d}t$
+\end_inset
+
+ which simplifies to 
+\begin_inset Formula $\frac{{\rm d}}{{\rm d}t}\left(\mathrm{e}^{-\lambda_{P}t}*\alpha\right)=\alpha\left(t\right)-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\alpha\left(t\right)$
+\end_inset
+
+.
+ Using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+ and the definition of the convolutional integral yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+For initial conditions, 
+\begin_inset Formula 
+\begin{align*}
+P(t_{0}) & =k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)+\mathrm{e}^{-\lambda_{P}t_{0}}*\left(r_{1}^{\top}(t_{0})\mathcal{H}^{\top}\dot{h}_{B}\left(q(t_{0}),t_{0}\right)+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)\right)\right)\\
+ & =k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)+\mathrm{e}^{-\lambda_{P}t_{0}}*\underbrace{\left(r_{1}^{\top}(t_{0})\mathcal{H}^{\top}\dot{h}_{B}\left(q(t_{0}),t_{0}\right)+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)\right)\right)}_{\rho(t)}\\
+ & =k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)+\mathrm{e}^{-\lambda_{P}t_{0}}*\rho(t)\\
+ & =k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)+\int_{t_{0}}^{t_{0}}\mathrm{e}^{-\lambda_{P}(t-\tau)}\rho(t){\rm d}\tau\\
+ & =k_{4}\left\Vert \mathcal{H}r_{1}(t_{0})\right\Vert _{1}-r_{1}^{\top}(t_{0})\mathcal{H}^{\top}h_{B}\left(q(t_{0}),t_{0}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+P\left(t_{0}\right)=k_{4}\left\Vert \mathcal{H}r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)\mathcal{H}^{\top}h_{B}\left(t_{0}\right).\label{eq:Pt_0}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\color red
+Since 
+\begin_inset Formula $t\mapsto\mathcal{H}r_{1}\left(t\right)$
+\end_inset
+
+ is absolutely continuous and 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{1}$
+\end_inset
+
+ is globally Lipschitz, the mapping 
+\begin_inset Formula $t\mapsto\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ is differentiable almost everywhere.
+ By the chain rule from 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Theorem 2.2"
+key "Shevitz.Paden1994"
+literal "false"
+
+\end_inset
+
+, the derivative of 
+\begin_inset Formula $\left\Vert \mathcal{H}r_{1}\right\Vert _{1}$
+\end_inset
+
+ is given almost everywhere by 
+\begin_inset Formula $\frac{{\rm d}}{{\rm d}t}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}=\frac{{\rm d}}{{\rm d}t}\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}\stackrel{{\rm a.e.}}{\in}\left(\ddot{\eta}+k_{1}\dot{\eta}\right)^{\top}K\left[\text{sgn}\right]\left(\dot{\eta}+k_{1}\eta\right)$
+\end_inset
+
+.
+ By the definition of the 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+-norm, 
+\begin_inset Formula $\left\Vert \dot{\eta}+k_{1}\eta\right\Vert _{1}=\left(\dot{\eta}+k_{1}\eta\right)^{\top}K\left[\text{sgn}\right]\left(\dot{\eta}+k_{1}\eta\right)$
+\end_inset
+
+.
+ Using the definitions of the chain rule and the 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+-norm, taking the time-derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+, using Leibniz's rule, and substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error Ensemble."
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Auxiliary Tracking Error ensemble"
+
+\end_inset
+
+, and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+ into the resulting expression yields that 
+\begin_inset Formula $t\mapsto P\left(t\right)$
+\end_inset
+
+ satisfies the differential inclusion
+\end_layout
+
+\begin_layout Standard
+
+\color red
+\begin_inset Formula 
+\begin{alignat}{1}
+\dot{P} & \stackrel{{\rm a.e.}}{\in}-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right).\label{eq:PDot}
+\end{alignat}
+
+\end_inset
+
+To facilitate the inclusion of the 
+\begin_inset Formula $P$
+\end_inset
+
+-function into the subsequent Lyapunov function candidate, 
+\begin_inset Formula $P$
+\end_inset
+
+ must be designed to be non-negative under certain gain conditions.
+ These sufficient gain conditions connect the 
+\begin_inset Formula $P$
+\end_inset
+
+-function with the controller design and are formalized in the subsequent
+ proposition.
+\end_layout
+
+\begin_layout Proposition
+\begin_inset CommandInset label
+LatexCommand label
+name "prop:Ppositive"
+
+\end_inset
+
+ For the 
+\begin_inset Formula $P$
+\end_inset
+
+-function defined as in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+, if 
+\begin_inset Formula $k_{4}>\chi_{1}+\frac{\chi_{2}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+ with 
+\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
+\end_inset
+
+, then 
+\begin_inset Formula $P\left(t\right)\geq0$
+\end_inset
+
+, for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+For gain conditions, we need 
+\begin_inset Formula 
+\[
+k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}+\mathrm{e}^{-\lambda_{P}t}*\left(r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)\right)\geq0
+\]
+
+\end_inset
+
+which is true if and only if both
+\begin_inset Formula 
+\[
+k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\geq0
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\[
+\mathrm{e}^{-\lambda_{P}t}*\left(r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)\right)>0
+\]
+
+\end_inset
+
+which is true if and only if 
+\begin_inset Formula 
+\begin{align*}
+r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right) & \geq0\\
+\implies0 & \leq r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)
+\end{align*}
+
+\end_inset
+
+Lets use some dummy variables in the meantime.
+ Find gain conditions on 
+\begin_inset Formula $k_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{4}$
+\end_inset
+
+ so that
+\begin_inset Formula 
+\[
+0\leq\alpha_{1}(t)\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\alpha_{2}(t)-\alpha_{1}(t)h_{B}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\left\Vert h_{B}\right\Vert \leq\chi_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \dot{h}_{B}\right\Vert \leq\chi_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha_{1},\alpha_{2}\in\mathbb{R}^{n}$
+\end_inset
+
+.
+ We have 
+\begin_inset Formula 
+\begin{align*}
+0 & \leq\alpha_{1}(t)\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\alpha_{2}(t)-\alpha_{1}(t)h_{B}\right)\\
+ & \leq\left\Vert \alpha_{1}(t)\dot{h}_{B}+(k_{2}-\lambda_{P})\left(k_{4}\alpha_{2}(t)-\alpha_{1}(t)h_{B}\right)\right\Vert \\
+ & \leq\left\Vert \alpha_{1}(t)\dot{h}_{B}\right\Vert +\left\Vert (k_{2}-\lambda_{P})\left(k_{4}\alpha_{2}(t)-\alpha_{1}(t)h_{B}\right)\right\Vert \\
+ & \leq\left\Vert \alpha_{1}(t)\right\Vert \left\Vert \dot{h}_{B}\right\Vert +\left\Vert k_{2}-\lambda_{P}\right\Vert \left\Vert k_{4}\alpha_{2}(t)-\alpha_{1}(t)h_{B}\right\Vert \\
+ & \leq\left\Vert \alpha_{1}(t)\right\Vert \chi_{2}+\left\Vert k_{2}-\lambda_{P}\right\Vert \left(k_{4}\left\Vert \alpha_{2}(t)\right\Vert +\left\Vert \alpha_{1}(t)h_{B}\right\Vert \right)\\
+ & \leq\left\Vert \alpha_{1}(t)\right\Vert \chi_{2}+\left\Vert k_{2}-\lambda_{P}\right\Vert \left(k_{4}\left\Vert \alpha_{2}(t)\right\Vert +\left\Vert \alpha_{1}(t)\right\Vert \left\Vert h_{B}\right\Vert \right)\\
+ & \leq\left\Vert \alpha_{1}(t)\right\Vert \chi_{2}+\left\Vert k_{2}-\lambda_{P}\right\Vert \left(k_{4}\left\Vert \alpha_{2}(t)\right\Vert +\left\Vert \alpha_{1}(t)\right\Vert \chi_{1}\right)\\
+ & \leq\frac{\left\Vert \alpha_{1}(t)\right\Vert \chi_{2}}{\left\Vert k_{2}-\lambda_{P}\right\Vert }+k_{4}\left\Vert \alpha_{2}(t)\right\Vert +\left\Vert \alpha_{1}(t)\right\Vert \chi_{1}\\
+ & \leq\frac{\left\Vert \alpha_{1}(t)\right\Vert \chi_{2}}{\left\Vert \alpha_{2}(t)\right\Vert \left\Vert k_{2}-\lambda_{P}\right\Vert }+k_{4}+\chi_{1}
+\end{align*}
+
+\end_inset
+
+We need 
+\begin_inset Formula $k_{2}>\lambda_{P}$
+\end_inset
+
+ and 
+\begin_inset Formula 
+\[
+k_{4}>\chi_{1}+\frac{\left\Vert \alpha_{1}(t)\right\Vert }{\left\Vert \alpha_{2}(t)\right\Vert }\frac{\chi_{2}}{\left\Vert k_{2}-\lambda_{P}\right\Vert }
+\]
+
+\end_inset
+
+We have 
+\begin_inset Formula 
+\begin{align*}
+\frac{\left\Vert \alpha_{1}(t)\right\Vert }{\left\Vert \alpha_{2}(t)\right\Vert } & =\frac{\left\Vert \left(\mathcal{H}r_{1}\right)^{\top}\right\Vert }{\left\Vert \mathcal{H}r_{1}\right\Vert _{1}}\\
+ & \leq1
+\end{align*}
+
+\end_inset
+
+So 
+\begin_inset Formula $k_{2}>\lambda_{P}$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{4}>\chi_{1}+\frac{\chi_{2}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+By Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Hb bounds"
+
+\end_inset
+
+, the 
+\begin_inset Formula $k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}$
+\end_inset
+
+ term in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+ satisfies 
+\begin_inset Formula $k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\geq\left(k_{4}-\chi_{1}\right)\left\Vert \mathcal{H}r_{1}\right\Vert _{1}\geq0$
+\end_inset
+
+ by the Cauchy-Schwarz inequality and the condition 
+\begin_inset Formula $k_{4}>\chi_{1}$
+\end_inset
+
+.
+ The convolution integrand in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: P function"
+
+\end_inset
+
+ is bounded as 
+\begin_inset Formula $r_{1}^{\top}\mathcal{H}^{\top}\dot{h}_{B}+\left(k_{2}-\lambda_{P}\right)\left(k_{4}\left\Vert \mathcal{H}r_{1}\right\Vert _{1}-r_{1}^{\top}\mathcal{H}^{\top}h_{B}\right)\geq\left\Vert \mathcal{H}r_{1}\right\Vert _{1}\left(\left(k_{2}-\lambda_{P}\right)\left(k_{4}-\chi_{1}\right)-\chi_{2}\right)$
+\end_inset
+
+.
+ This expression is non-negative when 
+\begin_inset Formula $\left(k_{2}-\lambda_{P}\right)\left(k_{4}-\chi_{1}\right)\geq\chi_{2}$
+\end_inset
+
+ which is equivalent to 
+\begin_inset Formula $k_{4}\geq\chi_{1}+\frac{\chi_{2}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $k_{4}>\chi_{1}+\frac{\chi_{2}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+ by assumption, the convolution integrand is positive, making the entire
+ convolution positive.
+ Therefore, 
+\begin_inset Formula $P\left(t\right)\geq0$
+\end_inset
+
+, for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\xi:\mathcal{I}\to\mathbb{R}^{3nN+1}$
+\end_inset
+
+ be defined as 
+\begin_inset Formula $\xi\left(t\right)=\left[\begin{array}{cc}
+z^{\top}\left(t\right) & P\left(t\right)\end{array}\right]^{\top}$
+\end_inset
+
+, and 
+\begin_inset Formula $\psi:\mathbb{R}^{3nN+1}\times\mathbb{R}_{\geq0}\rightrightarrows\mathbb{R}^{3nN+1}$
+\end_inset
+
+ denote the set-valued map
+\begin_inset Formula 
+\begin{equation}
+\psi\left(\xi,t\right)\triangleq\left[\begin{array}{c}
+r_{1}-k_{1}e\\
+r_{2}-k_{2}r_{1}-e\\
+\\
+\\
+\\
+\\
+-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)
+\end{array}\right].\label{eq: set-valued map}
+\end{equation}
+
+\end_inset
+
+Then using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Closed-Loop Error System"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:PDot"
+
+\end_inset
+
+, it follows that the trajectories 
+\begin_inset Formula $t\mapsto\xi\left(t\right)$
+\end_inset
+
+ satisfy the differential inclusion 
+\begin_inset Formula $\dot{\xi}\stackrel{{\rm a.e.}}{\in}\psi\left(\xi,t\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Since the universal approximation property of the DNN holds only on the
+ compact domain 
+\begin_inset Formula $\Omega$
+\end_inset
+
+, the subsequent stability analysis requires ensuring 
+\begin_inset Formula $\kappa\left(t\right)\in\Omega$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\geq t_{0}}$
+\end_inset
+
+.
+ This is achieved by establishing a stability result which constrains the
+ solution trajectory 
+\begin_inset Formula $z\left(t\right)$
+\end_inset
+
+ to a compact domain.
+ Consider the Lyapunov function candidate 
+\begin_inset Formula $V:\mathbb{R}^{\varphi}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ defined as
+\begin_inset Formula 
+\begin{equation}
+V\left(z\right)\triangleq\frac{1}{2}z^{\top}Qz,\label{eq:Lyapunov}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $Q\triangleq\text{blkdiag}\left\{ I_{3n},\Gamma_{1}^{-1},\Gamma_{2}^{-1}\right\} \in\mathbb{R}^{\varphi\times\varphi}$
+\end_inset
+
+.
+ By the Rayleigh quotient, 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Lyapunov"
+
+\end_inset
+
+ satisfies
+\begin_inset Formula 
+\begin{equation}
+\frac{1}{2}\lambda_{1}\left\Vert z\right\Vert ^{2}\leq V\left(z\right)\leq\frac{1}{2}\lambda_{\varphi}\left\Vert z\right\Vert ^{2},\label{eq: RQ}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\lambda_{1}\triangleq\lambda_{\min}\left\{ P\right\} =\min\left\{ 1,\lambda_{\min}\left\{ \Gamma^{-1}\right\} \right\} $
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{\varphi}\triangleq\lambda_{\max}\left\{ P\right\} =\max\left\{ 1,\lambda_{\max}\left\{ \Gamma^{-1}\right\} \right\} $
+\end_inset
+
+.
+ Based on the subsequent analysis, define 
+\begin_inset Formula $\delta\triangleq\frac{3\left(\overline{\omega}+\overline{\varepsilon}\right)^{2}}{4k_{2}}+\frac{k_{3}\overline{\Theta}^{2}}{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{\min}\triangleq\min\left\{ k_{1},\frac{1}{3}k_{2},\frac{1}{2}k_{3}\right\} $
+\end_inset
+
+.
+ Furthermore, let 
+\begin_inset Formula $\rho:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ denote a strictly increasing function and define 
+\begin_inset Formula $\overline{\rho}\left(\cdot\right)\triangleq\rho\left(\cdot\right)-\rho\left(0\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\overline{\rho}$
+\end_inset
+
+ is strictly increasing and invertible.
+ The region to which the state trajectory is constrained is defined as
+\begin_inset Formula 
+\begin{equation}
+\mathcal{D}\triangleq\left\{ \iota\in\mathbb{R}^{\varphi}:\left\Vert \iota\right\Vert \leq\overline{\rho}^{-1}\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right)\right\} ,\label{eq:state space}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\lambda_{V}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a user-defined rate of convergence parameter.
+ The compact domain 
+\begin_inset Formula $\Omega\subset\mathbb{R}^{4n}$
+\end_inset
+
+ over which the universal approximation property must hold is selected as
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\Omega & \triangleq\left\{ \iota\in\mathbb{R}^{4n}\right.:\left\Vert \iota\right\Vert \leq2\left(\overline{q}_{d}+\overline{\dot{q}}_{d}\right)\\
+ & +\left(k_{1}+2\right)\overline{\rho}^{-1}\left.\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right)\right\} .
+\end{aligned}
+\label{eq:OmegaSet}
+\end{equation}
+
+\end_inset
+
+For the dynamical system described by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:IVP"
+
+\end_inset
+
+, the set of initial conditions 
+\begin_inset Formula $\mathcal{S}\subset\mathcal{D}$
+\end_inset
+
+ is defined as
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+For feasibility of the set 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\sqrt{\frac{\lambda_{1}}{\lambda_{\varphi}}}\overline{\rho}^{-1}\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right)-\sqrt{\frac{\delta}{\lambda_{V}}} & >0\\
+\sqrt{\frac{\lambda_{1}}{\lambda_{\varphi}}}\overline{\rho}^{-1}\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right) & >\sqrt{\frac{\delta}{\lambda_{V}}}\\
+\overline{\rho}^{-1}\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right) & >\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\\
+k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right) & >\overline{\rho}\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)\\
+k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right) & >\overline{\rho}\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)\\
+k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right) & >\overline{\rho}\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)\\
+k_{2}\left(k_{\min}-\lambda_{V}\right) & >\overline{\rho}\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)+\rho\left(0\right)\\
+k_{2}\left(k_{\min}-\lambda_{V}\right) & >\rho\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)\\
+k_{\min}-\lambda_{V} & >\frac{1}{k_{2}}\rho\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)\\
+k_{\min} & >\lambda_{V}+\frac{1}{k_{2}}\rho\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\mathcal{S}\triangleq\left\{ \iota\in\mathbb{R}^{\varphi}:\left\Vert \iota\right\Vert \leq\sqrt{\frac{\lambda_{1}}{\lambda_{\varphi}}}\overline{\rho}^{-1}\left(k_{2}\left(k_{\min}-\lambda_{V}\right)-\rho\left(0\right)\right)-\sqrt{\frac{\delta}{\lambda_{V}}}\right\} ,\label{eq:initial conditions}
+\end{equation}
+
+\end_inset
+
+and the uniform ultimate bound 
+\begin_inset Formula $\mathcal{U}\subset\mathbb{R}^{\varphi}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+\mathcal{U}\triangleq\left\{ \iota\in\mathbb{R}^{\varphi}:\left\Vert \iota\right\Vert \leq\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right\} .\label{eq:equilibrium set}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Theorem
+Consider the dynamical system described by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Agent Dynamics"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Target Dynamics"
+
+\end_inset
+
+.
+ For any initial conditions of the state vector 
+\begin_inset Formula $z\left(t_{0}\right)\in\mathcal{S}$
+\end_inset
+
+, the controller given by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:control input"
+
+\end_inset
+
+ and the adaptation law given by 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Update Law"
+
+\end_inset
+
+ ensure that 
+\begin_inset Formula $z$
+\end_inset
+
+ uniformly exponentially converges to 
+\begin_inset Formula $\mathcal{U}$
+\end_inset
+
+ in the sense that 
+\begin_inset Formula 
+\[
+\left\Vert z\left(t\right)\right\Vert \leq\sqrt{\frac{\lambda_{\varphi}}{\lambda_{1}}\left\Vert z\left(t_{0}\right)\right\Vert ^{2}{\rm e}^{-\frac{2\lambda_{V}}{\lambda_{\varphi}}\left(t-t_{0}\right)}+\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}\left(1-{\rm e}^{-\frac{2\lambda_{V}}{\lambda_{\varphi}}\left(t-t_{0}\right)}\right)},
+\]
+
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\geq t_{0}}$
+\end_inset
+
+, provided that the sufficient gain condition 
+\begin_inset Formula $k_{\min}>\lambda_{V}+\frac{1}{k_{2}}\rho\left(\sqrt{\frac{\lambda_{\varphi}\delta}{\lambda_{1}\lambda_{V}}}\right)$
+\end_inset
+
+ is satisfied and Assumptions 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "targetbounds"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "thm:The-loss-function"
+
+\end_inset
+
+ hold.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+Taking the total derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Lyapunov"
+
+\end_inset
+
+ along the trajectories of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:IVP"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Consider
+\begin_inset Formula 
+\[
+V=\frac{1}{2}\left(e^{\top}e+r_{1}^{\top}r_{1}+r_{2}^{\top}r_{2}+\tilde{\gamma}^{\top}\Gamma_{1}^{-1}\tilde{\gamma}+\tilde{\theta}^{\top}\Gamma_{2}^{-1}\tilde{\theta}+P\right)
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+r_{2}^{\top}\dot{r}_{2}+\tilde{\gamma}^{\top}\Gamma_{1}^{-1}\dot{\tilde{\gamma}}+\tilde{\theta}^{\top}\Gamma_{2}^{-1}\dot{\tilde{\theta}}+\dot{P}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}-e\right)+r_{2}^{\top}\left(\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}\tilde{\theta}+R\left(\kappa\left(t\right),\tilde{\theta}\right)-\gamma\left(t\right)\text{sgn}\left(r_{1}\right)-k_{3}r_{2}-r_{1}+D\left(q,\dot{q},t\right)+\varepsilon\left(\kappa\left(t\right)\right)\right)\\
+ & +\tilde{\gamma}^{\top}\Gamma_{1}^{-1}\left(-\Gamma_{1}\left(r_{2}^{\top}\text{sgn}\left(r_{1}\right)-k_{4}\gamma\left(t\right)\right)\right)+\tilde{\theta}^{\top}\Gamma_{2}^{-1}\left(-\text{proj}\left(\Gamma_{2}\left(\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)-k_{5}\hat{\theta}\right)\right)\right)\\
+ & -\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)\\
+\\
+ & \leq e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}r_{2}-k_{2}r_{1}^{\top}r_{1}-r_{1}^{\top}e+\left(r_{2}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}\tilde{\theta}\right)^{\top}+r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)-r_{2}^{\top}\gamma\left(t\right)\text{sgn}\left(r_{1}\right)-k_{3}r_{2}^{\top}r_{2}-r_{2}^{\top}r_{1}+r_{2}^{\top}D\left(q,\dot{q},t\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)\\
+ & -\tilde{\gamma}^{\top}\left(r_{2}^{\top}\text{sgn}\left(r_{1}\right)-k_{4}\gamma\left(t\right)\right)-\tilde{\theta}^{\top}\left(\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)-k_{5}\hat{\theta}\right)-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)\\
+\\
+ & =\cancel{e^{\top}r_{1}}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}-\cancel{r_{1}^{\top}e}+\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}r_{2}+r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)-r_{2}^{\top}\gamma\left(t\right)\text{sgn}\left(r_{1}\right)-k_{3}r_{2}^{\top}r_{2}-\cancel{r_{2}^{\top}r_{1}}+r_{2}^{\top}D\left(q,\dot{q},t\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)\\
+ & -\tilde{\gamma}^{\top}r_{2}^{\top}\text{sgn}\left(r_{1}\right)+k_{4}\tilde{\gamma}^{\top}\gamma\left(t\right)-\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)+k_{5}\tilde{\theta}^{\top}\hat{\theta}-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)\\
+\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+k_{4}\tilde{\gamma}^{\top}\left(\gamma^{\ast}-\tilde{\gamma}\left(t\right)\right)+k_{5}\tilde{\theta}^{\top}\left(\theta^{\ast}-\tilde{\theta}\left(t\right)\right)\\
+ & +\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\ddot{e}\left(t\right)+k_{1}\dot{e}\left(t\right)+k_{2}\left(\dot{e}\left(t\right)+k_{1}e\left(t\right)\right)+e\left(t\right)\right)-\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)\\
+ & +r_{2}^{\top}D\left(q,\dot{q},t\right)-\lambda_{P}P-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)\\
+ & -r_{2}^{\top}\left(\gamma^{\ast}-\tilde{\gamma}\left(t\right)\right)\text{sgn}\left(r_{1}\right)-\tilde{\gamma}^{\top}r_{2}^{\top}\text{sgn}\left(r_{1}\right)\\
+ & +r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)\\
+\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}-k_{4}\tilde{\gamma}^{\top}\tilde{\gamma}-k_{5}\tilde{\theta}^{\top}\tilde{\theta}-\lambda_{P}P\\
+ & +\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\ddot{e}+\cancel{\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)}-\cancel{\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\left(\left(k_{1}+k_{2}\right)\dot{e}+\left(1+k_{1}k_{2}\right)e\right)}\\
+ & +r_{2}^{\top}D\left(q,\dot{q},t\right)-r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)\\
+ & -r_{2}^{\top}\gamma^{\ast}\text{sgn}\left(r_{1}\right)+\cancel{r_{2}^{\top}\tilde{\gamma}\text{sgn}\left(r_{1}\right)}-\cancel{r_{2}^{\top}\tilde{\gamma}^{\top}\text{sgn}\left(r_{1}\right)}\\
+ & +r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)\\
+ & +k_{4}\tilde{\gamma}^{\top}\gamma^{\ast}+k_{5}\tilde{\theta}^{\top}\theta^{\ast}+\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\\
+\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}-k_{4}\tilde{\gamma}^{\top}\tilde{\gamma}-k_{5}\tilde{\theta}^{\top}\tilde{\theta}-\lambda_{P}P\\
+ & +\cancel{r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}\text{sgn}\left(r_{1}\right)\right)}-\cancel{r_{2}^{\top}\left(D\left(q,\dot{q},t\right)-\gamma^{\ast}K\left[\text{sgn}\right]\left(r_{1}\right)\right)}\\
+ & +r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)+k_{4}\tilde{\gamma}^{\top}\gamma^{\ast}+k_{5}\tilde{\theta}^{\top}\theta^{\ast}+\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\ddot{e}\\
+\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}-k_{4}\tilde{\gamma}^{\top}\tilde{\gamma}-k_{5}\tilde{\theta}^{\top}\tilde{\theta}-\lambda_{P}P\\
+ & +r_{2}^{\top}R\left(\kappa\left(t\right),\tilde{\theta}\right)+r_{2}^{\top}\varepsilon\left(\kappa\left(t\right)\right)+k_{4}\tilde{\gamma}^{\top}\gamma^{\ast}+k_{5}\tilde{\theta}^{\top}\theta^{\ast}+\tilde{\theta}^{\top}\frac{\partial\Phi\left(\kappa\left(t\right),\hat{\theta}\right)}{\partial\hat{\theta}}^{\top}\ddot{e}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Consider the Lyapunov function candidate
+\begin_inset Formula 
+\[
+V=\frac{1}{2}\left(e^{\top}e+r_{1}^{\top}r_{1}+r_{2}^{\top}r_{2}+P+\widetilde{\theta}^{\top}\Gamma_{1}^{-1}\widetilde{\theta}+\tilde{\gamma}^{\top}\Gamma_{2}^{-1}\tilde{\gamma}\right),
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\tilde{\gamma}\triangleq\gamma^{\ast}-\gamma.
+\]
+
+\end_inset
+
+Then
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+r_{2}^{\top}\dot{r}_{2}+\dot{P}+\widetilde{\theta}^{\top}\Gamma_{1}^{-1}\dot{\widetilde{\theta}}+\tilde{\gamma}^{\top}\dot{\tilde{\gamma}}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}-r_{1}-k_{3}r_{2}-\gamma\text{sgn}(r_{1})+\Delta\right)-\lambda_{P}P-r_{2}^{\top}\left(\Delta-\gamma^{\ast}\text{sgn}(r_{1})\right)-\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}-\widetilde{\theta}^{\top}\Gamma_{1}^{-1}k_{2}\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}-\sigma_{1}\widehat{\theta}\right)-\tilde{\gamma}^{\top}\Gamma_{2}^{-1}\Gamma_{2}\left(r_{2}^{\top}\text{sgn}(r_{1})-\sigma_{2}\gamma\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}-\cancel{r_{2}^{\top}r_{1}}-k_{3}r_{2}^{\top}r_{2}-\gamma r_{2}^{\top}\text{sgn}(r_{1})+\cancel{r_{2}^{\top}\Delta}-\lambda_{P}P-\cancel{r_{2}^{\top}\Delta}+\gamma^{\ast}r_{2}^{\top}\text{sgn}(r_{1})-\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}+\gamma r_{2}^{\top}\text{sgn}(r_{1})-k_{2}\widetilde{\theta}^{\top}\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}+k_{2}\sigma_{1}\widetilde{\theta}^{\top}\widehat{\theta}-\tilde{\gamma}^{\top}r_{2}^{\top}\text{sgn}(r_{1})+\sigma_{2}\tilde{\gamma}^{\top}\gamma\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}-\lambda_{P}P+e^{\top}r_{1}+\left(\dot{r}_{1}+k_{2}r_{1}\right)^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}+\left(\gamma^{\ast}-\gamma\right)r_{2}^{\top}\text{sgn}(r_{1})-\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}-k_{2}\widetilde{\theta}^{\top}\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}+k_{2}\sigma_{1}\widetilde{\theta}^{\top}\widehat{\theta}+\tilde{\gamma}r_{2}^{\top}\text{sgn}(r_{1})+\sigma_{2}\tilde{\gamma}^{\top}\left(\gamma^{\ast}-\tilde{\gamma}\right)\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+e^{\top}r_{1}+\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}+k_{2}\left(r_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}\right)^{\top}+\cancel{\tilde{\gamma}r_{2}^{\top}\text{sgn}(r_{1})}-\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}-k_{2}\widetilde{\theta}^{\top}\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}+k_{2}\sigma_{1}\widetilde{\theta}^{\top}\left(\theta^{\ast}-\widetilde{\theta}\right)-\cancel{\tilde{\gamma}r_{2}^{\top}\text{sgn}(r_{1})}+k_{5}\tilde{\gamma}^{\top}\gamma^{\ast}-\sigma_{2}\tilde{\gamma}^{\top}\tilde{\gamma}\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+e^{\top}r_{1}+\cancel{\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}}+\cancel{k_{2}\widetilde{\theta}^{\top}\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}}-\cancel{\dot{r}_{1}^{\top}\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}}-\cancel{k_{2}\widetilde{\theta}^{\top}\nabla_{\widehat{\theta}}^{\top}\Phi(\kappa,\widehat{\theta})r_{1}}+k_{2}\sigma_{1}\widetilde{\theta}^{\top}\theta^{\ast}-k_{2}\sigma_{1}\widetilde{\theta}^{\top}\widetilde{\theta}-\sigma_{2}\tilde{\gamma}\tilde{\gamma}+\sigma_{2}\tilde{\gamma}\gamma^{\ast}\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}-k_{2}\sigma_{1}\widetilde{\theta}^{\top}\widetilde{\theta}-\sigma_{2}\tilde{\gamma}^{\top}\tilde{\gamma}+e^{\top}r_{1}+k_{2}\sigma_{1}\widetilde{\theta}^{\top}\theta^{\ast}+\sigma_{2}\tilde{\gamma}^{\top}\gamma^{\ast}\\
+ & \leq-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-k_{2}\sigma_{1}\left\Vert \widetilde{\theta}\right\Vert ^{2}-\sigma_{2}\left\Vert \tilde{\gamma}\right\Vert ^{2}+\frac{\left\Vert e\right\Vert ^{2}}{2}+\frac{\left\Vert r_{1}\right\Vert ^{2}}{2}+k_{2}\sigma_{1}\frac{\left\Vert \widetilde{\theta}\right\Vert ^{2}}{2}+k_{2}\sigma_{1}\frac{\left\Vert \theta^{\ast}\right\Vert ^{2}}{2}+\sigma_{2}\frac{\left\Vert \tilde{\gamma}\right\Vert ^{2}}{2}+\sigma_{2}\frac{\left\Vert \gamma^{\ast}\right\Vert ^{2}}{2}\\
+ & =\left(-k_{1}+\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}+\left(-k_{2}+\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+\left(-k_{2}\sigma_{1}+k_{2}\sigma_{1}\frac{1}{2}\right)\left\Vert \widetilde{\theta}\right\Vert ^{2}+\left(-\sigma_{2}+\sigma_{2}\frac{1}{2}\right)\left\Vert \tilde{\gamma}\right\Vert ^{2}+k_{2}\sigma_{1}\frac{\left\Vert \theta^{\ast}\right\Vert ^{2}}{2}+\sigma_{2}\frac{\left\Vert \gamma^{\ast}\right\Vert ^{2}}{2}\\
+ & =-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\frac{k_{2}\sigma_{1}}{2}\left\Vert \widetilde{\theta}\right\Vert ^{2}-\frac{\sigma_{2}}{2}\left\Vert \tilde{\gamma}\right\Vert ^{2}+k_{2}\sigma_{1}\frac{\left\Vert \theta^{\ast}\right\Vert ^{2}}{2}+\sigma_{2}\frac{\left\Vert \gamma^{\ast}\right\Vert ^{2}}{2}
+\end{align*}
+
+\end_inset
+
+Gain conditions:
+\begin_inset Formula 
+\begin{align*}
+k_{1}-\frac{1}{2} & >0,\\
+k_{1} & >\frac{1}{2}.\\
+k_{2}-\frac{1}{2} & >0,\\
+k_{2} & >\frac{1}{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+The Lb-DNN is termed "integrated" due to its inclusion within the integral
+ terms, as seen in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Implementable Controller"
+
+\end_inset
+
+.
+ This integration offers several advantages.
+ Primarily, it aligns with RISE-based controller design, which operates
+ at the 
+\begin_inset Formula $\dot{u}$
+\end_inset
+
+ level rather than 
+\begin_inset Formula $u$
+\end_inset
+
+.
+ Incorporating an Lb-DNN feedforward term outside the integral would necessitate
+ its time-derivative, introducing additional terms via the chain rule.
+ These terms, further expanded by the Taylor Theorem step as in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Lb-DNN Taylor Series Approximation"
+
+\end_inset
+
+, would require strict boundedness assumptions in the analysis.
+ Integration of the Lb-DNN term circumvents these complications.
+ Furthermore, this integration enables the Lb-DNN to function as a feedback
+ controller, utilizing the control output as an input for enhanced learning—a
+ feature precluded if placed outside the integral due to potential circularity
+ in controller boundedness arguments.
+ Lastly, within the integral, the Lb-DNN acts as a dynamic integrator, learning
+ the system's jerk (time-derivative of acceleration).
+ The subsequent experimental section will demonstrate the potential performance
+ improvements resulting from the learning of a jerk-based model.
+\end_layout
+
+\begin_layout Section
+Experiment
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+In this work,
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "/Users/cnino/Library/CloudStorage/OneDrive-UniversityofFlorida/Research/Papers/Bibtex/Sources"
+options "ieeetr"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

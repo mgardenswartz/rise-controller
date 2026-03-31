@@ -1,0 +1,4635 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass IEEEtran
+\begin_preamble
+\usepackage{cite}
+\thispagestyle{empty}
+\pagenumbering{gobble}
+\end_preamble
+\use_default_options true
+\begin_modules
+fixltx2e
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 0.75in
+\topmargin 1in
+\rightmargin 0.75in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Exponential Stability with RISE Controllers
+\end_layout
+
+\begin_layout Author
+Omkar Sudhir Patil, Axton Isaly, Bin Xian and Warren E.
+ Dixon
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Omkar Sudhir Patil, Axton Isaly and Warren E.
+ Dixon are with the Department of Mechanical and Aerospace Engineering,
+ University of Florida, Gainesville FL 32611-6250 USA.
+ Email: {patilomkarsudhir,axtonisaly1013,wdixon}@ufl.edu.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Bin Xian is with the School of Electrical and Information Engineering, Tianjin
+ Univesity, Tianjin 300072, China.
+ Email: xbin@tju.edu.cn
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+This research is supported in part by NSF award number 1762829, Office of
+ Naval Research Grant N00014-13-1-0151, AFOSR award number FA9550-18-1-0109
+ and FA9550-19-1-0169.
+ Any opinions, findings and conclusions or recommendations expressed in
+ this material are those of the author(s) and do not necessarily reflect
+ the views of the sponsoring agency.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+A class of continuous robust controllers termed Robust Integral of the Sign
+ of the Error (RISE) have been published over the past two decades as a
+ means to yield asymptotic tracking error convergence and asymptotic identificat
+ion of time-varying uncertainties, for classes of nonlinear systems that
+ are subject to sufficiently smooth bounded exogenous disturbances and/or
+ modeling uncertainties.
+ Despite the wide application of RISE-based techniques, an open question
+ that has eluded researchers during this time-span is whether the asymptotic
+ tracking error convergence is also uniform or exponential.
+ This question has remained open due to certain limitations in the traditional
+ construction of a Lyapunov function for RISE-based error systems.
+ In this paper, new insights on the construction of a Lyapunov function
+ are used that result in an exponential stability result for RISE-based
+ controllers.
+ As an outcome of this breakthrough, the inherent learning capability of
+ RISE-based controllers is shown to yield exponential identification of
+ state-dependent disturbances/uncertainty.
+\end_layout
+
+\begin_layout Keywords
+Robust control, Lyapunov methods, nonlinear control systems
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+IEEEPARstart{A}{}
+\end_layout
+
+\end_inset
+
+ class of continuous robust controllers termed Robust Integral of the Sign
+ of the Error (RISE) have been published over the past two decades 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Qu2002,Dixon2003a,Xian2004,Cai2006,Makkar2007,Xian2004c,Patre2008a,Patre2008,Patre2010b,Patre2010a,Patre2011,Fischer.Kan.ea2014,Sharma2012,Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+ as a means to yield asymptotic tracking error convergence and asymptotic
+ identification of time-varying uncertainties, for classes of nonlinear
+ systems that are subject to sufficiently smooth bounded exogenous disturbances
+ and/or modeling uncertainties.
+ RISE-based methods have been used for a wide variety of applications involving
+ control 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cai2006,Makkar2007,Xian2004c,Patre2008a,Patre2008,Patre2010b,Patre2010a,Patre2011,Fischer.Kan.ea2014,Fischer.Hughes.ea2014,Sharma2012,Zhao.Xian.ea2014,Yao.Deng.ea2015,Yao.Yao.ea2018,Dierks.Jagannathan2008,Bidikli.Tatlicioglu.ea2013,Bidikli.Tatlicioglu.ea2014a"
+literal "false"
+
+\end_inset
+
+, estimation 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Dixon2003a,Bhasin.Kamalapurkar.ea2013b,Dinh.Kamalapurkar.ea2014"
+literal "false"
+
+\end_inset
+
+, and optimization 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Sun.Ye.ea2017"
+literal "false"
+
+\end_inset
+
+.
+ Despite the wide application of RISE-based techniques, an open question
+ that has eluded researchers during this time-span is whether the asymptotic
+ tracking error convergence is also uniform or exponential.
+ This question has remained open due to certain limitations in the traditional
+ construction of a Lyapunov function for RISE-based error systems.
+\end_layout
+
+\begin_layout Standard
+The traditional analysis methodology for a RISE-based error system involves
+ a Lyapunov-based approach, where the candidate Lyapunov function (denoted
+ by 
+\begin_inset Formula $V_{L}$
+\end_inset
+
+) includes a P-function (denoted by 
+\begin_inset Formula $P$
+\end_inset
+
+) in addition to a typical sum of norm squared error terms.
+ The P-function is designed by selecting 
+\begin_inset Formula $\dot{P}$
+\end_inset
+
+ to cancel disturbance-based terms in 
+\begin_inset Formula $\dot{V}_{L}$
+\end_inset
+
+ and is the essential analysis and design tool to enable asymptotic convergence
+ (instead of uniformly ultimately bounded tracking) despite the presence
+ of a disturbance term that is only upper bounded by a constant.
+ Previous results, including the current result, determine P as a function
+ of the initial conditions of the system that is proven to be non-negative
+ under certain gain conditions.
+ Evaluating 
+\begin_inset Formula $\dot{V}_{L}$
+\end_inset
+
+ along the closed-loop error trajectories yields a negative semi-definite
+ 
+\begin_inset Formula $\dot{V}_{L}$
+\end_inset
+
+.
+ Then the extension of the LaSalle-Yoshizawa theorem for nonsmooth systems
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Fischer.Kamalapurkar.ea2013"
+literal "false"
+
+\end_inset
+
+ is invoked to prove asymptotic tracking error convergence.
+ Since the LaSalle-Yoshizawa theorem is based on Barbalat's lemma, the tradition
+al analysis methodology does not guarantee uniform tracking error convergence,
+ and the non-strictness of 
+\begin_inset Formula $V_{L}$
+\end_inset
+
+ precluded exponential stability of the closed-loop error system's origin.
+\end_layout
+
+\begin_layout Standard
+To prove exponential stability, it would be sufficient to select a positive-defi
+nite 
+\begin_inset Formula $V_{L}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\dot{V}_{L}\leq-\lambda_{L}V_{L}$
+\end_inset
+
+ for almost all time, with some positive constant 
+\begin_inset Formula $\lambda_{L}$
+\end_inset
+
+.
+ Then exponential stability can be established using the comparison principle.
+ Such a Lyapunov function is developed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+, which is the only known RISE-based exponential tracking result.
+ The result in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+ was developed for a specific application under the assumption that the
+ first and second derivatives of the uncertainty are bounded by known constants.
+ However, RISE-based controllers have been applied to a broader set of applicati
+ons where this assumed bound would not hold.
+ For example, in results like 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2008,Patre2010a"
+literal "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2011"
+literal "false"
+
+\end_inset
+
+ that involve dynamic compensator-based auxiliary control terms, the first
+ or second derivative of the uncertainty have bounds that are state-dependent.
+ It is not clear how the analysis approach in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+ can be extended for such cases.
+\end_layout
+
+\begin_layout Standard
+In this paper, a novel P-function design is developed that results in a
+ strict Lyapunov function.
+ The new analysis results in exponential stability of the closed-loop error
+ system's origin using a comparison theorem-based argument.
+ The novel P-function is shown to be non-negative under certain gain conditions
+ by examining the analytically derived solution to the dynamics in 
+\begin_inset Formula $\dot{P}$
+\end_inset
+
+.
+ Unlike the analysis approach in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+, the developed P-function can be easily modified for various bounds on
+ the first and second derivatives of uncertainty.
+ To rule out the existence of extra solutions for 
+\begin_inset Formula $P$
+\end_inset
+
+ that could be potentially negative over some time interval, the derived
+ solution for 
+\begin_inset Formula $P$
+\end_inset
+
+ is shown to be unique corresponding to a given closed-loop error trajectory.
+ Additionally, solution-dependent arguments are employed to show the sign
+ of the error term is integrable, and 
+\begin_inset Formula $\dot{V}_{L}\leq-\lambda_{L}V_{L}$
+\end_inset
+
+ for almost all time, which involves showing that the set of time-instants
+ where 
+\begin_inset Formula $\dot{V}_{L}\leq-\lambda_{L}V_{L}$
+\end_inset
+
+ may not be true have Lebesgue measure zero.
+ Furthermore, the disturbance/uncertainty is shown to be estimated with
+ exponential convergence of the disturbance identification error, while
+ prior results only indicated asymptotic convergence.
+\end_layout
+
+\begin_layout Section
+Control Design
+\end_layout
+
+\begin_layout Subsection
+Preliminaries
+\end_layout
+
+\begin_layout Standard
+A function 
+\begin_inset Formula $y:\mathcal{I}_{y}\to\mathbb{R}^{n}$
+\end_inset
+
+ is called a 
+\shape italic
+Filippov solution
+\shape default
+ of 
+\begin_inset Formula $\dot{y}=h(y,t)$
+\end_inset
+
+ on the interval 
+\begin_inset Formula $\mathcal{I}_{y}\subseteq\mathbb{R}_{\geq0}$
+\end_inset
+
+, given some Lebesgue measurable and locally essentially bounded function
+ 
+\begin_inset Formula $h:\mathbb{R}^{n}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+, if 
+\begin_inset Formula $y$
+\end_inset
+
+ is absolutely continuous on 
+\begin_inset Formula $\mathcal{I}_{y}$
+\end_inset
+
+, and 
+\begin_inset Formula $\dot{y}\in K\left[h\right](y,t)$
+\end_inset
+
+ for almost all 
+\begin_inset Formula $t\in\mathcal{I}_{y}$
+\end_inset
+
+, where 
+\begin_inset Formula $K\left[\cdot\right]$
+\end_inset
+
+ denotes the Filippov set-valued map defined in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equation 2b"
+key "Paden1987"
+literal "false"
+
+\end_inset
+
+.
+ A solution is called 
+\shape italic
+complete
+\shape default
+ if 
+\begin_inset Formula $\mathcal{I}_{y}$
+\end_inset
+
+ is unbounded.
+ A solution 
+\begin_inset Formula $y_{2}:[t_{0},t_{2})\to\mathbb{R}^{n}$
+\end_inset
+
+ to 
+\begin_inset Formula $\dot{y}=h(y,t)$
+\end_inset
+
+ is called a 
+\shape italic
+proper right extension
+\shape default
+ of a solution 
+\begin_inset Formula $y_{1}:[t_{0},t_{1})\to\mathbb{R}^{n}$
+\end_inset
+
+ to 
+\begin_inset Formula $\dot{y}=h(y,t)$
+\end_inset
+
+ if 
+\begin_inset Formula $t_{2}>t_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $y_{2}(t)=y_{1}(t)$
+\end_inset
+
+, 
+\begin_inset Formula $\forall t\in[t_{0},t_{1})$
+\end_inset
+
+.
+ A solution to 
+\begin_inset Formula $\dot{y}=h(y,t)$
+\end_inset
+
+ is called 
+\shape italic
+maximal
+\shape default
+ if it does not have a proper right extension which is also a solution to
+ 
+\begin_inset Formula $\dot{y}=h(y,t)$
+\end_inset
+
+.
+ If a solution is maximal and if the closure of its range, 
+\begin_inset Formula $\overline{\{y(t)\in\mathbb{R}^{n}|t\in\mathcal{I}_{y}\}}$
+\end_inset
+
+, is compact, then the solution is called 
+\shape italic
+precompact
+\shape default
+.
+ The space of continuous functions with continuous first 
+\begin_inset Formula $m$
+\end_inset
+
+ derivatives is denoted by 
+\begin_inset Formula $\mathcal{C}^{m}$
+\end_inset
+
+.
+ The space of essentially bounded Lebesgue measurable functions is denoted
+ by 
+\begin_inset Formula $\mathcal{L}_{\infty}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{p}$
+\end_inset
+
+ denotes the 
+\begin_inset Formula $p$
+\end_inset
+
+-norm, where the subscript is suppressed when 
+\begin_inset Formula $p=2$
+\end_inset
+
+.
+ The notation 
+\begin_inset Formula $[a;b]$
+\end_inset
+
+ denotes the column vector 
+\begin_inset Formula $\left[\begin{array}{cc}
+a^{T} & b^{T}\end{array}\right]^{T}$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+A continuous function 
+\begin_inset Formula $\omega:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ belongs to class 
+\begin_inset Formula $\mathcal{K}_{\infty}$
+\end_inset
+
+ if it is strictly increasing, 
+\begin_inset Formula $\omega(0)=0$
+\end_inset
+
+, and 
+\begin_inset Formula $\omega(s)\to\infty$
+\end_inset
+
+ as 
+\begin_inset Formula $s\to\infty$
+\end_inset
+
+.
+ A continuous function 
+\begin_inset Formula $\delta:[0,a)\times\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ belongs to class 
+\begin_inset Formula $\mathcal{KL}$
+\end_inset
+
+ if, for each fixed 
+\begin_inset Formula $s$
+\end_inset
+
+, 
+\begin_inset Formula $\delta(r,s)$
+\end_inset
+
+ is strictly increasing with respect to 
+\begin_inset Formula $r$
+\end_inset
+
+, 
+\begin_inset Formula $\delta(0,s)=0$
+\end_inset
+
+ 
+\color blue
+for all 
+\begin_inset Formula $s\geq0$
+\end_inset
+
+,
+\color inherit
+ and for each fixed 
+\begin_inset Formula $r$
+\end_inset
+
+, 
+\begin_inset Formula $\delta(r,s)$
+\end_inset
+
+ is decreasing with respect to 
+\begin_inset Formula $s$
+\end_inset
+
+ and 
+\begin_inset Formula $\delta(r,s)\to0$
+\end_inset
+
+ as 
+\begin_inset Formula $s\to\infty$
+\end_inset
+
+.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Control Objective
+\end_layout
+
+\begin_layout Standard
+Consider a control affine system with the nonlinear dynamics
+\begin_inset Formula 
+\begin{equation}
+\dot{x}=d(x,\nu,t)+u,\label{eq:dynamicsystem}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+ denotes time, 
+\begin_inset Formula $x:\mathcal{I}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes a Filippov solution
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+We consider Filippov solutions instead of classical solutions to facilitate
+ a nonsmooth control design.
+ Alternatively, Krasovskii solutions can also be considered.
+ Generalized solutions such as Filippov or Krasovskii solutions are guaranteed
+ to exist for nonsmooth systems with Lebesgue measurable and locally essentially
+ bounded right-hand-sides 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Proposition 3"
+key "Cortes2008"
+literal "false"
+
+\end_inset
+
+, whereas classical solutions might not exist.
+ 
+\end_layout
+
+\end_inset
+
+ to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dynamicsystem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), with the interval of existence 
+\begin_inset Formula $\mathcal{I}=[t_{0},t_{1})$
+\end_inset
+
+ for some 
+\begin_inset Formula $t_{0},t_{1}\in\mathbb{R}_{\geq0}$
+\end_inset
+
+ s.t.
+ 
+\begin_inset Formula $t_{1}>t_{0}$
+\end_inset
+
+, 
+\begin_inset Formula $\nu:\mathbb{R}_{\geq0}\to\mathbb{R}^{m}$
+\end_inset
+
+ denotes an auxiliary function representing some external dynamic compensator-ba
+sed terms (e.g., adaptive feedforward terms, observer-based terms), 
+\begin_inset Formula $d:\mathbb{R}^{n}\times\mathbb{R}^{m}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ represents 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+ modeling uncertainty in the system, and 
+\begin_inset Formula $u:\mathcal{I}\to\mathbb{R}^{n}$
+\end_inset
+
+ represents the control input.
+ 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+Let 
+\begin_inset Formula $\dot{d}:\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{m}\times\mathbb{R}^{m}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ and 
+\begin_inset Formula $\ddot{d}:\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{m}\times\mathbb{R}^{m}\times\mathbb{R}^{m}\times\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denote
+\end_layout
+
+\end_inset
+
+Let 
+\begin_inset Formula $\dot{d}(x,\dot{x},\nu,\dot{\nu},t)\triangleq\nabla d^{T}\left(x,\nu,t\right)[\dot{x};\dot{\nu};1]$
+\end_inset
+
+ and 
+\begin_inset Formula $\ddot{d}(x,\dot{x},\ddot{x},\nu,\dot{\nu},\ddot{\nu},t)=[\dot{x};\dot{\nu};1]^{T}\nabla^{2}d\left(x,\nu,t\right)[\dot{x};\dot{\nu};1]+\nabla d^{T}\left(x,\nu,t\right)[\ddot{x};\ddot{\nu};0]$
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+\begin_inset Formula $\dot{d}(x,\dot{x},\nu,\dot{\nu},t)\triangleq\frac{d}{dt}\left(d(x,\nu,t)\right)$
+\end_inset
+
+ 
+\begin_inset Formula $ $
+\end_inset
+
+and 
+\begin_inset Formula $\ddot{d}(x,\dot{x},\ddot{x},\nu,\dot{\nu},\ddot{\nu},t)\triangleq\frac{d^{2}}{dt^{2}}\left(d(x,\nu,t)\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+, respectively, where 
+\begin_inset Formula $\nabla$
+\end_inset
+
+ and 
+\begin_inset Formula $\nabla^{2}$
+\end_inset
+
+ denote the gradient and Hessian operators, respectively.
+ It is assumed that for each 
+\begin_inset Formula $(a,b,p,v,w,s)\in\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{m}\times\mathbb{R}^{m}\times\mathbb{R}^{m}$
+\end_inset
+
+, the mappings 
+\begin_inset Formula $t\mapsto d(a,v,t)$
+\end_inset
+
+, 
+\begin_inset Formula $t\mapsto\dot{d}(a,b,v,w,t)$
+\end_inset
+
+, and 
+\begin_inset Formula $t\mapsto\ddot{d}(a,b,p,v,w,s,t)$
+\end_inset
+
+ are bounded
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+there exists some constants 
+\begin_inset Formula $M_{1},\,M_{2},\,M_{3}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert d(a,v,t)\right\Vert \leq M_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \dot{d}(a,b,v,w,t)\right\Vert \leq M_{2}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \ddot{d}(a,b,p,v,w,s,t)\right\Vert \leq M_{3}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
+ The objective is to design a controller such that the state tracks a smooth
+ bounded reference trajectory.
+ The objective is quantified by defining the tracking error
+\begin_inset Formula 
+\begin{equation}
+e\triangleq x-x_{d},\label{eq:e}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $x_{d}:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ is a 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+ reference trajectory such that 
+\begin_inset Formula $x_{d},\dot{x}_{d}\in\mathcal{L}_{\infty}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Control Law Development
+\end_layout
+
+\begin_layout Standard
+\noindent
+To facilitate the subsequent analysis, a filtered tracking error 
+\begin_inset Formula $r:\mathcal{I}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $r\triangleq d(x,\nu,t)+u-\dot{x}_{d}+\alpha e$
+\end_inset
+
+,
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\noindent
+\begin_inset Formula 
+\begin{eqnarray*}
+r & = & \dot{e}+\alpha e\\
+ & = & \dot{x}-\dot{x}_{d}+\alpha e\\
+ & = & d(x,\nu,t)+u-\dot{x}_{d}+\alpha e
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ where 
+\begin_inset Formula $\alpha\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain.
+ To facilitate the subsequent analysis, the dynamics in terms of 
+\begin_inset Formula $\dot{e}$
+\end_inset
+
+ can be rewritten using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dynamicsystem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:e"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) as
+\begin_inset Formula 
+\begin{equation}
+\dot{e}=r-\alpha e.\label{eq:edot}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+Let 
+\begin_inset Formula $z:\mathcal{I}\to\mathbb{R}^{2n}$
+\end_inset
+
+ denote the augmented tracking error, 
+\begin_inset Formula $z\triangleq\left[\begin{array}{cc}
+e^{T} & r^{T}\end{array}\right]^{T}$
+\end_inset
+
+.
+ From the subsequent stability analysis, a continuous RISE control input
+ is designed as 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Xian2004"
+literal "false"
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+u\triangleq\dot{x}_{d}-\alpha e-\hat{d},\label{eq:controlinput}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\hat{d}:\mathcal{I}\to\mathbb{R}^{n}$
+\end_inset
+
+ is an auxiliary term designed as a Filippov solution
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Since 
+\begin_inset Formula $r$
+\end_inset
+
+ may not be commonly available, 
+\begin_inset Formula $\hat{d}(t)$
+\end_inset
+
+ is evaluated using 
+\begin_inset Formula $\hat{d}(t)=\hat{d}(t_{0})+ke(t)-ke(t_{0})+\int_{t_{0}}^{t}\left((k\alpha+1)e(\tau)+\beta\mathrm{sgn}(e(\tau))\right)d\tau$
+\end_inset
+
+ for closed-loop implementation.
+ Note that 
+\begin_inset Formula $\beta\mathrm{sgn}(e(\cdot))$
+\end_inset
+
+ is Riemann integrable on 
+\begin_inset Formula $[t_{0},t],\,\forall t\in\mathcal{I}$
+\end_inset
+
+ according to Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:integrable"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+ to
+\begin_inset Formula 
+\begin{equation}
+\dot{\hat{d}}=kr+e+\beta\mathrm{sgn}\left(e\right),\label{eq:mudot}
+\end{equation}
+
+\end_inset
+
+given any user-selected 
+\begin_inset Formula $\hat{d}(t_{0})\in\mathbb{R}^{n}.$
+\end_inset
+
+ In (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:mudot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $k,\beta\in\mathbb{R}_{>0}$
+\end_inset
+
+ are constant control gains.
+ Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dynamicsystem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+)-(
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:controlinput"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+\begin_inset Formula 
+\begin{eqnarray*}
+r & = & \dot{e}+\alpha e\\
+ & = & \dot{x}-\dot{x}_{d}+\alpha e\\
+ & = & d(x,\nu,t)+u-\dot{x}_{d}+\alpha e\\
+ & = & d(x,\nu,t)+\cancel{\dot{x}_{d}}-\cancel{\alpha e}{\color{blue}-\hat{d}}-\cancel{\dot{x}_{d}}+\cancel{\alpha e}\\
+ & = & d(x,\nu,t){\color{blue}-\hat{d}}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+r=d(x,\nu,t)-\hat{d}.\label{eq:r_eval}
+\end{equation}
+
+\end_inset
+
+It follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:mudot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r_eval"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $r$
+\end_inset
+
+ is a Filippov solution to the closed-loop error system
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{r} & = & \dot{d}(x,\dot{x},\nu,\dot{\nu},t)-\dot{\hat{d}}\\
+ & = & \dot{d}(x,\dot{x},\nu,\dot{\nu},t)-kr-e-\beta\mathrm{sgn}\left(e\right)\\
+ & = & \dot{d}(x,\dot{x},\nu,\dot{\nu},t)\pm\dot{d}(x_{d},\dot{x}_{d},\nu,\dot{\nu},t)-kr-e-\beta\mathrm{sgn}\left(e\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\dot{r}=\widetilde{N}+N_{B}-kr-e-\beta\mathrm{sgn}\left(e\right),\label{eq:rdot}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\widetilde{N}\triangleq\dot{d}(x,\dot{x},\nu,\dot{\nu},t)-\dot{d}(x_{d},\dot{x}_{d},\nu,\dot{\nu},t)$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{B}\triangleq\dot{d}(x_{d},\dot{x}_{d},\nu,\dot{\nu},t)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "assm:bounded_uncertainty"
+
+\end_inset
+
+ The function 
+\begin_inset Formula $\text{\ensuremath{\nu}}$
+\end_inset
+
+ is a solution to some external dynamics
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color purple
+Note that 
+\begin_inset Formula $\nu$
+\end_inset
+
+ essentially represents the effects of augmenting the RISE controller with
+ an additional controller that involves some dynamics.
+ The developed approach offers modularity in the sense that 
+\begin_inset Formula $\hat{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\nu$
+\end_inset
+
+ can be designed separately, as long as 
+\begin_inset Formula $\nu$
+\end_inset
+
+ satisfies Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "assm:bounded_uncertainty"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+ such that there exist known constants
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color purple
+An example of dynamics satisfying this assumption is 
+\begin_inset Formula $\dot{\nu}=\mathrm{proj}\{\eta_{2}\mathrm{tanh}(z),\eta_{1}\}$
+\end_inset
+
+, where 
+\begin_inset Formula $\mathrm{proj}\{\cdot,\cdot\}$
+\end_inset
+
+ denotes the smooth projection operator defined in
+\color inherit
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cai2006a"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+, 
+\begin_inset Formula $\eta_{1},\eta_{2},\eta_{3},\eta_{4}\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, and a known strictly increasing function, 
+\begin_inset Formula $\rho_{21}:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+, such that 
+\begin_inset Formula $\left\Vert \nu\right\Vert \leq\eta_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \dot{\nu}\right\Vert \leq\eta_{2}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \ddot{\nu}\right\Vert \leq\eta_{3}+\eta_{4}\left\Vert z\right\Vert +\rho_{21}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{N_{B}} & = & \frac{d^{2}}{dt^{2}}(d(x,\nu,t))\\
+ & = & \frac{d}{dt}(\frac{d}{dt}(d(x,\nu,t)))\\
+ & = & \frac{d}{dt}(\frac{\partial d}{\partial x}\dot{x}+\frac{\partial d}{\partial\nu}\dot{\nu}+\frac{\partial d}{\partial t})\\
+ & = & \frac{d}{dt}\left(\left(\frac{\partial d}{\partial x}\right)(\dot{x}_{d}+r-\alpha e)+\frac{\partial d}{\partial\nu}\dot{\nu}+\frac{\partial d}{\partial t}\right)\\
+ & = & \frac{d}{dt}\left(\frac{\partial d}{\partial x}\right)(\dot{x}_{d}+r-\alpha e)+\left(\frac{\partial d}{\partial x}\right)(\ddot{x}_{d}+\dot{r}-\alpha\dot{e})+\frac{d}{dt}\left(\frac{\partial d}{\partial\nu}\right)\dot{\nu}+\frac{\partial d}{\partial\nu}\ddot{\nu}+\frac{d}{dt}\frac{\partial d}{\partial t}\\
+ & = & \left(\frac{\partial^{2}d}{\partial x^{2}}\dot{x}+\frac{\partial^{2}d}{\partial x\partial\nu}\dot{\nu}+\frac{\partial^{2}d}{\partial x\partial t}\right)(\dot{x}_{d}+r-\alpha e)+\left(\frac{\partial d}{\partial x}\right)(\ddot{x}_{d}+\widetilde{N}+N_{B}-kr-e-\beta\mathrm{sgn}\left(e\right)-\alpha(r-\alpha e))+\frac{d}{dt}\left(\frac{\partial d}{\partial\nu}\right)\dot{\nu}+\frac{\partial d}{\partial\nu}\ddot{\nu}+\frac{d}{dt}\frac{\partial d}{\partial t}\\
+ & = & \left(\frac{\partial^{2}d}{\partial x^{2}}(\dot{x}_{d}+r-\alpha e)+\frac{\partial^{2}d}{\partial x\partial\nu}\dot{\nu}+\frac{\partial^{2}d}{\partial x\partial t}\right)(\dot{x}_{d}+r-\alpha e)+\left(\frac{\partial d}{\partial x}\right)(\ddot{x}_{d}+\widetilde{N}+N_{B}-kr-e-\beta\mathrm{sgn}\left(e\right)-\alpha(r-\alpha e))+\frac{d}{dt}\left(\frac{\partial d}{\partial\nu}\right)\dot{\nu}+\frac{\partial d}{\partial\nu}\ddot{\nu}+\frac{d}{dt}\frac{\partial d}{\partial t}\\
+ &  & \textrm{All the partial derivative terms can be bounded by some nonlinear function of \ensuremath{\left\Vert z\right\Vert }. It is assumed such bounding functions are known.}\\
+ &  & \textrm{It can be subsequently verified that each term in the above expression can be bounded by some known nonlinear function of \ensuremath{z}.}\\
+ &  & \textrm{Thus, \ensuremath{\dot{N}_{B}}}\textrm{can be bounded as}\left\Vert \dot{N}_{B}\right\Vert \leq\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert .
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+Old assumption
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\color blue
+The uncertainty 
+\begin_inset Formula $(x,t)\mapsto d(x,t)$
+\end_inset
+
+ is 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+, uniformly bounded in time, and its partial derivatives 
+\begin_inset Formula $\left\Vert \frac{\partial^{2}d}{\partial t^{2}}\right\Vert \leq\zeta_{1}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert $
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \frac{\partial^{2}d}{\partial x\partial t}\right\Vert \leq\zeta_{2}+\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert $
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \frac{\partial^{2}d}{\partial x^{2}}\right\Vert \leq\zeta_{3}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert $
+\end_inset
+
+, where 
+\begin_inset Formula $\zeta_{1},\zeta_{2},\zeta_{3}\in\mathbb{R}_{{\color{blue}\geq}0}$
+\end_inset
+
+ are known constants, and 
+\begin_inset Formula $\rho_{21},\rho_{22},\rho_{23}:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ are known positive and non-decreasing functions.
+ It follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $\text{\ensuremath{\ddot{d}(t)}}$
+\end_inset
+
+ is bounded such that 
+\begin_inset Formula $\left\Vert \ddot{d}\right\Vert _{1}\leq\gamma_{2}+\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+, 
+\begin_inset Formula $\,\forall t\in[0,\infty)$
+\end_inset
+
+, where 
+\begin_inset Formula $\gamma_{2}\in\mathbb{R}_{{\color{blue}\geq}0}$
+\end_inset
+
+ is a known bounding constants, and 
+\begin_inset Formula $\rho_{1},\rho_{2}:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ are known positive, globally invertible and non-decreasing functions.
+\color inherit
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{eqnarray*}
+\left\Vert \ddot{d}\right\Vert  & = & \left\Vert \frac{\partial^{2}d}{\partial t^{2}}+2\frac{\partial^{2}d}{\partial x\partial t}\dot{x}+\frac{\partial^{2}d}{\partial x^{2}}\ddot{x}\right\Vert \\
+ & = & \left\Vert \frac{\partial^{2}d}{\partial t^{2}}\right\Vert +2\left\Vert \frac{\partial^{2}d}{\partial x\partial t}\right\Vert \left\Vert \dot{x}\right\Vert +\left\Vert \frac{\partial^{2}d}{\partial x^{2}}\right\Vert \left\Vert \ddot{x}\right\Vert \\
+ & \leq & \zeta_{3}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +2\left(\zeta_{4}+\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left\Vert \dot{x}\right\Vert +\left(\zeta_{5}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left\Vert \ddot{x}\right\Vert \\
+ & \leq & \zeta_{3}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +2\left(\zeta_{4}+\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left\Vert \dot{x}_{d}+r-\alpha e\right\Vert +\left(\zeta_{5}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left\Vert \ddot{x}_{d}+\dot{r}-\alpha\dot{e}\right\Vert \\
+ & \leq & \zeta_{3}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +2\left(\zeta_{4}+\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left(\overline{\dot{x}_{d}}+\left\Vert r\right\Vert +\alpha\left\Vert e\right\Vert \right)+\left(\zeta_{5}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left\Vert \ddot{x}_{d}+\dot{d}(t)-kr-e-\beta\mathrm{sgn}\left(e\right)-\alpha r+\alpha^{2}e\right\Vert \\
+ & \leq & \zeta_{3}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +2\zeta_{4}\overline{\dot{x}_{d}}+2\zeta_{4}\left\Vert r\right\Vert +2\zeta_{4}\alpha\left\Vert e\right\Vert +2\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \overline{\dot{x}_{d}}+2\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \left\Vert r\right\Vert +2\alpha\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \left\Vert e\right\Vert \\
+ &  & +\left(\zeta_{5}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left(\overline{\ddot{x}_{d}}+\gamma_{1}+\rho_{1}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +k\left\Vert r\right\Vert +\left\Vert e\right\Vert +\beta+\alpha\left\Vert r\right\Vert +\alpha^{2}\left\Vert e\right\Vert \right)\\
+ & \leq & \zeta_{3}+\rho_{21}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +2\zeta_{4}\overline{\dot{x}_{d}}+2\zeta_{4}\left\Vert r\right\Vert +2\zeta_{4}\alpha\left\Vert e\right\Vert +2\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \overline{\dot{x}_{d}}+2\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \left\Vert r\right\Vert +2\alpha\rho_{22}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \left\Vert e\right\Vert \\
+ &  & +\left(\zeta_{5}+\rho_{23}(\left\Vert z\right\Vert )\left\Vert z\right\Vert \right)\left(\overline{\ddot{x}_{d}}+\gamma_{1}+\gamma_{2}\left\Vert z\right\Vert +\beta+\rho_{1}(\left\Vert z\right\Vert )\left\Vert z\right\Vert +\left(k+1+\alpha+\alpha^{2}\right)\left\Vert z\right\Vert \right)\\
+ & \leq & \textrm{Terms of the type}\\
+ &  & \textrm{constants}+\textrm{linear in \ensuremath{\left\Vert z\right\Vert }terms}+\rho_{z}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{z^{2}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert ^{2}\\
+ & = & \textrm{constants}+\textrm{linear in \ensuremath{\left\Vert z\right\Vert }terms}+\left(\rho_{z}\left(\left\Vert z\right\Vert \right)+\rho_{z^{2}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \leq & \gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Old math
+\begin_inset Formula 
+\[
+\left\Vert \dot{d}\right\Vert \leq\gamma_{1}+\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\left\Vert \ddot{d}\left(x,\dot{x},\ddot{x},t\right)\right\Vert  & = & \left\Vert \ddot{d}\left(e+x_{d},\dot{x}+\dot{x}_{d},\ddot{x}+\ddot{x}_{d},t\right)-\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)+\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert \\
+ & = & \left\Vert \ddot{d}\left(e+x_{d},\dot{e}+\dot{x}_{d},\ddot{e}+\ddot{x}_{d},t\right)-\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert +\left\Vert \ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert \\
+ & = & \left\Vert \ddot{d}\left(e+x_{d},r-\alpha e+\dot{x}_{d},\dot{r}-\alpha\dot{e}+\ddot{x}_{d},t\right)-\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert +\left\Vert \ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert \\
+ & = & \left\Vert \ddot{d}\left(e+x_{d},r-\alpha e+\dot{x}_{d},\dot{r}-\alpha\dot{e}+\ddot{x}_{d},t\right)-\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert +\left\Vert \ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert \\
+ & = & \left\Vert \ddot{d}\left(e+x_{d},r-\alpha e+\dot{x}_{d},\dot{d}(t)-kr-e-\beta\mathrm{sgn}\left(e\right)-\alpha r+\alpha^{2}e+\ddot{x}_{d},t\right)-\ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert +\left\Vert \ddot{d}\left(x_{d},\dot{x}_{d},\ddot{x}_{d},t\right)\right\Vert 
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+Then, there exist known constants 
+\begin_inset Formula $\gamma_{1},\gamma_{3},\gamma_{4}\in\mathbb{R}_{\geq0}$
+\end_inset
+
+ and a known strictly increasing function 
+\begin_inset Formula $\rho_{21}:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert N_{B}\right\Vert \leq\gamma_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \dot{N}_{B}\right\Vert \leq\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+, 
+\begin_inset Formula $\forall t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+.
+ Additionally, since 
+\begin_inset Formula $\nu$
+\end_inset
+
+ is bounded and 
+\begin_inset Formula $t\mapsto\dot{d}(a,b,v,w,t)$
+\end_inset
+
+ is bounded for each 
+\begin_inset Formula $(a,b,v,w)\in\mathbb{R}^{n}\times\mathbb{R}^{n}\times\mathbb{R}^{m}\times\mathbb{R}^{m}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \widetilde{N}\right\Vert \leq\gamma_{2}\left\Vert z\right\Vert +\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert ,\,\forall t\in\mathbb{R}_{\geq0}$
+\end_inset
+
+, according to the Mean Value Theorem-based inequality in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 5"
+key "arxivKamalapurkar.Klotz.ea2013"
+literal "false"
+
+\end_inset
+
+, where 
+\begin_inset Formula $\gamma_{2}\in\mathbb{R}_{\geq0}$
+\end_inset
+
+ is a known constant, and 
+\begin_inset Formula $\rho_{1}:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ is a known strictly increasing function.
+ Note that the type of state-dependent bounds considered in Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "assm:bounded_uncertainty"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ are general and often required in various applications where the RISE method
+ is used (e.g.,
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2008,Patre2010a"
+literal "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2011"
+literal "false"
+
+\end_inset
+
+), typically as a consequence of augmenting adaptive feedforward controllers
+ with a RISE term.
+ In the case where 
+\begin_inset Formula $\nu$
+\end_inset
+
+ represents adaptive feedforward terms, the developed approach offers modularity
+ of design in the sense that 
+\begin_inset Formula $\hat{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\nu$
+\end_inset
+
+ can be designed independently, as long as 
+\begin_inset Formula $\nu$
+\end_inset
+
+ satisfies Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "assm:bounded_uncertainty"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The following example illustrates a type of system satisfying Assumption
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "assm:bounded_uncertainty"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Example
+\noindent
+Consider a dynamic neural network given by
+\begin_inset Formula 
+\begin{equation}
+\dot{\nu}=\mathrm{proj}\{W^{T}\sigma(V^{T}x),\nu\},\label{eq:neural_network}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mathrm{proj}\{\cdot,\cdot\}$
+\end_inset
+
+ denotes the smooth projection operator in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cai2006a"
+literal "false"
+
+\end_inset
+
+ that guarantees 
+\begin_inset Formula $\left\Vert \nu\right\Vert \leq\eta_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $\sigma:\mathbb{R}^{L}\to\mathbb{R}^{L}$
+\end_inset
+
+ denotes a globally bounded continuous activation function, and 
+\begin_inset Formula $W\in\mathbb{R}^{m\times L}$
+\end_inset
+
+ and 
+\begin_inset Formula $V\in\mathbb{R}^{L\times n}$
+\end_inset
+
+ are constant
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+See 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2008"
+literal "false"
+
+\end_inset
+
+ for continuous adaptive weight updates.
+\end_layout
+
+\end_inset
+
+ matrices of outer and inner-layer weights, respectively.
+ Using 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Property 3"
+key "Cai2006a"
+literal "false"
+
+\end_inset
+
+ and the fact that 
+\begin_inset Formula $\sigma(\cdot)$
+\end_inset
+
+ is globally bounded, 
+\begin_inset Formula $\dot{\nu}$
+\end_inset
+
+ can be bounded by a constant, i.e., 
+\begin_inset Formula $\left\Vert \dot{\nu}\right\Vert \leq\eta_{2}$
+\end_inset
+
+.
+ Taking the time-derivative of 
+\begin_inset Formula $\dot{\nu}$
+\end_inset
+
+ yields 
+\begin_inset Formula $\ddot{\nu}=\frac{d}{dt}(\mathrm{proj}\{W^{T}\sigma(V^{T}x),\nu\})=\left.\frac{\partial}{\partial y}(\mathrm{proj}\{y,\nu\})\right|_{y=W^{T}\sigma(V^{T}x)}\frac{d}{dt}(W^{T}\sigma(V^{T}x))+\left.\frac{\partial}{\partial y}(\mathrm{proj}\{W^{T}\sigma(V^{T}x),y\})\right|_{y=\nu}\dot{\nu}$
+\end_inset
+
+.
+ Based on the structure of the projection operator in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Eq. 7"
+key "Cai2006a"
+literal "false"
+
+\end_inset
+
+, the terms 
+\begin_inset Formula $\left.\frac{\partial}{\partial y}(\mathrm{proj}\{y,\nu\})\right|_{y=W^{T}\sigma(V^{T}x)}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left.\frac{\partial}{\partial y}(\mathrm{proj}\{W^{T}\sigma(V^{T}x),y\})\right|_{y=\nu}$
+\end_inset
+
+ can be bounded by some known functions of 
+\begin_inset Formula $x$
+\end_inset
+
+.
+ Additionally, based on the right-hand-side of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the term 
+\begin_inset Formula $\frac{d}{dt}(W^{T}\sigma(V^{T}x))=W^{T}\left.\frac{\partial}{\partial y}\sigma(y)\right|_{y=V^{T}x}V^{T}\dot{x}=W^{T}\left.\frac{\partial}{\partial y}\sigma(y)\right|_{y=V^{T}x}V^{T}(\dot{x}_{d}+r-\alpha e)$
+\end_inset
+
+ can be bounded by some known continuous function of 
+\begin_inset Formula $z$
+\end_inset
+
+.
+ Therefore, 
+\begin_inset Formula $\ddot{\nu}$
+\end_inset
+
+ can be bounded as 
+\begin_inset Formula $\left\Vert \ddot{\nu}\right\Vert \leq\eta_{3}+\eta_{4}\left\Vert z\right\Vert +\rho_{21}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+ Thus, the dynamic neural network in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:neural_network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) satisfies Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "assm:bounded_uncertainty"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color blue
+Old Example
+\end_layout
+
+\begin_layout Plain Layout
+
+\color blue
+Let 
+\begin_inset Formula $\mathrm{proj}\{\mu,\hat{\theta},\bar{\theta}\}$
+\end_inset
+
+ denote a smooth projection operator (cf., 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cai2006a"
+literal "false"
+
+\end_inset
+
+) applied over an update law 
+\begin_inset Formula $\mu:\mathcal{I}\to\mathbb{R}^{L_{1}\times L_{2}}$
+\end_inset
+
+, such that all solutions to 
+\begin_inset Formula $\dot{\hat{\theta}}=\mathrm{proj}\{\mu,\hat{\theta},\bar{\theta}\}$
+\end_inset
+
+ initialized according to 
+\begin_inset Formula $\left\Vert \hat{\theta}(t_{0})\right\Vert _{F}\leq\bar{\theta}$
+\end_inset
+
+ satisfy 
+\begin_inset Formula $\left\Vert \hat{\theta}(t)\right\Vert _{F}\leq\bar{\theta}$
+\end_inset
+
+, 
+\begin_inset Formula $\forall t\in\mathcal{I}$
+\end_inset
+
+, where 
+\begin_inset Formula $\hat{\theta}:\mathcal{I}\to\mathbb{R}^{L_{1}\times L_{2}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\bar{\theta}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Consider the dynamical neural network given by 
+\begin_inset Formula $\nu(t)=\int_{0}^{t}\mathrm{proj}\{\hat{W}^{T}(\tau)\sigma(\hat{V}^{T}(\tau)x(\tau)),\nu(\tau),\eta_{2}\}d\tau$
+\end_inset
+
+, where 
+\begin_inset Formula $\hat{W}:\mathcal{I}\to\mathbb{R}^{m\times L}$
+\end_inset
+
+ is the matrix of outer-layer weights, 
+\begin_inset Formula $\hat{V}:\mathcal{I}\to\mathbb{R}^{L\times n}$
+\end_inset
+
+ is the matrix of inner-layer weights, 
+\begin_inset Formula $\sigma:\mathbb{R}^{L}\to\mathbb{R}^{L}$
+\end_inset
+
+ denotes a globally bounded continuous activation function with a globally
+ bounded gradient.
+ Then, differentiating 
+\begin_inset Formula $\nu$
+\end_inset
+
+ using Leibniz rule yields 
+\begin_inset Formula $\dot{\nu}=\mathrm{proj}\{\hat{W}^{T}\sigma(\hat{V}^{T}x),\nu,\eta_{2}\}$
+\end_inset
+
+.
+ The inner and outer-layer weights are designed using the projection-based
+ update laws 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patre2008"
+literal "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $\dot{\hat{W}}=\mathrm{proj}\{\Gamma_{1}\hat{\sigma}^{\prime}\hat{V}^{T}\dot{x}_{d}e^{T},\hat{W},\bar{W}\}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{\hat{V}}=\mathrm{proj}\{\Gamma_{2}\dot{x}_{d}(\hat{\sigma}^{\prime T}\hat{W}e)^{T},\hat{V},\bar{V}\}$
+\end_inset
+
+, where 
+\begin_inset Formula $\Gamma_{1}\in\mathbb{R}^{L\times L}$
+\end_inset
+
+ and 
+\begin_inset Formula $\Gamma_{2}\in\mathbb{R}^{m\times m}$
+\end_inset
+
+ are positive-definite adaptation gains, 
+\begin_inset Formula $\hat{\sigma}^{\prime}$
+\end_inset
+
+ is a short-hand notation for 
+\begin_inset Formula $\left.\frac{\partial\sigma(y)}{\partial y}\right|_{y=\hat{V}^{T}x}$
+\end_inset
+
+.
+ Consequently, 
+\begin_inset Formula $\ddot{\nu}=\frac{d}{dt}(\mathrm{proj}\{\hat{W}^{T}\sigma(\hat{V}^{T}x),\nu,\eta_{2}\})=\left.\frac{\partial}{\partial y}(\mathrm{proj}\{y,\nu,\eta_{2}\})\right|_{y=\hat{W}^{T}\sigma(\hat{V}^{T}x)}\frac{d}{dt}(\hat{W}^{T}\sigma(\hat{V}^{T}x))+\left.\frac{\partial}{\partial y}(\mathrm{proj}\{\hat{W}^{T}\sigma(\hat{V}^{T}x),y,\eta_{2}\})\right|_{y=\nu}\dot{\nu}.$
+\end_inset
+
+ Since 
+\begin_inset Formula $\left\Vert \frac{\partial}{\partial y}(\mathrm{proj}\{y,\nu,\eta_{2}\})\right\Vert \leq1$
+\end_inset
+
+, 
+\begin_inset Formula $\forall y\in\mathbb{R}^{m}$
+\end_inset
+
+, 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The structure of the closed-loop error system in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) may appear similar to a higher order sliding-mode design (cf., 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Levant1993"
+literal "false"
+
+\end_inset
+
+); however, there are some remarkable differences to highlight.
+ Specifically, the 
+\begin_inset Formula $\beta\mathrm{sgn}\left(e\right)$
+\end_inset
+
+ term in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) would need to be 
+\begin_inset Formula $\beta\mathrm{sgn}\left(r\right)$
+\end_inset
+
+ to facilitate the analysis for a standard continuous higher-order sliding-mode
+ design.
+ Since sensor measurements for the highest order derivative (e.g., 
+\begin_inset Formula $\dot{e}$
+\end_inset
+
+ or 
+\begin_inset Formula $r$
+\end_inset
+
+) may not be available for feedback, the controller in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:controlinput"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is designed to depend only on state measurements.
+ Additionally, the closed-loop error system in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is also different from a super-twisting system, since (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) would require an additional 
+\begin_inset Formula $-\left|e\right|^{1/2}\mathrm{sgn}(e)$
+\end_inset
+
+ term to facilitate a super-twisting design, which needs a different analysis
+ approach 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Gonzalez.Moreno.ea2011"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+We now present some supporting lemmas which facilitate the subsequent analysis.
+ Proofs of all lemmas can be found in the Appendix.
+ 
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:meas_zero"
+
+\end_inset
+
+Given some Filippov solutions, 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+, to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), respectively, the set of time-instants 
+\begin_inset Formula $T\triangleq\{t\in\mathcal{I}|\exists i\in\{1,2,\ldots,n\}\,\mathit{s.t.}\,e_{i}\left(t\right)=0\:\wedge r_{i}\left(t\right)\neq0\}$
+\end_inset
+
+ has Lebesgue measure zero, where 
+\begin_inset Formula $e_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{i}$
+\end_inset
+
+ denote the 
+\begin_inset Formula $i^{th}$
+\end_inset
+
+ element of 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+, respectively.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:integrable"
+
+\end_inset
+
+Given some Filippov solution, 
+\begin_inset Formula $e$
+\end_inset
+
+, to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $\textrm{sgn}\left(e(\cdot)\right)$
+\end_inset
+
+ is Riemann integrable on 
+\begin_inset Formula $[t_{0},t_{1}]$
+\end_inset
+
+, 
+\begin_inset Formula $\forall t_{1}\in\mathcal{I}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Stability Analysis
+\end_layout
+
+\begin_layout Standard
+Following the development in Section II, every Filippov solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:dynamicsystem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:mudot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) with the controller in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:controlinput"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) corresponds to a Filippov solution of the transformed system in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Additionally, a P-function is introduced to facilitate the construction
+ of a candidate Lyapunov function for analyzing the stability and convergence
+ properties of 
+\begin_inset Formula $z$
+\end_inset
+
+.
+ The P-function is denoted by 
+\begin_inset Formula $P:\mathcal{I}\to\mathbb{R}$
+\end_inset
+
+ and is defined as a Filippov solution to
+\begin_inset Formula 
+\begin{equation}
+\dot{P}=-\lambda_{P}P-L,\label{eq:Pdot}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\lambda_{P}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is an auxiliary constant, and
+\begin_inset Formula 
+\begin{eqnarray}
+L & \triangleq & r^{T}N_{B}-r^{T}\beta\mathrm{sgn}\left(e\right)\nonumber \\
+ &  & -\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1},\label{eq:L}
+\end{eqnarray}
+
+\end_inset
+
+where 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{1}$
+\end_inset
+
+ denotes the 
+\begin_inset Formula $1$
+\end_inset
+
+-norm, and
+\begin_inset Formula 
+\begin{equation}
+P(t_{0})=\beta\left\Vert e(t_{0})\right\Vert _{1}-e^{T}(t_{0})N_{B}(t_{0}).\label{eq:P0}
+\end{equation}
+
+\end_inset
+
+The analytical solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is derived in Lemma 3.
+ To facilitate the inclusion of the P-function in the candidate Lyapunov
+ function, 
+\begin_inset Formula $P$
+\end_inset
+
+ is designed to be non-negative under certain gain conditions as described
+ in Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:P>0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:Psol"
+
+\end_inset
+
+Given some Filippov solutions, 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+, to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), respectively,
+\begin_inset Formula 
+\begin{eqnarray}
+P & = & \beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}\nonumber \\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left((\alpha-\lambda_{P})\left(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}\right)+e^{T}\dot{N}_{B}\right)\nonumber \\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right),\label{eq:P_expand}
+\end{eqnarray}
+
+\end_inset
+
+is the unique Filippov solution to the differential equation in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) initialized according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), where `
+\begin_inset Formula $*$
+\end_inset
+
+' denotes the convolution operator, i.e., 
+\begin_inset Formula $p(t)*q(t)=\int_{t_{0}}^{t}p(t-\tau)q(\tau)d\tau$
+\end_inset
+
+, for any given 
+\begin_inset Formula $p,q:[t_{0},\infty)\to\mathbb{R}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:P>0"
+
+\end_inset
+
+ Given any pair of Filippov solutions, 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+, to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), respectively, provided that 
+\begin_inset Formula $P$
+\end_inset
+
+ is initialized according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and the gain conditions
+\begin_inset Formula 
+\begin{equation}
+\alpha>\lambda_{P},\label{eq:alpha_gc}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\beta>\gamma_{1}+\frac{\gamma_{3}}{\alpha-\lambda_{P}},\label{eq:beta_gc}
+\end{equation}
+
+\end_inset
+
+are satisfied, 
+\begin_inset Formula $P(t)\geq0,\,\forall t\in\mathcal{I}$
+\end_inset
+
+, where the gains 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+ are introduced in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:mudot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), respectively, and 
+\begin_inset Formula $\gamma_{1},\gamma_{4}$
+\end_inset
+
+ are introduced in Assumption 1.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\psi\triangleq\left[\begin{array}{ccc}
+e^{T} & r^{T} & P\end{array}\right]^{T}$
+\end_inset
+
+, and 
+\begin_inset Formula $\dot{\psi}=g(\psi,t)$
+\end_inset
+
+ denote the differential equations in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), where 
+\begin_inset Formula $g:\mathbb{R}^{2n+1}\times[t_{0},\infty)\to\mathbb{R}^{2n+1}$
+\end_inset
+
+ is Lebesgue measurable and locally essentially bounded (i.e., bounded on
+ a neighborhood of every point, excluding sets of measure zero), since it
+ is continuous except in the set 
+\begin_inset Formula $\{(\psi,t)\in\mathbb{R}^{2n+1}\times[t_{0},\infty)|e=0\}$
+\end_inset
+
+.
+ To facilitate the stability analysis, let 
+\begin_inset Formula $V_{L}:\mathbb{R}^{2n+1}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ be defined as
+\begin_inset Formula 
+\begin{equation}
+V_{L}(\psi)\triangleq\frac{1}{2}e^{T}e+\frac{1}{2}r^{T}r+P.\label{eq:Lyap}
+\end{equation}
+
+\end_inset
+
+Let 
+\begin_inset Formula $c\triangleq\min\{k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4},\frac{\lambda_{P}}{2}\},$
+\end_inset
+
+ 
+\begin_inset Formula $\rho\left(\cdot\right)\triangleq\rho_{1}\left(\cdot\right)+n\rho_{2}\left(\cdot\right)$
+\end_inset
+
+, and consider the regions, 
+\begin_inset Formula $\mathcal{D}\triangleq\{\sigma\in\mathbb{R}^{2n+1}|V_{L}(\sigma)<\frac{(\rho^{-1}(c-\lambda_{V}))^{2}}{2}\}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathcal{S}\triangleq\{\sigma\in\mathbb{R}^{2n}|\left\Vert \sigma\right\Vert <c-\lambda_{V}\}$
+\end_inset
+
+, where 
+\begin_inset Formula $\lambda_{V}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a user-defined constant.
+\end_layout
+
+\begin_layout Theorem
+Let 
+\begin_inset Formula $W:\mathbb{R}^{2n}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ be defined as 
+\begin_inset Formula $W(z(t_{0}))\triangleq\sqrt{\left\Vert z(t_{0})\right\Vert ^{2}+2\left(\beta+\gamma_{1}\right)\left\Vert z(t_{0})\right\Vert _{1}}$
+\end_inset
+
+.
+ Given any initial condition 
+\begin_inset Formula $z(t_{0})\in\mathbb{R}^{2n}$
+\end_inset
+
+, every maximal solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) with 
+\begin_inset Formula $P(t_{0})$
+\end_inset
+
+ initialized according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is complete, and the zero solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $(e(t),r(t))\equiv(0,0)$
+\end_inset
+
+, is semi-globally exponentially stable in the sense that 
+\begin_inset Formula $\left\Vert z(t)\right\Vert \leq W(z(t_{0}))\exp\left(-\lambda_{V}(t-t_{0})\right)$
+\end_inset
+
+, 
+\begin_inset Formula $\forall(z(t_{0}),t)\in\mathbb{R}^{2n}\times[t_{0},\infty)$
+\end_inset
+
+, provided that the gains 
+\begin_inset Formula $\alpha,\beta,k$
+\end_inset
+
+ and 
+\begin_inset Formula $\lambda_{P}$
+\end_inset
+
+ are selected according to the gain conditions in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:alpha_gc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:beta_gc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and
+\begin_inset Formula 
+\begin{equation}
+c>\lambda_{V}+\rho\left(W(z(t_{0}))\right).\label{eq:cgain}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+The existence of a Filippov solution, 
+\begin_inset Formula $\psi:\mathcal{I}\rightarrow\mathbb{R}^{2n+1}$
+\end_inset
+
+, to 
+\begin_inset Formula $\dot{\psi}=g(\psi,t)$
+\end_inset
+
+ is guaranteed
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+The solution 
+\begin_inset Formula $\psi$
+\end_inset
+
+ may not be unique; however, 
+\begin_inset Formula $P$
+\end_inset
+
+ is unique according to Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Psol"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ for a given pair 
+\begin_inset Formula $(e,r)$
+\end_inset
+
+.
+ Moreover, the results in this paper are applicable to all the trajectories
+ even when 
+\begin_inset Formula $\psi$
+\end_inset
+
+ is non-unique, since we consider a generalized Filippov solution in the
+ analysis.
+\end_layout
+
+\end_inset
+
+ by 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Proposition 3"
+key "Cortes2008"
+literal "false"
+
+\end_inset
+
+.
+ The time-derivative of  
+\begin_inset Formula $V_{L}$
+\end_inset
+
+ along 
+\begin_inset Formula $\psi$
+\end_inset
+
+, starting from the specified initial conditions, exists a.e., and 
+\begin_inset Formula $\dot{V}_{L}(\psi,t)\overset{a.e.}{\in}\dot{\widetilde{V}}_{L}(\psi,t)$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equations 12 and 13"
+key "Shevitz1994"
+literal "false"
+
+\end_inset
+
+, where the notation 
+\begin_inset Formula $\stackrel{a.e.}{(\cdot)}$
+\end_inset
+
+ implies that the relation holds for almost all time 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+, and
+\begin_inset Formula 
+\begin{eqnarray}
+\dot{\widetilde{V}}_{L}(\psi,t) & = & \underset{\xi\in\partial V_{L}(\psi)}{\bigcap}\xi^{T}K\left[g\right](\psi,t)\nonumber \\
+ & = & \nabla V_{L}^{T}K\left[g\right](\psi,t)\nonumber \\
+ & = & \left[\begin{array}{cc}
+z^{T} & 1\end{array}\right]^{T}K\left[g\right](\psi,t).\label{eq:vtildedotsub2}
+\end{eqnarray}
+
+\end_inset
+
+In (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:vtildedotsub2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $\partial V_{L}(\psi)$
+\end_inset
+
+ denotes Clarke's generalized gradient 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equation 7"
+key "Shevitz1994"
+literal "false"
+
+\end_inset
+
+, and 
+\begin_inset Formula $K[\cdot]$
+\end_inset
+
+ is defined in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equation 2b"
+key "Paden1987"
+literal "false"
+
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\psi\mapsto V_{L}(\psi)$
+\end_inset
+
+ is continuously differentiable, 
+\begin_inset Formula $\partial V_{L}=\{\nabla V_{L}\}$
+\end_inset
+
+ using 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Proposition 6"
+key "Cortes2008"
+literal "false"
+
+\end_inset
+
+.
+ Substituting (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) into 
+\begin_inset Formula $(\text{\ref{eq:vtildedotsub2}})$
+\end_inset
+
+, utilizing 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{1}\leq\sqrt{n}\left\Vert \cdot\right\Vert $
+\end_inset
+
+, and applying Young's inequality on 
+\begin_inset Formula $\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}$
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Note
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{\widetilde{V}}_{L} & = & r^{T}({\color{blue}\widetilde{N}+N_{B}}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P\\
+ &  & -r^{T}N_{B}+r^{T}\beta K\left[\mathrm{sgn}\right](e)\\
+ &  & {\color{blue}+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}}\\
+ & \leq & r^{T}({\color{blue}\widetilde{N}+N_{B}}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P\\
+ &  & -r^{T}N_{B}+r^{T}\beta K\left[\mathrm{sgn}\right](e)\\
+ &  & {\color{blue}+\frac{\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert z\right\Vert ^{2}}\\
+ &  & {\color{blue}+\frac{\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert e\right\Vert _{1}^{2}}\\
+ & \leq & r^{T}({\color{blue}\widetilde{N}+N_{B}}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P\\
+ &  & -r^{T}N_{B}+r^{T}\beta K\left[\mathrm{sgn}\right](e)\\
+ &  & {\color{blue}+\frac{\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert z\right\Vert ^{2}}\\
+ &  & {\color{blue}+\frac{n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert e\right\Vert ^{2}}\\
+ & \leq & r^{T}({\color{blue}\widetilde{N}+N_{B}}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P\\
+ &  & -r^{T}N_{B}+r^{T}\beta K\left[\mathrm{sgn}\right](e)\\
+ &  & {\color{blue}+\frac{\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert z\right\Vert ^{2}}\\
+ &  & {\color{blue}+\frac{n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert z\right\Vert ^{2}}\\
+ & \leq & r^{T}({\color{blue}\widetilde{N}+N_{B}}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P\\
+ &  & -r^{T}N_{B}+r^{T}\beta K\left[\mathrm{sgn}\right](e)\\
+ &  & {\color{blue}+\frac{(n+1)\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)}{2}\left\Vert z\right\Vert ^{2}}\\
+ &  & \textrm{Note that \ensuremath{n+1\leq2n} since \ensuremath{n\in\mathbb{N}}}\\
+ & \leq & r^{T}({\color{blue}\widetilde{N}+\cancel{N_{B}}}-kr-\cancel{e}-\cancel{\beta K\left[\mathrm{sgn}\right](e)})\\
+ &  & +e^{T}(\cancel{r}-\alpha e)-\lambda_{P}P\\
+ &  & \cancel{-r^{T}N_{B}}+\cancel{r^{T}\beta K\left[\mathrm{sgn}\right](e)}\\
+ &  & {\color{blue}+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}}\\
+ & {\color{blue}\overset{a.e.}{\leq}} & -k\left\Vert r\right\Vert ^{2}+r^{T}\widetilde{N}-\alpha\left\Vert e\right\Vert ^{2}-\lambda_{P}P\\
+ &  & {\color{blue}+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}}\\
+ & \leq & -k\left\Vert r\right\Vert ^{2}+\left\Vert r\right\Vert \left\Vert \widetilde{N}\right\Vert -\alpha\left\Vert e\right\Vert ^{2}-\lambda_{P}P\\
+ &  & {\color{blue}+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}}\\
+ & \leq & -k\left\Vert r\right\Vert ^{2}+\left\Vert r\right\Vert \left(\gamma_{2}\left\Vert z\right\Vert +\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)-\alpha\left\Vert e\right\Vert ^{2}-\lambda_{P}P\\
+ &  & {\color{blue}+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}}\\
+ & \leq & -k\left\Vert r\right\Vert ^{2}-\alpha\left\Vert e\right\Vert ^{2}-\lambda_{P}P\\
+ &  & +\left\Vert z\right\Vert \left(\gamma_{2}\left\Vert z\right\Vert +\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\\
+ &  & +n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}\\
+ & \leq & -k\left\Vert r\right\Vert ^{2}-\alpha\left\Vert e\right\Vert ^{2}-\lambda_{P}P\\
+ &  & +\left(\gamma_{2}+\rho_{1}\left(\left\Vert z\right\Vert \right)+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\right)\left\Vert z\right\Vert ^{2}\\
+ & = & -\left(\min\left\{ k,\alpha\right\} \right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
+ &  & +\left(\gamma_{2}+\rho_{1}\left(\left\Vert z\right\Vert \right)+n\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\right)\left\Vert z\right\Vert ^{2}\\
+ & = & -\left(\min\left\{ k,\alpha\right\} -\gamma_{2}-n\gamma_{4}\right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
+ &  & +\left(\rho_{1}\left(\left\Vert z\right\Vert \right)+n\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}\\
+ & = & -\left(\min\left\{ k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4}\right\} \right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
+ &  & +\left(\rho_{1}\left(\left\Vert z\right\Vert \right)+n\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}\\
+ & = & -\left(\min\left\{ k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4}\right\} \right)\left\Vert z\right\Vert ^{2}-\left(\frac{\lambda_{P}}{2}\right)2P\\
+ &  & +\left(\rho_{1}\left(\left\Vert z\right\Vert \right)+n\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}\\
+ & \leq & -2\left(\min\left\{ k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4},\frac{\lambda_{P}}{2}\right\} \right)V_{L}\\
+ &  & +\left(\rho_{1}\left(\left\Vert z\right\Vert \right)+n\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}\\
+ & \leq & -\left(\min\left\{ k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4},\frac{\lambda_{P}}{2}\right\} \right)V_{L}\\
+ &  & +\left(\rho_{1}\left(\sqrt{2V_{L}}\right)+n\rho_{2}\left(\sqrt{2V_{L}}\right)\right)V_{L}\\
+ &  & \textrm{Defining \ensuremath{c=\min\left\{ k-\gamma_{2}-n\gamma_{4},\alpha-\gamma_{2}-n\gamma_{4},\frac{\lambda_{P}}{2}\right\} }and \ensuremath{\rho\left(V_{L}\right)=\rho_{1}\left(V_{L}\right)+n\rho_{2}\left(V_{L}\right)}}\\
+ & \leq & -2cV_{L}+2\rho\left(\sqrt{2V_{L}}\right)V_{L}\\
+ & = & -2\left(c-\rho\left(\sqrt{2V_{L}}\right)\right)V_{L}
+\end{eqnarray*}
+
+\end_inset
+
+Consider the set 
+\begin_inset Formula $\mathcal{D}\triangleq\{\sigma\in\mathbb{R}^{2n+1}|V_{L}(\sigma)<\frac{(\rho^{-1}(c-\lambda_{V}))^{2}}{2}\}$
+\end_inset
+
+ .
+ Then 
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{V}_{L} & \overset{a.e.}{\leq} & -2\left(c-\rho\left(\sqrt{2V_{L}}\right)\right)V_{L}\\
+ & \overset{a.e.}{\leq} & -2\left(c-\rho\left(\sqrt{\cancel{2}\frac{(\rho^{-1}(c-\lambda_{V}))^{2}}{\cancel{2}}}\right)\right)V_{L},\,\forall\psi(t)\in\mathcal{D}.\\
+ & \overset{a.e.}{\leq} & -2\left(c-\rho\left(\sqrt{(\rho^{-1}(c-\lambda_{V}))^{2}}\right)\right)V_{L},\,\forall\psi(t)\in\mathcal{D}.\\
+ & \overset{a.e.}{\leq} & -2\left(c-\cancel{\rho}\left(\cancel{\rho^{-1}}(c-\lambda_{V})\right)\right)V_{L},\,\forall\psi(t)\in\mathcal{D}.\\
+ & \overset{a.e.}{\leq} & -2\left(c-\left(c-\lambda_{V}\right)\right)V_{L},\,\forall\psi(t)\in\mathcal{D}.\\
+ & \overset{a.e.}{\leq} & -2\left(\cancel{c}-\cancel{c}+\lambda_{V}\right)V_{L},\,\forall\psi(t)\in\mathcal{D}.\\
+ & \overset{a.e.}{\leq} & -2\lambda_{V}V_{L},\,\forall\psi(t)\in\mathcal{D}.
+\end{eqnarray*}
+
+\end_inset
+
+Using the comparison principle yields
+\begin_inset Formula 
+\[
+V_{L}(\psi(t))\leq V_{L}(\psi(t_{0}))\exp\left(-2\lambda_{V}(t-t_{0})\right),\,\forall\psi(t)\in\mathcal{D},
+\]
+
+\end_inset
+
+therefore, 
+\begin_inset Formula $V_{L}(\psi(t))\leq V_{L}(\psi(t_{0})),\,\forall\psi(t)\in\mathcal{D}$
+\end_inset
+
+, which implies all solutions initialized in 
+\begin_inset Formula $\mathcal{D}$
+\end_inset
+
+ stay in 
+\begin_inset Formula $\mathcal{D}$
+\end_inset
+
+.
+ Selecting 
+\begin_inset Formula $c>\lambda_{V}+\rho(\sqrt{2V_{L}(\psi(t_{0}))})$
+\end_inset
+
+ yields
+\begin_inset Formula 
+\begin{eqnarray*}
+c & > & \lambda_{V}+\rho(\sqrt{2V_{L}(\psi(t_{0}))})\\
+c-\lambda_{V} & > & \rho(\sqrt{2V_{L}(\psi(t_{0}))})\\
+\rho^{-1}\left(c-\lambda_{V}\right) & > & \sqrt{2V_{L}(\psi(t_{0}))}\\
+\left(\rho^{-1}\left(c-\lambda_{V}\right)\right)^{2} & > & 2V_{L}(\psi(t_{0}))\\
+\frac{\left(\rho^{-1}\left(c-\lambda_{V}\right)\right)^{2}}{2} & > & V_{L}(\psi(t_{0}))\\
+V_{L}(\psi(t_{0})) & < & \frac{\left(\rho^{-1}\left(c-\lambda_{V}\right)\right)^{2}}{2}
+\end{eqnarray*}
+
+\end_inset
+
+ 
+\begin_inset Formula $\psi(t_{0})\in\mathcal{D}$
+\end_inset
+
+, which guarantees 
+\begin_inset Formula $\psi(t)\in\mathcal{D},\forall t\in\mathcal{I}$
+\end_inset
+
+.
+ Then 
+\begin_inset Formula $V_{L}(\psi(t))\leq V_{L}(\psi(t_{0}))\exp\left(-2\lambda_{V}(t-t_{0})\right),\,\forall(t,\psi(t_{0}))\in\mathcal{I}\times\mathcal{D},$
+\end_inset
+
+ and the size of 
+\begin_inset Formula $\mathcal{D}$
+\end_inset
+
+ can be arbitrarily increased to include any initial condition by selecting
+ gains according to the gain condition 
+\begin_inset Formula $c>\lambda_{V}+V_{L}(\psi(t_{0}))$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray}
+\dot{\widetilde{V}}_{L} & = & r^{T}(\widetilde{N}+N_{B}-kr-e-\beta K\left[\mathrm{sgn}\right](e))\nonumber \\
+ &  & +e^{T}(r-\alpha e)-\lambda_{P}P-r^{T}N_{B}\nonumber \\
+ &  & +r^{T}\beta K\left[\mathrm{sgn}\right](e)+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\nonumber \\
+ & \leq & -k\left\Vert r\right\Vert ^{2}-\alpha\left\Vert e\right\Vert ^{2}+\left(\gamma_{2}+\rho_{1}\left(\left\Vert z\right\Vert \right)\right)\left\Vert r\right\Vert \left\Vert z\right\Vert \nonumber \\
+ &  & -\lambda_{P}P+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\nonumber \\
+ & \leq & -2\left(c-\rho\left(\left\Vert z\right\Vert \right)\right)V_{L}\nonumber \\
+ & \leq & -2\left(c-\rho\left(\sqrt{2V_{L}}\right)\right)V_{L},\label{eq:vtildedotsub1}
+\end{eqnarray}
+
+\end_inset
+
+for almost all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+, where 
+\begin_inset Formula $c$
+\end_inset
+
+ and 
+\begin_inset Formula $\rho$
+\end_inset
+
+ are introduced before the theorem statement, the term
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula $K\left[\textrm{sgn}\right](e)=\textrm{SGN}(e)$
+\end_inset
+
+, using the calculus for computing Filippov's differential inclusion in
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Paden1987"
+literal "false"
+
+\end_inset
+
+, such that 
+\begin_inset Formula $\textrm{SGN}_{{\color{blue}i}}(e_{i})=\left\{ 1\right\} $
+\end_inset
+
+ if 
+\begin_inset Formula $e_{i}>0$
+\end_inset
+
+, 
+\begin_inset Formula $\left[-1,1\right]$
+\end_inset
+
+ if 
+\begin_inset Formula $e_{i}=0$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\{ -1\right\} $
+\end_inset
+
+ if 
+\begin_inset Formula $e_{i}<0$
+\end_inset
+
+, where 
+\begin_inset Formula $\textrm{SGN}_{i}(\cdot)$
+\end_inset
+
+ and 
+\begin_inset Formula $e_{i}$
+\end_inset
+
+ denote the 
+\begin_inset Formula $i^{\mathrm{th}}$
+\end_inset
+
+ components of 
+\begin_inset Formula $\textrm{SGN}(\cdot)$
+\end_inset
+
+ and 
+\begin_inset Formula $e$
+\end_inset
+
+, respectively, 
+\begin_inset Formula $\forall i=1,\ldots,n$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $t\mapsto r^{T}(t)\beta K\left[\mathrm{sgn}\right](e(t))$
+\end_inset
+
+ is set-valued only for the set of time instants 
+\begin_inset Formula $T=\{t\in[t_{0},\infty)|\exists i\in\{1,2,\ldots,n\}\,\textrm{s.t.}\,e_{i}\left(t\right)=0\:\wedge r_{i}(t)\neq0\}$
+\end_inset
+
+.
+ According to Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:meas_zero"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the set 
+\begin_inset Formula $T$
+\end_inset
+
+ has Lebesgue measure zero.
+ It follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:vtildedotsub1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $V_{L}$
+\end_inset
+
+ is non-increasing along all trajectories initialized such that 
+\begin_inset Formula $\psi(t_{0})\in\mathcal{D}$
+\end_inset
+
+.
+ Selecting 
+\begin_inset Formula $c$
+\end_inset
+
+ according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cgain"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields 
+\begin_inset Formula $c>\lambda_{V}+\rho\left(W(z(t_{0}))\right)=\lambda_{V}+\rho(\sqrt{2V_{L}(\psi(t_{0}))})$
+\end_inset
+
+.
+ Then, 
+\begin_inset Formula $V_{L}(\psi(t))$
+\end_inset
+
+ is non-increasing, implying 
+\begin_inset Formula $\psi(t)\in\mathcal{D},\,\forall t\in\mathcal{I}$
+\end_inset
+
+.
+ It follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:vtildedotsub1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cgain"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $\dot{V}_{L}$
+\end_inset
+
+ can be upper-bounded as
+\begin_inset Formula 
+\begin{equation}
+\dot{V}_{L}\leq-2\lambda_{V}V_{L},\label{eq:vltildevl}
+\end{equation}
+
+\end_inset
+
+for almost all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ Using the comparison principle 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 4.4"
+key "Lin.Sontag.ea1996"
+literal "false"
+
+\end_inset
+
+ in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:vltildevl"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Formula 
+\begin{equation}
+V_{L}(\psi(t))\leq V_{L}(\psi(t_{0}))\exp\left(-2\lambda_{V}(t-t_{0})\right),\label{eq:Vlexp}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula $\forall(\psi(t_{0}),t)\in\mathcal{D}\times\mathcal{I}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $(\psi,t)\mapsto K\left[g\right](\psi,t)$
+\end_inset
+
+ is locally bounded over 
+\begin_inset Formula $\mathbb{R}^{2n+1}\times[t_{0},\infty)$
+\end_inset
+
+ and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Vlexp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) implies that 
+\begin_inset Formula $\psi$
+\end_inset
+
+ is precompact, then 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 3.3 and Remark 3.4"
+key "Kamalapurkar.Dixon.ea2020"
+literal "false"
+
+\end_inset
+
+ can be invoked to show that every maximal solution 
+\begin_inset Formula $\psi$
+\end_inset
+
+ with 
+\begin_inset Formula $P(t_{0})$
+\end_inset
+
+ initialized according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is complete, i.e., 
+\begin_inset Formula $\mathcal{I}=[t_{0},\infty)$
+\end_inset
+
+.
+ Using the definition of 
+\begin_inset Formula $z$
+\end_inset
+
+, (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Vlexp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:P>0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $V_{L}(\psi(t))=\frac{1}{2}\left\Vert z(t)\right\Vert ^{2}+P(t)\geq\frac{1}{2}\left\Vert z(t)\right\Vert ^{2},\,\forall t\in[t_{0},\infty)$
+\end_inset
+
+.
+ Therefore,
+\begin_inset Formula 
+\begin{equation}
+\left\Vert z(t)\right\Vert \leq\sqrt{2V_{L}(\psi(t))},\,\forall t\in[t_{0},\infty).\label{eq:zbound}
+\end{equation}
+
+\end_inset
+
+Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Vlexp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:zbound"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $\left\Vert z(t)\right\Vert $
+\end_inset
+
+ can further be upper-bounded as
+\begin_inset Formula 
+\begin{equation}
+\left\Vert z(t)\right\Vert \leq\sqrt{2V_{L}(\psi(t_{0}))}\exp\left(-\lambda_{V}(t-t_{0})\right),\label{eq:ztbound}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula $\forall(\psi(t_{0}),t)\in\mathcal{D}\times[t_{0},\infty)$
+\end_inset
+
+.
+ Moreover, substituting (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) in the expression for 
+\begin_inset Formula $V_{L}(\psi(t_{0}))$
+\end_inset
+
+ yields 
+\begin_inset Formula $V_{L}(\psi(t_{0}))=\frac{1}{2}\left\Vert z(t_{0})\right\Vert ^{2}+P(t_{0})$
+\end_inset
+
+.
+ Consequently, 
+\begin_inset Formula $\psi(t_{0})\in\mathcal{D}$
+\end_inset
+
+ implies 
+\begin_inset Formula $z(t_{0})\in\mathcal{S}$
+\end_inset
+
+.
+ Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:ztbound"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Formula 
+\begin{equation}
+\left\Vert z(t)\right\Vert \leq W(z(t_{0}))\exp\left(-\lambda_{V}(t-t_{0})\right),\label{eq:ztfbound}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Formula $\forall(z(t_{0}),t)\in\mathcal{S}\times[t_{0},\infty)$
+\end_inset
+
+, implying the zero solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $(e(t),r(t))\equiv(0,0)$
+\end_inset
+
+, is semi-globally exponentially stable.
+ Note that the exponential stability result is semi-global (cf., 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Remark 2"
+key "Pettersen2017"
+literal "false"
+
+\end_inset
+
+) because the size of the set 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ can be arbitrarily increased using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cgain"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) to include any 
+\begin_inset Formula $z(t_{0})\in\mathbb{R}^{2n}$
+\end_inset
+
+.
+ Moreover, 
+\begin_inset Formula $x\in\mathcal{L}_{\infty}$
+\end_inset
+
+ since 
+\begin_inset Formula $e,x_{d}\in\mathcal{L}_{\infty}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $d\in\mathcal{L}_{\infty}$
+\end_inset
+
+ by Assumption 1, it follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r_eval"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $\hat{d}\in\mathcal{L}_{\infty}$
+\end_inset
+
+.
+ Therefore, since all the terms on the right hand side of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:controlinput"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) are bounded and continuous, 
+\begin_inset Formula $u\in\mathcal{L}_{\infty}$
+\end_inset
+
+ and is continuous.
+ Moreover, since 
+\begin_inset Formula $e(t)=e(t_{0})+\int_{t_{0}}^{t}\left(r(\tau)-\alpha e(\tau)\right)d\tau$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in[t_{0},\infty)$
+\end_inset
+
+ using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the continuity of 
+\begin_inset Formula $r-\alpha e$
+\end_inset
+
+ implies that the Filippov solution 
+\begin_inset Formula $e$
+\end_inset
+
+ is also continuously differentiable.
+\end_layout
+
+\begin_layout Remark
+The relation in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r_eval"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) indicates that 
+\begin_inset Formula $r$
+\end_inset
+
+ is the estimation error between the RISE term 
+\begin_inset Formula $\hat{d}(t)$
+\end_inset
+
+ and the uncertainty 
+\begin_inset Formula $d(x,\nu,t)$
+\end_inset
+
+.
+ Therefore, (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:ztfbound"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) implies that the RISE term is an exponentially convergent estimator of
+ the uncertainty, i.e., 
+\begin_inset Formula $\hat{d}(t)\to d(x,\nu,t)$
+\end_inset
+
+ with a uniform and exponential convergence as 
+\begin_inset Formula $t\to\infty$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+For the special case when 
+\begin_inset Formula $\dot{d}(t)$
+\end_inset
+
+ and 
+\begin_inset Formula $\ddot{d}(t)$
+\end_inset
+
+ are bounded by known constants, the analysis approach in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Zhao.Xian.ea2014"
+literal "false"
+
+\end_inset
+
+ can also be considered.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+The exponential stability result is global when the bounds on 
+\begin_inset Formula $\widetilde{N}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{N}_{B}$
+\end_inset
+
+ are linear in 
+\begin_inset Formula $\left\Vert z\right\Vert $
+\end_inset
+
+, i.e., 
+\begin_inset Formula $\rho_{1}=\rho_{2}=0$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+In this paper, new insights on the construction of a P-function are used
+ to yield exponential stability with RISE-based controllers.
+ As an outcome of this breakthrough, the inherent learning capability of
+ RISE-based controllers is shown to yield exponential identification of
+ disturbances/uncertainty, as compared to all previous asymptotic results.
+ Future work could involve extension of the proposed stability analysis
+ methodology for RISE-based error systems with sensor noise, and delays
+ in input and state measurements.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "encr,master,ncr"
+options "ieeetr"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Appendix
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+Proof of Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:meas_zero"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The set 
+\begin_inset Formula $T$
+\end_inset
+
+ can also be represented as 
+\begin_inset Formula $T=\{t\in\mathcal{I}|\exists i\in\{1,2,\ldots,n\}\,\textrm{s.t.}\,e_{i}\left(t\right)=0\:\wedge r_{i}(t)-\alpha e_{i}(t)\neq0\}=\{t\in\mathcal{I}|\exists i\in\{1,2,\ldots,n\}\,\textrm{s.t.}\,e_{i}\left(t\right)=0\:\wedge\dot{e}_{i}(t)\neq0\}$
+\end_inset
+
+ to facilitate the subsequent analysis using the dynamics in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:rdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Select 
+\begin_inset Formula $a\in T$
+\end_inset
+
+, which yields 
+\begin_inset Formula $e_{i}(a)=0$
+\end_inset
+
+ using the definition of 
+\begin_inset Formula $T$
+\end_inset
+
+.
+ Given 
+\begin_inset Formula $\dot{e}_{i}(a)\neq0$
+\end_inset
+
+, we can assume without loss of generality that 
+\begin_inset Formula $\dot{e}_{i}(a)>0$
+\end_inset
+
+; the proof easily extends for 
+\begin_inset Formula $\dot{e}_{i}(a)<0$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+ are absolutely continuous, it follows from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) that 
+\begin_inset Formula $\dot{e}$
+\end_inset
+
+ is continuous.
+ Given 
+\begin_inset Formula $\dot{e}_{i}(a)>0$
+\end_inset
+
+ and continuity of 
+\begin_inset Formula $\dot{e}$
+\end_inset
+
+, there exists 
+\begin_inset Formula $\delta>0$
+\end_inset
+
+ such that 
+\begin_inset Formula $\dot{e}_{i}(t)>0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\left(a-\delta,a+\delta\right)$
+\end_inset
+
+.
+ Based on 
+\begin_inset Formula $\dot{e}_{i}(t)>0$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\int_{a}^{t}\dot{e}_{i}(\tau)d\tau>0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\left(a,a+\delta\right)$
+\end_inset
+
+.
+ Then, using 
+\begin_inset Formula $e_{i}(a)=0$
+\end_inset
+
+ yields 
+\begin_inset Formula $\int_{a}^{t}\dot{e}_{i}(\tau)d\tau=e_{i}(t)-e_{i}(a)=e_{i}(t)>0$
+\end_inset
+
+.
+ Similarly, 
+\begin_inset Formula $-\int_{t}^{a}\dot{e}_{i}(\tau)d\tau=e_{i}(t)-e_{i}(a)=e_{i}(t)<0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\left(a-\delta,a\right)$
+\end_inset
+
+, implying 
+\begin_inset Formula $e_{i}(t)\neq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\left(a-\delta,a+\delta\right)\backslash\left\{ a\right\} $
+\end_inset
+
+.
+ If more than one component has 
+\begin_inset Formula $e_{i}(a)=0$
+\end_inset
+
+, we select the intersection of each neighborhood found above, represented
+ by 
+\begin_inset Formula $U(a)$
+\end_inset
+
+.
+ Therefore, there exists a neighborhood, 
+\begin_inset Formula $U(a)$
+\end_inset
+
+, for any 
+\begin_inset Formula $a\in T$
+\end_inset
+
+, s.t.
+ 
+\begin_inset Formula $e_{i}(t)\neq0$
+\end_inset
+
+ for all time-instants 
+\begin_inset Formula $t\in U(a)\backslash\left\{ a\right\} $
+\end_inset
+
+ and 
+\begin_inset Formula $i\in\{1,2,\ldots,n\}$
+\end_inset
+
+.
+ When 
+\begin_inset Formula $t\in T$
+\end_inset
+
+, 
+\begin_inset Formula $e_{i}(t)=0$
+\end_inset
+
+ for some 
+\begin_inset Formula $i\in\{1,2,\ldots,n\}$
+\end_inset
+
+, which implies 
+\begin_inset Formula $U(a)\cap T=\{a\}$
+\end_inset
+
+ for all 
+\begin_inset Formula $a\in T$
+\end_inset
+
+; therefore, 
+\begin_inset Formula $T$
+\end_inset
+
+ is discrete and consequently has measure zero.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+Proof of Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:integrable"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The function 
+\begin_inset Formula $\textrm{sgn}\left(e(\cdot)\right)$
+\end_inset
+
+ is discontinuous only at time-instants where it changes sign, i.e., the set
+ 
+\begin_inset Formula $\{t\in\mathcal{I}|\exists i\in\{1,2,\ldots,n\}\,\textrm{s.t.}\,e_{i}\left(t\right)=0\:\wedge\dot{e}_{i}(t)\neq0\}=\{t\in\mathcal{I}|\exists i\in\{1,2,\ldots,n\}\,\textrm{s.t.}\,e_{i}\left(t\right)=0\:\wedge r_{i}(t)-\alpha e_{i}(t)\neq0\}=T$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $T$
+\end_inset
+
+ has Lebesgue measure zero according to Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:meas_zero"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $\textrm{sgn}\left(e(\cdot)\right)$
+\end_inset
+
+ is continuous a.e., implying it is Riemann integrable 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Theorem 11.33"
+key "Rudin1976"
+literal "false"
+
+\end_inset
+
+ on 
+\begin_inset Formula $[t_{0},t_{1}]$
+\end_inset
+
+, 
+\begin_inset Formula $\forall t_{1}\in\mathcal{I}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+Proof of Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Psol"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+The right hand side (RHS) of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P_expand"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is almost everywhere (a.e.) differentiable with respect to time, because
+ every term on the RHS is absolutely continuous, including 
+\begin_inset Formula $\left\Vert e\right\Vert _{1}$
+\end_inset
+
+, since 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{1}$
+\end_inset
+
+ is globally Lipschitz and 
+\begin_inset Formula $e$
+\end_inset
+
+ is absolutely continuous.
+ The time-derivative of 
+\begin_inset Formula $\left\Vert e\right\Vert _{1}$
+\end_inset
+
+, whenever it exists, is 
+\begin_inset Formula $\dot{e}^{T}\textrm{sgn}(e)$
+\end_inset
+
+, using the chain rule.
+ Therefore, taking the time-derivative of both the sides of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P_expand"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) at points where 
+\begin_inset Formula $P$
+\end_inset
+
+ is differentiable yields
+\begin_inset Formula 
+\begin{align}
+\dot{P} & \stackrel{a.e.}{=}\beta\dot{e}^{T}\textrm{sgn}(e)-\dot{e}^{T}N_{B}-e^{T}\dot{N}_{B}\nonumber \\
+ & +\frac{d}{dt}(\mathrm{e}^{-\lambda_{P}t}*((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}))\nonumber \\
+ & +\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\right).\label{eq:Pdoteval1}
+\end{align}
+
+\end_inset
+
+Based on the Leibniz rule, for any given 
+\begin_inset Formula $q:[t_{0},\infty)\to\mathbb{R}$
+\end_inset
+
+, the function 
+\begin_inset Formula $\mathrm{e}^{-\lambda_{P}t}$
+\end_inset
+
+ satisfies 
+\begin_inset Formula $\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*q\right)=\frac{d}{dt}\left(\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau\right)=q(t)-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau=-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*q+q$
+\end_inset
+
+.
+ Additionally, 
+\begin_inset Formula $L=\dot{e}^{T}N_{B}+\alpha e^{T}N_{B}-\beta\dot{e}^{T}\mathrm{sgn}\left(e\right)-\alpha\beta\left\Vert e\right\Vert _{1}-(\gamma_{4}+\rho_{2}(\left\Vert z\right\Vert ))\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}$
+\end_inset
+
+ is obtained after substituting (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:edot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) into (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Therefore, the expression for 
+\begin_inset Formula $\dot{P}$
+\end_inset
+
+ in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdoteval1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) can be rewritten as
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Given
+\begin_inset Formula 
+\begin{eqnarray*}
+P & = & \beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left((\alpha-\lambda_{P})\left(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\right)+e^{T}\dot{N}_{B}(t)\right)\\
+ & {\color{blue}} & {\color{blue}+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)},
+\end{eqnarray*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{P} & = & \beta\dot{e}^{T}\textrm{sgn}(e)-\dot{e}^{T}N_{B}(t)-e^{T}\dot{N}_{B}(t)\\
+ &  & +\frac{d}{dt}(\mathrm{e}^{-\lambda_{P}t}*((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}))\\
+ &  & {\color{blue}+\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\right)}
+\end{eqnarray*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*q\right) & = & \frac{d}{dt}\left(\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Leibniz Rule says
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{d}{dx}\left(\int_{a(x)}^{b(x)}f(x,t)dt\right) & = & f(x,b(x))\frac{db(x)}{dx}-f(x,a(x))\frac{da(x)}{dx}+\int_{a(x)}^{b(x)}\frac{\partial}{\partial x}f(x,t)dt
+\end{eqnarray*}
+
+\end_inset
+
+Applying Leibniz Rule yields,
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{d}{dt}\left(\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau\right) & = & \mathrm{e}^{-\lambda_{P}(t-t)}q(t)\frac{dt}{dt}-\mathrm{e}^{-\lambda_{P}(t-t_{0})}q(t_{0})\frac{dt_{0}}{dt}+\int_{t_{0}}^{t}\frac{\partial}{\partial t}\left(\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)\right)d\tau\\
+ & = & \mathrm{e}^{0}q(t)1-0-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau\\
+ & = & q(t)-\lambda_{P}\int_{t_{0}}^{t}\mathrm{e}^{-\lambda_{P}(t-\tau)}q(\tau)d\tau\\
+ & = & q(t)-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*q
+\end{eqnarray*}
+
+\end_inset
+
+therefore the property 
+\begin_inset Formula 
+\[
+\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*q\right)=q-\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*q
+\]
+
+\end_inset
+
+Applying this property to 
+\begin_inset Formula $\frac{d}{dt}(\mathrm{e}^{-\lambda_{P}t}*((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}))$
+\end_inset
+
+ and 
+\begin_inset Formula $\frac{d}{dt}\left(\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\right)$
+\end_inset
+
+ terms in 
+\begin_inset Formula $\dot{P}$
+\end_inset
+
+ yields
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{P} & = & \beta\dot{e}^{T}\textrm{sgn}(e)-\dot{e}^{T}N_{B}(t)-e^{T}\dot{N}_{B}(t)\\
+ &  & +(\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\\
+ &  & +\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\\
+ & = & \beta\dot{e}^{T}\textrm{sgn}(e)-\dot{e}^{T}N_{B}(t)-e^{T}\dot{N}_{B}(t)\\
+ &  & +\alpha(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})-\lambda_{P}(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})\\
+ &  & +e^{T}\dot{N}_{B}+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\\
+ & = & \beta\dot{e}^{T}\textrm{sgn}(e)-\dot{e}^{T}N_{B}(t)-\cancel{e^{T}\dot{N}_{B}(t)}\\
+ &  & +\alpha\beta\left\Vert e\right\Vert _{1}-\alpha e^{T}N_{B}-\lambda_{P}\beta\left\Vert e\right\Vert _{1}+\lambda_{P}e^{T}N_{B}\\
+ &  & +\cancel{e^{T}\dot{N}_{B}}+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\\
+ & = & \beta\dot{e}^{T}\textrm{sgn}(e)+\alpha\beta\left\Vert e\right\Vert _{1}\\
+ &  & -\dot{e}^{T}N_{B}-\alpha e^{T}N_{B}\\
+ &  & +\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\\
+ &  & -\lambda_{P}\beta\left\Vert e\right\Vert _{1}+\lambda_{P}e^{T}N_{B}\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\\
+ & = & \beta\left(\dot{e}+\alpha e\right)^{T}\textrm{sgn}(e)\\
+ &  & -\left(\dot{e}+\alpha e\right)^{T}N_{B}\\
+ &  & +\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\\
+ &  & -\lambda_{P}\left(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B}\right)\\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\\
+ & = & \beta r^{T}\textrm{sgn}(e)-r^{T}N_{B}+\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}-\lambda_{P}P
+\end{eqnarray*}
+
+\end_inset
+
+Recall 
+\begin_inset Formula $L=r^{T}N_{B}(t)-r^{T}\beta\mathrm{sgn}\left(e\right){\color{blue}-\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}}$
+\end_inset
+
+.
+ Therefore
+\begin_inset Formula 
+\[
+P=-\lambda_{P}P-L.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray}
+\dot{P} & \stackrel{a.e.}{=} & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)\nonumber \\
+ &  & -\lambda_{P}\mathrm{e}^{-\lambda_{P}t}*((\alpha-\lambda_{P})(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B})+e^{T}\dot{N}_{B})\nonumber \\
+ &  & -\lambda_{P}\beta\left\Vert e\right\Vert _{1}+\lambda_{P}e^{T}N_{B}+\beta\dot{e}^{T}\textrm{sgn}(e)\nonumber \\
+ &  & -\dot{e}^{T}N_{B}+\alpha\beta\left\Vert e\right\Vert _{1}-\alpha e^{T}N_{B}\nonumber \\
+ &  & +\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\nonumber \\
+ & = & -\lambda_{P}P-L.\label{eq:Pdoteval2}
+\end{eqnarray}
+
+\end_inset
+
+Filippov's differential inclusion for (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pdot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is given by
+\begin_inset Formula 
+\begin{eqnarray}
+\dot{P} & \in & -\lambda_{P}P-K\left[L\right].\label{eq:PFillipov}
+\end{eqnarray}
+
+\end_inset
+
+To prove the uniqueness of the solution to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:PFillipov"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), consider any two solutions with the same initial conditions, i.e., 
+\begin_inset Formula $P_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $P_{2}$
+\end_inset
+
+, with 
+\begin_inset Formula $P_{1}(t_{0})=P_{2}(t_{0})$
+\end_inset
+
+, implying
+\begin_inset Formula 
+\begin{eqnarray}
+\dot{P}_{1} & \stackrel{a.e.}{\in} & -\lambda_{P}P_{1}-K\left[L\right],\label{eq:P1dot}\\
+\dot{P}_{2} & \stackrel{a.e.}{\in} & -\lambda_{P}P_{2}-K\left[L\right].\label{eq:P2dot}
+\end{eqnarray}
+
+\end_inset
+
+Based on (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $t\mapsto K\left[L\right](\psi(t))$
+\end_inset
+
+ is set-valued only when there exists some 
+\begin_inset Formula $i\in\{1,2,\ldots,n\}$
+\end_inset
+
+ such that 
+\begin_inset Formula $t\to K[\textrm{sgn}](e_{i}(t))$
+\end_inset
+
+ is set-valued and 
+\begin_inset Formula $r_{i}(t)\neq0$
+\end_inset
+
+.
+ Using Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:meas_zero"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $t\mapsto K\left[L\right](\psi(t))$
+\end_inset
+
+ is set-valued only for a set of time-instants of measure zero.
+ Therefore, defining 
+\begin_inset Formula $\Delta(t)=P_{2}(t)-P_{1}(t)$
+\end_inset
+
+, and using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P1dot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P2dot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Formula 
+\begin{equation}
+\dot{\Delta}\stackrel{a.e.}{=}-\lambda_{P}\Delta,\label{eq:delta}
+\end{equation}
+
+\end_inset
+
+with 
+\begin_inset Formula $\Delta(t_{0})=0$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\Delta\equiv0$
+\end_inset
+
+ is an equilibrium point of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:delta"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), 
+\begin_inset Formula $\Delta(t_{0})=0$
+\end_inset
+
+ implies 
+\begin_inset Formula $\left\Vert \Delta(t)\right\Vert =0,\,\forall t\in\mathcal{I}$
+\end_inset
+
+, therefore 
+\begin_inset Formula $P_{1}(t)=P_{2}(t),\,\forall t\in[t_{0},\infty)$
+\end_inset
+
+, i.e., any two solutions are equal, implying the solution is unique.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+\begin_inset Argument 1
+status open
+
+\begin_layout Plain Layout
+Proof of Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:P>0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Using Holder's inequality and Assumption 1 yields lower bounds on 
+\begin_inset Formula $-e^{T}N_{B}$
+\end_inset
+
+ and 
+\begin_inset Formula $e^{T}\dot{N}_{B}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{eqnarray}
+-e^{T}N_{B} & \geq & -\left\Vert e\right\Vert _{1}\left\Vert N_{B}\right\Vert _{1}\geq-\gamma_{1}\left\Vert e\right\Vert _{1},\label{eq:e_ddot}
+\end{eqnarray}
+
+\end_inset
+
+and
+\begin_inset Formula 
+\begin{eqnarray}
+e^{T}\dot{N}_{B} & \geq & -\left\Vert e\right\Vert _{1}\left\Vert \dot{N}_{B}\right\Vert _{1}\nonumber \\
+ & \geq & -\left(\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\left\Vert e\right\Vert _{1},\label{eq:e_dddot}
+\end{eqnarray}
+
+\end_inset
+
+
+\begin_inset Formula $\forall t\in\mathcal{I}$
+\end_inset
+
+.
+ Substituting the bounds in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:e_ddot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:e_dddot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) into the expression for 
+\begin_inset Formula $P$
+\end_inset
+
+ in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P_expand"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Formula 
+\begin{eqnarray}
+P & \geq & \beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1}\nonumber \\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right).\label{eq:P_lowerbound}
+\end{eqnarray}
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Given
+\begin_inset Formula 
+\begin{eqnarray*}
+P & = & \beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left((\alpha-\lambda_{P})\left(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\right)+e^{T}\dot{N}_{B}(t)\right)\\
+ & {\color{blue}} & {\color{blue}+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)}
+\end{eqnarray*}
+
+\end_inset
+
+Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:e_ddot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:e_dddot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) ,
+\begin_inset Formula 
+\[
+\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\geq\beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1},
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\mathrm{e}^{-\lambda_{P}t}*\left((\alpha-\lambda_{P})\left(\beta\left\Vert e\right\Vert _{1}-e^{T}N_{B}(t)\right)+e^{T}\dot{N}_{B}(t)\right) & \geq & \mathrm{e}^{-\lambda_{P}t}*\left((\alpha-\lambda_{P})\left(\beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1}\right)-\left(\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\left\Vert e\right\Vert _{1}\right)\\
+ & = & \mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\left(\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\right)\left\Vert e\right\Vert _{1}\right)\\
+ & = & \mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right)-\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\left\Vert e\right\Vert _{1}\right)\\
+ & = & \mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right)-\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)
+\end{eqnarray*}
+
+\end_inset
+
+Therefore,
+\begin_inset Formula 
+\begin{eqnarray*}
+P & \geq & \beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1}\\
+ &  & +\mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right)-\cancel{\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)}\\
+ &  & {\color{blue}\cancel{+\mathrm{e}^{-\lambda_{P}t}*\left(\left(\gamma_{4}+\rho_{2}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert \left\Vert e\right\Vert _{1}\right)}}\\
+ & = & \beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1}+\mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right)
+\end{eqnarray*}
+
+\end_inset
+
+Selecting 
+\begin_inset Formula $\beta>{\color{blue}\gamma_{1}}+\frac{{\color{blue}\gamma_{3}}}{\alpha-\lambda_{P}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha>\lambda_{P}$
+\end_inset
+
+, yields 
+\begin_inset Formula $\beta\left\Vert e\right\Vert _{1}-\gamma_{1}\left\Vert e\right\Vert _{1}\geq0$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathrm{e}^{-\lambda_{P}t}*\left(\left((\alpha-\lambda_{P})\left(\beta-\gamma_{1}\right)-\gamma_{3}\right)\left\Vert e\right\Vert _{1}\right)\geq0$
+\end_inset
+
+, therefore, 
+\begin_inset Formula $P\geq0$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+Selecting 
+\begin_inset Formula $P(t_{0})$
+\end_inset
+
+ according to (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+ according to the gain conditions (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:alpha_gc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:beta_gc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields 
+\begin_inset Formula $P(t)\geq0$
+\end_inset
+
+, 
+\begin_inset Formula $\,\forall t\in\mathcal{I}$
+\end_inset
+
+ using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:P_lowerbound"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\end_body
+\end_document

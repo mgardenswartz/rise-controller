@@ -57,7 +57,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         next_zeta, e_hat_dot_rho = update_rho_filter(zeta, e_meas, A_d, B_q, B_s, rho_k4)
         
         # Composite error signal r
-        r = e_meas + k_1 * e_hat_dot_rho
+        r_meas = e_meas + k_1 * e_hat_dot_rho
 
         # Active Network Branch
         if enable_learning:
@@ -78,7 +78,7 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
             # ADAPTIVE WEIGHT LAWS
             if is_integral:
                 # Integral uses the filtered 'r' tracking signal
-                theta_hat_dot = compute_theta_hat_dot(r, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
+                theta_hat_dot = -compute_theta_hat_dot(r_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
             else:
                 # Baseline uses the standard 'e_meas'
                 theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
