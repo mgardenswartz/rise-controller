@@ -37,14 +37,12 @@ def calculate_and_save_statistics(
         config.neural_network.k_0,
         config.neural_network.k_i
     )
-    flops_per_pass = 2 * p 
 
     stats = {
         "rms_tracking_error_norm": _rms_of_norm(e_post),
         "rms_control_input_norm": _rms_of_norm(u_post),
         "rms_nn_output_norm": _rms_of_norm(phi_post),
-        "total_trainable_parameters": float(p),
-        "forward_pass_flops": float(flops_per_pass)
+        "total_trainable_parameters": float(p)
     }
 
     stats_path = output_dir / config.directories.statistics_filename

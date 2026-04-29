@@ -32,82 +32,76 @@ def create_plant_vector_field(sys_id: int):
     return plant_vector_field
 
 # --- 2. THE DISCRETE CONTROLLER STEP ---
-def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
+def create_discrete_controller(ctrl_type: str, sys_id: int, dt_ctrl: float):
     def discrete_step(carry, noise_sample, args):
-        # Unpack the 5-element carry state (including zeta for the filter)
         t, x_true, theta_hat, I_state, zeta = carry
-        # Unpack the 5-element carry state (including zeta for the filter)
-        t, x_true, theta_hat, I_state, zeta = carry
-        
+
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
-         excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar, 
-         enable_learning, e_0, x_d_dot_0, A_d, B_q, B_s, rho_k4) = args
+         excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar,
          enable_learning, e_0, x_d_dot_0, A_d, B_q, B_s, rho_k4) = args
 
         x_d = get_desired_trajectory(t, sys_id)
         x_d_dot = get_desired_velocity(t, sys_id)
-        
-        # Sample noisy measurement
+
         x_meas = x_true + noise_sample
         e_meas = x_d - x_meas
         u_1 = get_excitation_signal(t, excitation_duration, d_out)
-        
-        # Construct Constant Diagonal Learning Rate Matrix
+
         p = theta_hat.shape[0]
         gamma = learning_rate * jnp.eye(p)
-        
+
         # --- RHO FILTER PROPAGATION ---
         next_zeta, e_hat_dot_rho = update_rho_filter(zeta, e_meas, A_d, B_q, B_s, rho_k4)
-        
-        # Composite error signal r
+
+        # Composite error signal r (used by _r variants)
         r = e_meas + k_1 * e_hat_dot_rho
+        # Velocity estimate x_hat_dot (used by direct_r)
+        x_hat_dot = x_d_dot - e_hat_dot_rho
 
-        # Active Network Branch
         if enable_learning:
-            if is_integral:
-                # Integral Controller (Psi inside the integral)
-                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
-                # SEVERED LOOP: Network input is exclusively x_meas
-                phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+            if ctrl_type.startswith("integral_"):
+                # Controllers 1 & 2: NN inside the integral, kappa = [x, u]
+                u_next = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+                kappa = jnp.concatenate([x_meas, u_next])
+                phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
-            else:
-                # Baseline Controller (Psi outside the integral)
+                jac = jax.jacobian(lambda th: resnet_network(th, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx))(theta_hat)
+                driving_signal = r if ctrl_type == "integral_r" else e_meas
+                theta_hat_dot = compute_theta_hat_dot(driving_signal, theta_hat, jac, gamma, k_theta_hat, theta_bar)
+
+            else:  # direct_r or direct_e
+                # Controllers 3 & 4: NN outside the integral, input = x
                 phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                u = u_1 + phi_eval + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+                u_next = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) - phi_eval + I_state
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
 
-            # ADAPTIVE WEIGHT LAWS
-            if is_integral:
-                # Integral uses the filtered 'r' tracking signal
-                theta_hat_dot = compute_theta_hat_dot(r, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
-            else:
-                # Baseline uses the standard 'e_meas'
-                theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jacobian, gamma, k_theta_hat, theta_bar)
-            
-        # Linear Baseline Branch
+                if ctrl_type == "direct_r":
+                    # Regressor Omega = (dPhi/dx) * x_hat_dot; update with d(Omega)/d(theta)
+                    def phi_fn(th, x_val):
+                        return resnet_network(th, x_val, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                    def omega_fn(th, x_val, x_dot_val):
+                        dPhi_dx = jax.jacobian(phi_fn, argnums=1)(th, x_val)
+                        return dPhi_dx @ x_dot_val
+                    jac_update = jax.jacobian(omega_fn, argnums=0)(theta_hat, x_meas, x_hat_dot)
+                    theta_hat_dot = compute_theta_hat_dot(r, theta_hat, jac_update, gamma, k_theta_hat, theta_bar)
+                else:  # direct_e
+                    jac = jax.jacobian(lambda th: resnet_network(th, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx))(theta_hat)
+                    theta_hat_dot = compute_theta_hat_dot(e_meas, theta_hat, jac, gamma, k_theta_hat, theta_bar)
+
         else:
+            # Linear baseline branch (no learning)
             phi_eval = jnp.zeros(d_out)
-            if is_integral:
-                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
-                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
-            else:
-                u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
-                I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
-                
+            u_next = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
+            I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas
             theta_hat_dot = jnp.zeros_like(theta_hat)
 
-        # Discrete Euler Integration for Controller States
+        # Discrete Euler integration for controller states
         theta_next = theta_hat + dt_ctrl * theta_hat_dot
         I_next = I_state + dt_ctrl * I_dot
 
-        # Pack data for logging. Return next_zeta in the carry tuple!
-        # Pack data for logging. Return next_zeta in the carry tuple!
-        log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u)
-        return (theta_next, I_next, next_zeta, u), log_data
-        return (theta_next, I_next, next_zeta, u), log_data
-    
+        log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u_next)
+        return (theta_next, I_next, next_zeta, u_next), log_data
+
     return discrete_step
 
 def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
@@ -120,7 +114,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
 
     n = config.simulation.state_space_dim
     p = get_total_parameters(
-        n, config.neural_network.hidden_width, 
+        config.neural_network.d_in, config.neural_network.hidden_width,
         n, config.neural_network.b,
         config.neural_network.k_0, config.neural_network.k_i
     )
@@ -163,7 +157,7 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     clip_limit = 3.0 * noise_std
     noise_array = jnp.clip(raw_noise, noise_mean - clip_limit, noise_mean + clip_limit)
 
-    is_integral = config.simulation.controller_type == "nn_in_integral"
+    ctrl_type = config.simulation.controller_type
     enable_learning = getattr(config.simulation, "enable_learning", True)
 
     # --- SETUP STATIC RHO FILTER MATRICES ---
@@ -195,13 +189,11 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
         config.math_constants.k_theta_hat, config.math_constants.learning_rate, 
         config.math_constants.theta_bar, enable_learning,
-        e_0, x_d_dot_0, 
-        A_d, B_q, B_s, config.math_constants.rho_k4
-        e_0, x_d_dot_0, 
+        e_0, x_d_dot_0,
         A_d, B_q, B_s, config.math_constants.rho_k4
     )
 
-    discrete_controller = create_discrete_controller(is_integral, sys_id, dt_ctrl)
+    discrete_controller = create_discrete_controller(ctrl_type, sys_id, dt_ctrl)
     plant_vector_field = create_plant_vector_field(sys_id)
     term = diffrax.ODETerm(plant_vector_field)
     solver = diffrax.Tsit5()

@@ -29,7 +29,7 @@ from src.math.networks import get_total_parameters
 
 # --- UNIFIED EXPERIMENT SETTINGS ---
 MC_TRIALS = 10
-SYSTEMS = list(range(1, 9))
+SYSTEMS = [1, 2, 4, 6, 8]
 N_STATES_MAP = {1: 2, 2: 2, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 6}
 NUMERICAL_SEED = 42
 STAGE_1_NUM_TRIALS = 40
@@ -103,7 +103,10 @@ def build_config(sys_id, ctrl_name, seed, gains, arch, state_space_dim):
     config.neural_network.k_i = arch["k_i"]
     config.neural_network.hidden_width = arch["hidden_width"]
     
-    config.neural_network.d_in = state_space_dim
+    if ctrl_name.startswith("integral_"):
+        config.neural_network.d_in = state_space_dim * 2
+    else:
+        config.neural_network.d_in = state_space_dim
     config.neural_network.d_out = state_space_dim
     
     return config
@@ -262,7 +265,7 @@ def phase_1_tune_all():
 def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
     print("\n" + "="*70 + "\nPHASE 2: UNIFIED MASSIVE SWEEP\n" + "="*70)
     
-    controllers = ["baseline", "nn_in_integral"]
+    controllers = ["integral_r", "integral_e", "direct_r", "direct_e"]
     base_output_dir = Path("outputs/unified_sweep")
     base_output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -282,13 +285,14 @@ def phase_2_unified_sweep(gains_dict: dict, save_plots: bool = False):
             gains = gains_dict[sys_key]
             
             for ctrl_name in controllers:
-                target_lr = gains.get("lr_baseline", 1.0) if ctrl_name == "baseline" else gains.get("lr_integral", 1.0)
-                target_k_theta = gains.get("k_theta_hat_baseline", 0.0) if ctrl_name == "baseline" else gains.get("k_theta_hat_integral", 0.0)
+                target_lr = gains.get("lr_integral", 1.0) if ctrl_name.startswith("integral_") else gains.get("lr_baseline", 1.0)
+                target_k_theta = gains.get("k_theta_hat_integral", 0.0) if ctrl_name.startswith("integral_") else gains.get("k_theta_hat_baseline", 0.0)
                 
                 for size_name, arch_params in TARGET_ARCHS.items():
                     arch = arch_params.copy()
                     arch['hidden_width'] = int(d_out * arch.pop('width_multiplier'))
-                    arch['actual_p'] = get_total_parameters(d_out, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
+                    d_in_ctrl = d_out * 2 if ctrl_name.startswith("integral_") else d_out
+                    arch['actual_p'] = get_total_parameters(d_in_ctrl, arch['hidden_width'], d_out, arch['b'], arch['k_0'], arch['k_i'])
                     
                     print(f"\n[SWEEP] Sys: {sys_id} | Detune: {detune_str} | Ctrl: {ctrl_name} | Arch: {size_name.upper()} (LR={target_lr:.4f} | k_th={target_k_theta:.4f})")
                     

@@ -4,16 +4,16 @@ from pathlib import Path
 from collections import defaultdict
 import re
 
-def format_stats(clean_array):
-    """Returns a formatted string 'Median (Max)' and the raw median for math."""
-    if not clean_array:
-        return "FAILED", np.nan
-    
-    med = np.median(clean_array)
-    mx = np.max(clean_array)
-    
-    mx_str = f"{mx:.2e}" if mx > 9999 else f"{mx:.4f}"
-    return f"{med:.4f} ({mx_str})", med
+CONTROLLERS = ["direct_e", "direct_r", "integral_e", "integral_r"]
+CTRL_ABBR   = {"direct_e": "dir_e", "direct_r": "dir_r", "integral_e": "int_e", "integral_r": "int_r"}
+REFERENCE   = "direct_e"
+
+
+def fmt_cell(med, surv, total):
+    if surv == 0:
+        return f"{'FAILED':>8} [--/{total:2d}]"
+    return f"{med:>8.4f} [{surv:2d}/{total:2d}]"
+
 
 def main():
     base_dir = Path("outputs/unified_sweep")
@@ -21,95 +21,110 @@ def main():
         print("No sweep data found in outputs/unified_sweep.")
         return
 
-    # Structure: results[sys_id][detune_val][size_name][ctrl] = {'rms_e': [], 'rms_u': [], 'actual_p': 0}
-    results = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {'rms_e': [], 'rms_u': [], 'actual_p': 0}))))
+    results = defaultdict(
+        lambda: defaultdict(
+            lambda: defaultdict(
+                lambda: defaultdict(
+                    lambda: {"rms_e": [], "rms_u": [], "actual_p": 0}
+                )
+            )
+        )
+    )
 
-    # Regex to extract the sys_id and detune multiplier from the directory name
     dir_pattern = re.compile(r"sys_(\d+)_detune_([0-9.]+)")
 
-    # 1. Crawl the directories and parse JSONs
     for sys_dir in base_dir.iterdir():
-        if not sys_dir.is_dir(): continue
-        
+        if not sys_dir.is_dir():
+            continue
         match = dir_pattern.match(sys_dir.name)
         if not match:
             continue
-            
-        sys_id = int(match.group(1))
+        sys_id    = int(match.group(1))
         detune_val = float(match.group(2))
-        
+
         for ctrl_dir in sys_dir.iterdir():
-            if not ctrl_dir.is_dir(): continue
+            if not ctrl_dir.is_dir():
+                continue
             ctrl = ctrl_dir.name
-            
+            if ctrl not in CONTROLLERS:
+                continue
+
             for size_dir in ctrl_dir.iterdir():
-                if not size_dir.is_dir(): continue
+                if not size_dir.is_dir():
+                    continue
                 size_name = size_dir.name
-                
+
                 for seed_dir in size_dir.glob("seed_*"):
                     stat_file = seed_dir / "statistics.json"
-                    if stat_file.exists():
-                        with open(stat_file, 'r') as f:
-                            stats = json.load(f)
-                            
-                            e = stats.get('rms_tracking_error_norm', np.nan)
-                            u = stats.get('rms_control_input_norm', np.nan)
-                            p = stats.get('total_trainable_parameters', 0)
-                            
-                            results[sys_id][detune_val][size_name][ctrl]['rms_e'].append(e)
-                            results[sys_id][detune_val][size_name][ctrl]['rms_u'].append(u)
-                            results[sys_id][detune_val][size_name][ctrl]['actual_p'] = int(p)
+                    if not stat_file.exists():
+                        continue
+                    with open(stat_file, "r") as f:
+                        stats = json.load(f)
+                    results[sys_id][detune_val][size_name][ctrl]["rms_e"].append(
+                        stats.get("rms_tracking_error_norm", np.nan)
+                    )
+                    results[sys_id][detune_val][size_name][ctrl]["rms_u"].append(
+                        stats.get("rms_control_input_norm", np.nan)
+                    )
+                    results[sys_id][detune_val][size_name][ctrl]["actual_p"] = int(
+                        stats.get("total_trainable_parameters", 0)
+                    )
 
     if not results:
         print("No valid detune directories parsed. Check your outputs folder.")
         return
 
-    # 2. Print the cleanly formatted table
-    print("\n" + "="*175)
-    print(f"{'Sys':<3} | {'Detune':<6} | {'Arch Size':<9} | {'Params(B/I)':<11} | {'Base RMS(e): Med (Max) [Surv]':<31} | {'Int. RMS(e): Med (Max) [Surv]':<31} | {'% Imp(e)':<8} | {'Base RMS(u): Med(Max)':<22} | {'Int. RMS(u): Med(Max)':<22}")
-    print("-" * 175)
+    # Build header
+    cell_w = 16  # "  0.1234 [10/10]" = 16 chars
+    ctrl_header = " | ".join(f"{CTRL_ABBR[c]:^{cell_w}}" for c in CONTROLLERS)
+    header = f"{'Sys':<3} | {'Detune':<6} | {'Arch':<9} | {'P(dir/int)':<11} | {ctrl_header} | {'Best%Imp':>8}"
+    sep    = "=" * len(header)
 
-    # Sort Systems ascending, then Detune descending (1.0 -> 0.1)
+    print("\n" + sep)
+    print(header)
+    print("-" * len(header))
+
     for sys_id in sorted(results.keys()):
         for detune_val in sorted(results[sys_id].keys(), reverse=True):
             for size_name in ["small", "medium", "large"]:
-                if size_name not in results[sys_id][detune_val]:
+                size_data = results[sys_id][detune_val].get(size_name)
+                if size_data is None:
                     continue
-                
-                data = results[sys_id][detune_val][size_name]
-                
-                b_data = data.get('baseline', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
-                i_data = data.get('nn_in_integral', {'rms_e': [], 'rms_u': [], 'actual_p': 0})
-                
-                b_e_clean = [x for x in b_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
-                b_u_clean = [x for x in b_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
-                i_e_clean = [x for x in i_data['rms_e'] if not np.isnan(x) and not np.isinf(x)]
-                i_u_clean = [x for x in i_data['rms_u'] if not np.isnan(x) and not np.isinf(x)]
-                
-                b_surv, i_surv = len(b_e_clean), len(i_e_clean)
-                
-                b_e_str, b_e_med = format_stats(b_e_clean)
-                i_e_str, i_e_med = format_stats(i_e_clean)
-                b_u_str, _ = format_stats(b_u_clean)
-                i_u_str, _ = format_stats(i_u_clean)
-                
-                if b_surv > 0 and i_surv > 0:
-                    improvement = ((b_e_med - i_e_med) / b_e_med) * 100.0
-                    imp_str = f"{improvement:+.1f}%"
-                else:
-                    imp_str = "N/A"
-                
-                p_str = f"{b_data['actual_p']} / {i_data['actual_p']}"
+
+                medians, survs, cells = {}, {}, {}
+                for ctrl in CONTROLLERS:
+                    cd    = size_data.get(ctrl, {"rms_e": [], "actual_p": 0})
+                    total = len(cd["rms_e"])
+                    clean = [x for x in cd["rms_e"] if np.isfinite(x)]
+                    med   = float(np.median(clean)) if clean else np.nan
+                    medians[ctrl] = med
+                    survs[ctrl]   = len(clean)
+                    cells[ctrl]   = fmt_cell(med, len(clean), total)
+
+                # Best % improvement over REFERENCE
+                ref_med = medians[REFERENCE]
+                best_imp = np.nan
+                if np.isfinite(ref_med) and survs[REFERENCE] > 0:
+                    for ctrl in CONTROLLERS:
+                        if ctrl == REFERENCE:
+                            continue
+                        if np.isfinite(medians[ctrl]) and survs[ctrl] > 0:
+                            imp = (ref_med - medians[ctrl]) / ref_med * 100.0
+                            if np.isnan(best_imp) or imp > best_imp:
+                                best_imp = imp
+                imp_str = f"{best_imp:+.1f}%" if np.isfinite(best_imp) else "N/A"
+
+                # Param counts: direct and integral groups share counts within group
+                d_p = size_data.get("direct_e", size_data.get("direct_r", {})).get("actual_p", 0)
+                i_p = size_data.get("integral_e", size_data.get("integral_r", {})).get("actual_p", 0)
+                p_str      = f"{d_p}/{i_p}"
                 detune_str = f"{detune_val*100:.0f}%"
-                
-                b_e_full = f"{b_e_str:>18} [{b_surv:2d}/10]" if b_surv > 0 else f"{'FAILED':>18} [ 0/10]"
-                i_e_full = f"{i_e_str:>18} [{i_surv:2d}/10]" if i_surv > 0 else f"{'FAILED':>18} [ 0/10]"
-                b_u_full = f"{b_u_str:>22}" if b_surv > 0 else f"{'FAILED':>22}"
-                i_u_full = f"{i_u_str:>22}" if i_surv > 0 else f"{'FAILED':>22}"
-                
-                print(f" {sys_id:<2} | {detune_str:<6} | {size_name:<9} | {p_str:<11} | {b_e_full:<31} | {i_e_full:<31} | {imp_str:>8} | {b_u_full:<22} | {i_u_full:<22}")
-                
-    print("="*175 + "\n")
+
+                ctrl_cells = " | ".join(f"{cells[c]:>{cell_w}}" for c in CONTROLLERS)
+                print(f" {sys_id:<2} | {detune_str:<6} | {size_name:<9} | {p_str:<11} | {ctrl_cells} | {imp_str:>8}")
+
+    print(sep + "\n")
+
 
 if __name__ == "__main__":
     main()
