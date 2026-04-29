@@ -276,34 +276,6 @@ Note that
 .
 \end_layout
 
-\begin_layout Remark
-
-\color blue
-For simplicity, the presented architecture requires 
-\begin_inset Formula $L_{i,0}\triangleq L_{\text{out}}$
-\end_inset
-
- for all 
-\begin_inset Formula $i\in\left\{ 1,\ldots,b\right\} $
-\end_inset
-
-.
-
-\color red
- Consequently, for the 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-
-\end_layout
-
 \begin_layout Standard
 For all 
 \begin_inset Formula $\left(i,j\right)\in\left\{ 0,\ldots,b\right\} \times\left\{ 0,\ldots,k_{i}+1\right\} $
@@ -3635,7 +3607,7 @@ Then
 
 
 \begin_inset Note Note
-status collapsed
+status open
 
 \begin_layout Section
 Problem Formulation
@@ -4318,7 +4290,7 @@ Subsequent adaptive estimation of
 
  may need to be arbitrarily large.
  This situation is a consequence of the fact that there exist continuous
- functions that cannot be approximated to arbirary accuracy in the snse
+ functions that cannot be approximated to arbitrary accuracy in the sense
  of 
 \begin_inset CommandInset ref
 LatexCommand eqref
