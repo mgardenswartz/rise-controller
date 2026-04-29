@@ -1,0 +1,784 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Intro
+\end_layout
+
+\begin_layout Standard
+Model
+\begin_inset Formula 
+\[
+M\left(q\right)\ddot{q}+V_{m}\left(q,\dot{q}\right)\dot{q}+G\left(q\right)+F\left(\dot{q}\right)+\tau_{d}\left(t\right)=\tau\left(t\right)
+\]
+
+\end_inset
+
+Properties
+\begin_inset Formula 
+\[
+m_{1}\left\Vert y\right\Vert ^{2}\le y^{\top}M\left(q\right)y\le\overline{m}\left(q\right)\left\Vert y\right\Vert ^{2}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $m_{1},\overline{m}\left(q\right)\in\mathbb{R}_{>0}$
+\end_inset
+
+ are known.
+\end_layout
+
+\begin_layout Standard
+Properties
+\begin_inset Formula 
+\begin{align*}
+q_{d} & \le\overline{q}_{d}\\
+\dot{q}_{d} & \le\overline{\dot{q}}_{d}\\
+\ddot{q}_{d} & \le\overline{\ddot{q}}_{d}\\
+\dddot{q}_{d} & \le\overline{\dddot{q}}_{d}\\
+\ddddot{q}_{d} & \le\overline{\ddddot{q}}_{d}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We assume full-state feedback, not output feedback.
+\end_layout
+
+\begin_layout Standard
+Let
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+f\left(x\right)=W^{\top}\sigma\left(V^{\top}x\right)+\varepsilon\left(x\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Error
+\end_layout
+
+\begin_layout Standard
+First,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+e_{1} & \triangleq q_{d}-q\\
+e_{2} & \triangleq\dot{e}_{1}+\alpha_{1}e_{1}\\
+e_{3} & \triangleq\dot{e}_{2}+\alpha_{2}e_{2}
+\end{align*}
+
+\end_inset
+
+Assume 
+\begin_inset Formula $\dot{q}$
+\end_inset
+
+ is measurable, so 
+\begin_inset Formula $e_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $e_{1}$
+\end_inset
+
+ are known but 
+\begin_inset Formula $e_{3}$
+\end_inset
+
+ is not.
+ First,
+\begin_inset Formula 
+\begin{align*}
+\dot{e}_{1} & =e_{2}-\alpha_{1}e_{1}\\
+\dot{e}_{2} & =e_{3}-\alpha_{2}e_{2}
+\end{align*}
+
+\end_inset
+
+And
+\begin_inset Formula 
+\begin{align*}
+M\left(q\right)e_{3} & =M\left(q\right)\left(\dot{e}_{2}+\alpha_{2}e_{2}\right)\\
+ & =M\left(q\right)\dot{e}_{2}+M\left(q\right)\alpha_{2}e_{2}\\
+ & =M\left(q\right)\left(\ddot{e}_{1}+\alpha_{1}\dot{e}_{1}\right)+M\left(q\right)\alpha_{2}e_{2}\\
+ & =M\left(q\right)\left(\ddot{e}_{1}+\alpha_{1}\dot{e}_{1}\right)+M\left(q\right)\alpha_{2}e_{2}\\
+ & =M\left(q\right)\ddot{e}_{1}+M\left(q\right)\alpha_{1}\dot{e}_{1}+M\left(q\right)\alpha_{2}e_{2}\\
+ & =M\left(q\right)\ddot{e}_{1}+M\left(q\right)\left(\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)\\
+ & =M\left(q\right)\left(\ddot{q}_{d}-\ddot{q}\right)+M\left(q\right)\left(\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)\\
+ & =-M\left(q\right)\ddot{q}+M\left(q\right)\left(\ddot{q}_{d}+\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)\\
+ & =V_{m}\left(q,\dot{q}\right)\dot{q}+G\left(q\right)+F\left(\dot{q}\right)+\tau_{d}\left(t\right)-\tau\left(t\right)+M\left(q\right)\left(\ddot{q}_{d}+\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)\\
+\\
+ & =V_{m}\left(q,\dot{q}\right)\dot{q}+G\left(q\right)+F\left(\dot{q}\right)+\tau_{d}\left(t\right)-\tau\left(t\right)+M\left(q\right)\left(\ddot{q}_{d}+\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)\\
+ & +M\left(q_{d}\right)\ddot{q}_{d}+V_{m}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}+G\left(q_{d}\right)+F\left(\dot{q}_{d}\right)-M\left(q_{d}\right)\ddot{q}_{d}-V_{m}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}-G\left(q_{d}\right)-F\left(\dot{q}_{d}\right)\\
+\\
+ & =\underbrace{V_{m}\left(q,\dot{q}\right)\dot{q}-V_{m}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}+G\left(q\right)-G\left(q_{d}\right)+F\left(\dot{q}\right)-F\left(\dot{q}_{d}\right)+M\left(q\right)\left(\ddot{q}_{d}+\alpha_{1}\dot{e}_{1}+\alpha_{2}e_{2}\right)-M\left(q_{d}\right)\ddot{q}_{d}}_{S\left(q,\dot{q},q_{d},\dot{q}_{d}\ddot{q}_{d}\right)}\\
+ & +\tau_{d}\left(t\right)-\tau\left(t\right)+\underbrace{M\left(q_{d}\right)\ddot{q}_{d}+V_{m}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}+G\left(q_{d}\right)+F\left(\dot{q}_{d}\right)}_{f_{d}\left(q_{d},\dot{q}_{d}\ddot{q}_{d}\right)}\\
+\\
+ & =S\left(q,\dot{q},q_{d},\dot{q}_{d}\ddot{q}_{d}\right)+\tau_{d}\left(t\right)-\tau\left(t\right)+f_{d}\left(q_{d},\dot{q}_{d}\ddot{q}_{d}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+NN
+\end_layout
+
+\begin_layout Standard
+Below, let 
+\begin_inset Formula $M\left(a\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $V_{m}\left(a,b\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $G\left(a\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $F\left(b\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\dot{f}_{d}\left(q_{d},\dot{q}_{d}\ddot{q}_{d}\right) & =\frac{d}{dt}\left(M\left(q_{d}\right)\ddot{q}_{d}+V_{m}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}+G\left(q_{d}\right)+F\left(\dot{q}_{d}\right)\right)\\
+ & =\dot{M}\left(q_{d}\right)\ddot{q}_{d}+M\left(q_{d}\right)\dddot{q}_{d}+{\color{brown}\dot{V}_{m}}\left(q_{d},\dot{q}_{d}\right)\dot{q}_{d}+V_{m}\left(q_{d},\dot{q}_{d}\right)\ddot{q}_{d}+{\color{brown}\dot{G}}\left(q_{d}\right)+{\color{brown}\dot{F}}\left(\dot{q}_{d}\right)\\
+ & =\left.\frac{dM}{da}\right|_{a=q_{d}}\ddot{q}_{d}+M\left(q_{d}\right)\dddot{q}_{d}+\left(\left.\frac{\partial V_{m}}{\partial a}\right|_{a=q_{d}}\dot{q}_{d}+\left.\frac{\partial V_{m}}{\partial b}\right|_{b=\dot{q}_{d}}\ddot{q}_{d}\right)\dot{q}_{d}+V_{m}\left(q_{d},\dot{q}_{d}\right)\ddot{q}_{d}\\
+ & +\left.\frac{dG}{da}\right|_{a=q_{d}}+\left.\frac{dF}{db}\right|_{b=\dot{q}_{d}}
+\end{align*}
+
+\end_inset
+
+The term 
+\begin_inset Formula $\left.\frac{dM}{d\zeta}\right|_{\zeta=q_{d}}$
+\end_inset
+
+ is 
+\color brown
+probably
+\color inherit
+ a function of 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{q}_{d}$
+\end_inset
+
+.
+ I'm being lazy here.
+ Blah blah blah
+\begin_inset Formula 
+\[
+\dot{f}_{d}\left(q_{d},\dot{q}_{d}\ddot{q}_{d}\right)=\Phi\left(Q_{d},\Theta^{\ast}\right)+\varepsilon\left(Q_{d}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $Q_{d}\triangleq\left[\begin{array}{cccc}
+q_{d}^{\top} & \dot{q}_{d}^{\top} & \ddot{q}_{d}^{\top} & \dddot{q}_{d}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{4n}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Control Synthesis
+\end_layout
+
+\begin_layout Standard
+Let
+\begin_inset Formula 
+\[
+\dot{\tau}=\left(k_{s}+1\right)\dot{e}_{2}+\left(k_{s}+1\right)\alpha_{2}e_{2}+\beta_{1}\text{sgn}\left(e_{2}\right)+\Phi\left(Q_{d},\widehat{\Theta}\right)
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{s},\beta_{1}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Continuing with Error System
+\end_layout
+
+\begin_layout Standard
+Returnign to the error system, we had
+\begin_inset Formula 
+\[
+M\left(q\right)e_{3}=S\left(q,\dot{q},q_{d},\dot{q}_{d}\ddot{q}_{d}\right)+\tau_{d}\left(t\right)-\tau\left(t\right)+f_{d}\left(q_{d},\dot{q}_{d}\ddot{q}_{d}\right)
+\]
+
+\end_inset
+
+Take the time derivative gives
+\begin_inset Formula 
+\[
+\frac{d}{dt}\left(M\left(q\right)e_{3}\right)=\dot{M}\left(q\right)e_{3}+M\left(q\right)\dot{e}_{3}
+\]
+
+\end_inset
+
+So,
+\begin_inset Formula 
+\begin{align*}
+\dot{M}\left(q\right)e_{3}+M\left(q\right)\dot{e}_{3} & =\frac{d}{dt}\left(S+\tau_{d}-\tau+f_{d}\right)\\
+\dot{M}\left(q\right)e_{3}+M\left(q\right)\dot{e}_{3} & =\dot{S}+\dot{\tau}_{d}-\dot{\tau}+\dot{f}_{d}\\
+M\left(q\right)\dot{e}_{3} & =-\dot{M}\left(q\right)e_{3}+\dot{S}+\dot{\tau}_{d}-\dot{\tau}+\dot{f}_{d}\\
+M\left(q\right)\dot{e}_{3} & =-\dot{M}\left(q\right)e_{3}+\dot{S}+\dot{\tau}_{d}-\left(\left(k_{s}+1\right)\dot{e}_{2}+\left(k_{s}+1\right)\alpha_{2}e_{2}+\beta_{1}\text{sgn}\left(e_{2}\right)+\Phi\left(Q_{d},\widehat{\Theta}\right)\right)+\Phi\left(Q_{d},\Theta^{\ast}\right)+\varepsilon\left(Q_{d}\right)\\
+M\left(q\right)\dot{e}_{3} & =-\dot{M}\left(q\right)e_{3}+\dot{S}+\dot{\tau}_{d}-\left(k_{s}+1\right)\dot{e}_{2}-\left(k_{s}+1\right)\alpha_{2}e_{2}-\beta_{1}\text{sgn}\left(e_{2}\right)-\Phi\left(Q_{d},\widehat{\Theta}\right)+\Phi\left(Q_{d},\Theta^{\ast}\right)+\varepsilon\left(Q_{d}\right)
+\end{align*}
+
+\end_inset
+
+Taylor series
+\begin_inset Formula 
+\[
+\Phi\left(Q_{d},\Theta^{\ast}\right)=\Phi\left(Q_{d},\widehat{\Theta}\right)+\frac{\partial\Phi}{\partial\widehat{\Theta}}\widetilde{\Theta}+R\left(Q_{d},\widetilde{\Theta}\right)
+\]
+
+\end_inset
+
+So,
+\begin_inset Formula 
+\begin{align*}
+M\left(q\right)\dot{e}_{3} & =-\dot{M}\left(q\right)e_{3}+\dot{S}+\dot{\tau}_{d}-\left(k_{s}+1\right)\dot{e}_{2}-\left(k_{s}+1\right)\alpha_{2}e_{2}-\beta_{1}\text{sgn}\left(e_{2}\right)+\frac{\partial\Phi}{\partial\widehat{\Theta}}\widetilde{\Theta}+R\left(Q_{d},\widetilde{\Theta}\right)+\varepsilon\left(Q_{d}\right)\\
+ & =-\frac{1}{2}\dot{M}\left(q\right)e_{3}-\frac{1}{2}\dot{M}\left(q\right)e_{3}+e_{2}-e_{2}+\dot{S}+\dot{\tau}_{d}-\left(k_{s}+1\right)\dot{e}_{2}-\left(k_{s}+1\right)\alpha_{2}e_{2}-\beta_{1}\text{sgn}\left(e_{2}\right)+\frac{\partial\Phi}{\partial\widehat{\Theta}}\widetilde{\Theta}+R\left(Q_{d},\widetilde{\Theta}\right)+\varepsilon\left(Q_{d}\right)\\
+ & =-\frac{1}{2}\dot{M}\left(q\right)e_{3}\underbrace{-\frac{1}{2}\dot{M}\left(q\right)e_{3}+\dot{S}+e_{2}}_{\widetilde{N}}-e_{2}-\left(k_{s}+1\right)\dot{e}_{2}-\left(k_{s}+1\right)\alpha_{2}e_{2}-\beta_{1}\text{sgn}\left(e_{2}\right)+\underbrace{\frac{\partial\Phi}{\partial\widehat{\Theta}}\left(Q_{d}\right)\widetilde{\Theta}}_{N_{B2}}+\underbrace{R\left(Q_{d},\widetilde{\Theta}\right)+\varepsilon\left(Q_{d}\right)+\dot{\tau}_{d}}_{N_{B1}}
+\end{align*}
+
+\end_inset
+
+Let
+\begin_inset Formula 
+\[
+N_{B3}\triangleq N_{B1}+N_{B2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+P Function Lemma
+\end_layout
+
+\begin_layout Standard
+Bounding...
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}\right\Vert  & \le\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+{\color{red}\left\Vert N_{B1}\right\Vert } & {\color{red}\le\zeta_{1}}\\
+{\color{red}\left\Vert N_{B2}\right\Vert } & {\color{red}\le\zeta_{2}}\\
+{\color{red}\left\Vert \frac{\partial N_{B3}}{\partial\widehat{\Theta}}\right\Vert } & {\color{red}\le\zeta_{4}}\\
+{\color{red}\left\Vert \frac{\partial N_{B3}}{\partial x_{d}}\dot{x}_{d}\right\Vert } & {\color{red}\le\zeta_{3}}
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $z\triangleq\left[\begin{array}{ccc}
+e_{1}^{\top} & e_{2}^{\top} & e_{3}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{3n}$
+\end_inset
+
+, 
+\begin_inset Formula $\zeta_{1},\zeta_{2},\zeta_{3},\zeta_{4}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Facts
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+For a matrix 
+\begin_inset Formula $A\in\mathbb{R}^{m\times n}$
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\frac{1}{\sqrt{n}}\left\Vert A\right\Vert _{1}\le\left\Vert A\right\Vert _{2}\le\sqrt{m}\left\Vert A\right\Vert _{1}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\frac{1}{\sqrt{m}}\left\Vert A\right\Vert _{\infty}\le\left\Vert A\right\Vert _{2}\le\sqrt{n}\left\Vert A\right\Vert _{\infty}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\frac{1}{n}\left\Vert A\right\Vert _{1}\le\left\Vert A\right\Vert _{2}\le m\left\Vert A\right\Vert _{1}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\left\Vert A\right\Vert _{2}\le\sqrt{\left\Vert A\right\Vert _{1}\left\Vert A\right\Vert _{\infty}}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\left\Vert A\right\Vert _{2}\le\left\Vert A\right\Vert _{F}\le\left\Vert A\right\Vert _{2}\sqrt{\min\left\{ m,n\right\} }
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\frac{1}{\sqrt{n}}\left\Vert A\right\Vert _{\infty}\le\left\Vert A\right\Vert _{F}\le\sqrt{m}\left\Vert A\right\Vert _{\infty}
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\frac{1}{\sqrt{m}}\left\Vert A\right\Vert _{1}\le\left\Vert A\right\Vert _{F}\le\sqrt{n}\left\Vert A\right\Vert _{1}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Note 
+\begin_inset Formula $\left\Vert A\right\Vert _{2}=\left\Vert A\right\Vert _{F}$
+\end_inset
+
+ if and only if the matrix has rank 1 (or 0).
+\end_layout
+
+\end_inset
+
+ We need
+\begin_inset Formula 
+\begin{align*}
+\beta_{1} & >\zeta_{1}+\zeta_{2}+\frac{1}{\alpha_{2}}\zeta_{3}\\
+\beta_{2} & >\zeta_{4}
+\end{align*}
+
+\end_inset
+
+Let 
+\begin_inset Formula $\beta_{2}\in\mathbb{R}_{>0}$
+\end_inset
+
+ and let
+\begin_inset Formula 
+\[
+P=\beta_{1}\left\Vert e_{2}\left(t_{0}\right)\right\Vert -e_{2}\left(t_{0}\right)^{\top}N_{B3}\left(\widetilde{\Theta}\left(t_{0}\right),Q_{d}\left(t_{0}\right),t_{0}\right)-\intop_{t_{0}}^{t}L\left(s\right)ds
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align*}
+L\left(t\right) & =e_{3}^{\top}\left(N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}\text{sgn}\left(e_{2}\right)\right)+\dot{e}_{2}^{\top}N_{B2}\left(\widetilde{\Theta},Q_{d}\right)-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}\\
+ & =e_{3}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}e_{3}^{\top}\text{sgn}\left(e_{2}\right)+\dot{e}_{2}^{\top}N_{B2}\left(\widetilde{\Theta},Q_{d}\right)-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}\\
+ & =\left(\dot{e}_{2}+\alpha_{2}e_{2}\right)^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}\left(\dot{e}_{2}+\alpha_{2}e_{2}\right)^{\top}\text{sgn}\left(e_{2}\right)+\dot{e}_{2}^{\top}N_{B2}\left(\widetilde{\Theta},Q_{d}\right)-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}\\
+ & =\dot{e}_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)+\alpha_{2}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}\dot{e}_{2}^{\top}\text{sgn}\left(e_{2}\right)-\alpha_{2}\beta_{1}e_{2}^{\top}\text{sgn}\left(e_{2}\right)+\dot{e}_{2}^{\top}N_{B2}\left(\widetilde{\Theta},Q_{d}\right)-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}\\
+ & =\dot{e}_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},t\right)+\alpha_{2}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}\dot{e}_{2}^{\top}\text{sgn}\left(e_{2}\right)-\alpha_{2}\beta_{1}e_{2}^{\top}\text{sgn}\left(e_{2}\right)-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}
+\end{align*}
+
+\end_inset
+
+Take the integral.
+ Note that 
+\begin_inset Formula $e_{2}^{\top}\text{sgn}\left(e_{2}\right)=\left\Vert e_{2}\right\Vert _{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{e}_{2}^{\top}\text{sgn}\left(e_{2}\right)=\frac{d}{dt}\left\Vert e_{2}\right\Vert _{1}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+L\left(t\right) & =\intop_{t_{0}}^{t}\left(\dot{e}_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)+\alpha_{2}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},s\right)-\beta_{1}\frac{d}{ds}\left\Vert e_{2}\right\Vert _{1}-\alpha_{2}\beta_{1}\left\Vert e_{2}\right\Vert _{1}-\beta_{2}\left\Vert e_{2}\right\Vert ^{2}\right)ds\\
+ & =\intop_{t_{0}}^{t}\dot{e}_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds+\alpha_{2}\intop_{t_{0}}^{t}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},s\right)ds-\beta_{1}\intop_{t_{0}}^{t}\frac{d}{ds}\left\Vert e_{2}\right\Vert _{1}ds-\alpha_{2}\beta_{1}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert _{1}ds-\beta_{2}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert ^{2}ds
+\end{align*}
+
+\end_inset
+
+ Integration by parts tutorial.
+ 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Integration by parts is
+\begin_inset Formula 
+\[
+\intop udv=uv-\intop vdu
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Good candidates for choosing 
+\begin_inset Formula $u$
+\end_inset
+
+ are LIATE: logarithmic, inverse functions like arctangent, algebraic functions
+ (
+\begin_inset Formula $x^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $3x$
+\end_inset
+
+), trigonometric functions, and exponential functions.
+ Choose earlier items in the list first.
+ Easy example: 
+\begin_inset Formula $\intop x{\rm e}^{x}dx$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $u=x$
+\end_inset
+
+ and 
+\begin_inset Formula $dv={\rm e}^{x}dx$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $v={\rm e}^{x}$
+\end_inset
+
+ (no constant term) and 
+\begin_inset Formula $du=1\cdot dx.$
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\intop x{\rm e}^{x}dx & =x{\rm e}^{x}-\intop{\rm e}^{x}dx\\
+ & =x{\rm e}^{x}-{\rm e}^{x}+C\\
+ & =\left(x-1\right){\rm e}^{x}+C
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Hard example: 
+\begin_inset Formula $I\triangleq\intop{\rm e}^{x}\cos\left(x\right)dx$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $u=\cos\left(x\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $dv={\rm e}^{x}dx$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $du=-\sin\left(x\right)dx$
+\end_inset
+
+ and 
+\begin_inset Formula $v={\rm e}^{x}$
+\end_inset
+
+.
+\begin_inset Formula 
+\[
+I={\rm e}^{x}\cos\left(x\right)+\intop{\rm e}^{x}\sin\left(x\right)dx
+\]
+
+\end_inset
+
+Again.
+ Let 
+\begin_inset Formula $u=\sin\left(x\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $dv={\rm e}^{x}dx$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $du=\cos\left(x\right)dx$
+\end_inset
+
+ and 
+\begin_inset Formula $v={\rm e}^{x}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+\intop{\rm e}^{x}\sin\left(x\right)dx & ={\rm e}^{x}\sin\left(x\right)-\intop{\rm e}^{x}\cos\left(x\right)dx\\
+ & ={\rm e}^{x}\sin\left(x\right)-I+C
+\end{align*}
+
+\end_inset
+
+Substitute and solve
+\begin_inset Formula 
+\begin{align*}
+I & ={\rm e}^{x}\cos\left(x\right)+{\rm e}^{x}\sin\left(x\right)-I\\
+2I & ={\rm e}^{x}\cos\left(x\right)+{\rm e}^{x}\sin\left(x\right)\\
+I & =\frac{1}{2}{\rm e}^{x}\left(\cos\left(x\right)+\sin\left(x\right)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Integrate by parts to get 
+\begin_inset Formula $\intop\dot{e}_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds=e_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)-\intop e_{2}^{\top}\dot{N}_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Let 
+\begin_inset Formula $u=N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $dv=\dot{e}_{2}^{\top}ds$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $v=e_{2}^{\top}$
+\end_inset
+
+ (no 
+\begin_inset Formula $C$
+\end_inset
+
+) and 
+\begin_inset Formula $du=\dot{N}_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds$
+\end_inset
+
+\SpecialChar endofsentence
+
+\begin_inset Formula 
+\begin{align*}
+\intop\dot{e}_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds & =e_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)-\intop e_{2}^{\top}\dot{N}_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Thus,
+\begin_inset Formula 
+\begin{align*}
+\intop_{t_{0}}^{t}L\left(s\right)ds & =\left.e_{2}^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},s\right)\right|_{t_{0}}^{t}-\intop_{t_{0}}^{t}e_{2}^{\top}\dot{N}_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds+\alpha_{2}\intop_{t_{0}}^{t}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},s\right)ds-\beta_{1}\intop_{t_{0}}^{t}\frac{d}{ds}\left\Vert e_{2}\right\Vert _{1}ds-\alpha_{2}\beta_{1}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert _{1}ds-\beta_{2}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert ^{2}ds\\
+ & =e_{2}\left(t\right)^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},t\right)-e_{2}\left(t_{0}\right)^{\top}N_{B3}\left(Q_{d},\widetilde{\Theta},t_{0}\right)-\intop_{t_{0}}^{t}e_{2}^{\top}\dot{N}_{B3}\left(Q_{d},\widetilde{\Theta},s\right)ds+\alpha_{2}\intop_{t_{0}}^{t}e_{2}^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},s\right)ds-\beta_{1}\left\Vert e_{2}\left(t\right)\right\Vert _{1}+\beta_{1}\left\Vert e_{2}\left(t_{0}\right)\right\Vert _{1}-\alpha_{2}\beta_{1}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert _{1}ds-\beta_{2}\intop_{t_{0}}^{t}\left\Vert e_{2}\right\Vert ^{2}ds
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Take the time derivative of 
+\begin_inset Formula $P$
+\end_inset
+
+ to get
+\begin_inset Formula 
+\begin{align*}
+\dot{P} & =-\frac{d}{dt}\left(e_{2}\left(t_{0}\right)^{\top}N_{B3}\left(\widetilde{\Theta}\left(t_{0}\right),Q_{d}\left(t_{0}\right),t_{0}\right)\right)-\frac{d}{dt}\intop_{t_{0}}^{t}L\left(s\right)ds\\
+ & =-L\left(t\right)+L\left(t_{0}\right)\\
+\\
+ & =-e_{3}\left(t\right)^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)+\beta_{1}e_{3}\left(t\right)^{\top}\text{sgn}\left(e_{2}\left(t\right)\right)-\dot{e}_{2}\left(t\right)^{\top}N_{B2}\left(\widetilde{\Theta},Q_{d}\right)+\beta_{2}\left\Vert e_{2}\left(t\right)\right\Vert ^{2}\\
+ & +\underbrace{e_{3}\left(t_{0}\right)^{\top}N_{B1}\left(Q_{d},\widetilde{\Theta},t\right)-\beta_{1}e_{3}\left(t_{0}\right)^{\top}\text{sgn}\left(e_{2}\left(t_{0}\right)\right)+\dot{e}_{2}\left(t_{0}\right)^{\top}N_{B2}\left(\widetilde{\Theta}\left(t_{0}\right),Q_{d}\left(t_{0}\right)\right)-\beta_{2}\left\Vert e_{2}\left(t_{0}\right)\right\Vert ^{2}}_{\text{{\color{red}Missing from orginal paper}}}
+\end{align*}
+
+\end_inset
+
+What happens when we plug in those gain conditions?
+\begin_inset Formula 
+\[
+\intop_{t_{0}}^{t}L\left(s\right)ds=
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Stability
+\end_layout
+
+\begin_layout Standard
+Let
+\begin_inset Formula 
+\[
+V=\frac{1}{2}e_{2}^{\top}e_{2}+e_{1}^{\top}e_{1}+\frac{1}{2}e_{3}^{\top}M\left(q\right)e_{3}+\frac{1}{2}\alpha_{2}\widetilde{\Theta}^{\top}\Gamma^{-1}\widetilde{\Theta}+P
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\Gamma\succ0$
+\end_inset
+
+ is symmetric.
+ Then, (
+\begin_inset Formula $M$
+\end_inset
+
+ must be symmetric)
+\begin_inset Formula 
+\[
+\dot{V}=e_{2}^{\top}\dot{e}_{2}+2e_{1}^{\top}e_{1}+\frac{1}{2}e_{3}^{\top}M\left(q\right)\dot{e}_{3}+\frac{1}{2}e_{3}^{\top}\dot{M}\left(q\right)e_{3}+\frac{1}{2}\alpha_{2}\widetilde{\Theta}^{\top}\Gamma^{-1}\widetilde{\Theta}+\dot{P}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\color red
+STOPPED AND NEVER FINISHED
+\end_layout
+
+\end_body
+\end_document

@@ -36,9 +36,12 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
     def discrete_step(carry, noise_sample, args):
         # Unpack the 5-element carry state (including zeta for the filter)
         t, x_true, theta_hat, I_state, zeta = carry
+        # Unpack the 5-element carry state (including zeta for the filter)
+        t, x_true, theta_hat, I_state, zeta = carry
         
         (d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx,
          excitation_duration, k_1, k_2, beta, k_theta_hat, learning_rate, theta_bar, 
+         enable_learning, e_0, x_d_dot_0, A_d, B_q, B_s, rho_k4) = args
          enable_learning, e_0, x_d_dot_0, A_d, B_q, B_s, rho_k4) = args
 
         x_d = get_desired_trajectory(t, sys_id)
@@ -64,9 +67,9 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
             if is_integral:
                 # Integral Controller (Psi inside the integral)
                 u = u_1 + (k_1 + k_2) * (e_meas - e_0) + (x_d_dot - x_d_dot_0) + I_state
-                kappa = jnp.concatenate([x_meas, u])
-                phi_eval = resnet_network(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
-                jacobian = compute_jacobian(theta_hat, kappa, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                # SEVERED LOOP: Network input is exclusively x_meas
+                phi_eval = resnet_network(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
+                jacobian = compute_jacobian(theta_hat, x_meas, d_in, hidden_width, d_out, b, k_0, k_i, h_act_idx, o_act_idx, shortcut_act_idx)
                 I_dot = beta * jnp.sign(e_meas) + (k_1 * k_2 + 1.0) * e_meas - phi_eval
             else:
                 # Baseline Controller (Psi outside the integral)
@@ -100,7 +103,9 @@ def create_discrete_controller(is_integral: bool, sys_id: int, dt_ctrl: float):
         I_next = I_state + dt_ctrl * I_dot
 
         # Pack data for logging. Return next_zeta in the carry tuple!
+        # Pack data for logging. Return next_zeta in the carry tuple!
         log_data = (t, x_true, theta_hat, gamma, x_d, e_meas, phi_eval, u)
+        return (theta_next, I_next, next_zeta, u), log_data
         return (theta_next, I_next, next_zeta, u), log_data
     
     return discrete_step
@@ -113,9 +118,10 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     o_act_idx = jnp.array(act_map[config.neural_network.output_activation.lower()])
     shortcut_act_idx = jnp.array(act_map[config.neural_network.shortcut_activation.lower()])
 
+    n = config.simulation.state_space_dim
     p = get_total_parameters(
-        config.neural_network.d_in, config.neural_network.hidden_width, 
-        config.neural_network.d_out, config.neural_network.b,
+        n, config.neural_network.hidden_width, 
+        n, config.neural_network.b,
         config.neural_network.k_0, config.neural_network.k_i
     )
 
@@ -129,8 +135,6 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         jnp.zeros((p,))
     )
 
-    d_out = config.neural_network.d_out
-    n = config.simulation.state_space_dim
     if config.simulation.randomize_x0:
         x_0 = jax.random.uniform(key_x0, shape=(n,),
                                  minval=-config.simulation.random_x0_square_size,
@@ -173,6 +177,17 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     # Initial state is a (4, n) matrix of zeros
     zeta_0 = jnp.zeros((4, n))
 
+    # --- SETUP STATIC RHO FILTER MATRICES ---
+    A_d, B_q, B_s = setup_rho_filter(
+        config.math_constants.rho_k1, 
+        config.math_constants.rho_k2, 
+        config.math_constants.rho_k3, 
+        dt_ctrl
+    )
+    
+    # Initial state is a (4, n) matrix of zeros
+    zeta_0 = jnp.zeros((4, n))
+
     math_args = (
         config.neural_network.d_in, config.neural_network.hidden_width, config.neural_network.d_out,
         config.neural_network.b, config.neural_network.k_0, config.neural_network.k_i,
@@ -180,6 +195,8 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         config.math_constants.k_1, config.math_constants.k_2, config.math_constants.beta,
         config.math_constants.k_theta_hat, config.math_constants.learning_rate, 
         config.math_constants.theta_bar, enable_learning,
+        e_0, x_d_dot_0, 
+        A_d, B_q, B_s, config.math_constants.rho_k4
         e_0, x_d_dot_0, 
         A_d, B_q, B_s, config.math_constants.rho_k4
     )
@@ -195,18 +212,25 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
     def hybrid_scan_step(carry, step_data):
         # 1. Unpack 5-element carry
         t_current, x_current, theta_hat_curr, I_curr, zeta_curr = carry
+        # 1. Unpack 5-element carry
+        t_current, x_current, theta_hat_curr, I_curr, zeta_curr = carry
         noise_samp = step_data
         
         # 2. Evaluate discrete controller (returns 4-element next-state tuple + log data)
         ctrl_carry = (t_current, x_current, theta_hat_curr, I_curr, zeta_curr)
         (theta_next, I_next, zeta_next, u_held), log_data = discrete_controller(ctrl_carry, noise_samp, math_args)
+        # 2. Evaluate discrete controller (returns 4-element next-state tuple + log data)
+        ctrl_carry = (t_current, x_current, theta_hat_curr, I_curr, zeta_curr)
+        (theta_next, I_next, zeta_next, u_held), log_data = discrete_controller(ctrl_carry, noise_samp, math_args)
         
+        # 3. Check for numerical explosions
         # 3. Check for numerical explosions
         is_invalid = (
             jnp.any(jnp.isnan(x_current)) | jnp.any(jnp.isinf(x_current)) |
             jnp.any(jnp.isnan(u_held)) | jnp.any(jnp.isinf(u_held))
         )
         
+        # 4. Conditionally bypass the continuous solver
         # 4. Conditionally bypass the continuous solver
         def integrate_plant(_):
             sol = diffrax.diffeqsolve(
@@ -225,8 +249,12 @@ def run_simulation(config: ExperimentConfig) -> dict[str, jax.Array]:
         
         # 5. Pack 5-element carry for next step
         next_carry = (t_current + dt_ctrl, x_next, theta_next, I_next, zeta_next)
+        # 5. Pack 5-element carry for next step
+        next_carry = (t_current + dt_ctrl, x_next, theta_next, I_next, zeta_next)
         return next_carry, log_data
 
+    # Initial 5-element carry state
+    init_carry = (t0, x_0, theta_hat_0, I_0, zeta_0)
     # Initial 5-element carry state
     init_carry = (t0, x_0, theta_hat_0, I_0, zeta_0)
     

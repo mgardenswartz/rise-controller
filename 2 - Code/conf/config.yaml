@@ -23,6 +23,7 @@ directories:
   config_filename: "config.yaml"
   statistics_filename: "statistics.json"
 
+
 simulation:
   controller_type: "nn_in_integral" # "baseline" or "nn_in_integral"
   randomize_x0: false
@@ -37,7 +38,7 @@ simulation:
   rtol: 1e-4
   random_seed: 582394
   debug_print: false
-  state_space_dim: 6
+  state_space_dim: 2
   noise_mean: 0.0
   noise_std: 0.05
   enable_learning: true
@@ -56,8 +57,6 @@ math_constants:
   rho_k4: 0.5
 
 neural_network:
-  d_in: 12
-  d_out: 6
   b: 0  # Blocks
   k_0: 2  # Depth
   k_i: 2  # Depth  
@@ -65,7 +64,7 @@ neural_network:
   hidden_activation: "swish"
   output_activation: "tanh"
   shortcut_activation: "linear"
-  init_mean: 0.1
+  init_mean: -0.1
   init_std: 0.1
   init_type: "normal"
 

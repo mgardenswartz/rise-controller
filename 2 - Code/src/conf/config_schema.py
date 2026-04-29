@@ -47,8 +47,6 @@ class MathConstantsConfig:
 
 @dataclass
 class NeuralNetworkConfig:
-    d_in: int
-    d_out: int
     b: int
     k_0: int
     k_i: int

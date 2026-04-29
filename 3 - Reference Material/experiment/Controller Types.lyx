@@ -1,0 +1,387 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1.5cm
+\topmargin 1.5cm
+\rightmargin 1.5cm
+\bottommargin 1.5cm
+\headheight 1.5cm
+\headsep 1.5cm
+\footskip 1.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Controllers
+\end_layout
+
+\begin_layout Subsection*
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+e & =q_{d}-q\\
+\dot{e} & =\dot{q}_{d}-\dot{q}\\
+\ddot{e} & =\ddot{q}_{d}-\ddot{q}\\
+ & =\ddot{q}_{d}-\left(f(q,\dot{q})+u(t)+d(t)\right)\\
+ & =\ddot{q}_{d}-f(q,\dot{q})-u(t)-d(t)\\
+r_{1} & =\dot{e}+k_{1}e\\
+\dot{r_{1}} & =\ddot{e}+k_{1}\dot{e}\\
+ & =\ddot{q}_{d}-f(q,\dot{q})-u(t)-d(t)+k_{1}(r_{1}-k_{1}e)\\
+ & =\ddot{q}_{d}-f(q,\dot{q})-u(t)-d(t)+k_{1}r_{1}-k_{1}^{2}e\\
+\ddot{r}_{1} & =\dddot{q}_{d}-\frac{{\rm d}}{{\rm d}t}f(q,\dot{q})-\dot{u}(t)-\dot{d}(t)+k_{1}\dot{r}_{1}-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}-\left(\frac{\partial f}{\partial q}\frac{\partial q}{\partial t}+\frac{\partial f}{\partial\dot{q}}\frac{\partial\dot{q}}{\partial t}\right)-\dot{u}-\dot{d}(t)+k_{1}\left(r_{2}-k_{2}r_{1}\right)-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}-\left(\frac{\partial f}{\partial q}\dot{q}+\frac{\partial f}{\partial\dot{q}}\ddot{q}\right)-\dot{u}-\dot{d}(t)+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}-\left(\frac{\partial f}{\partial q}\dot{q}+\frac{\partial f}{\partial\dot{q}}\left(f(q,\dot{q})+u+d(t)\right)\right)-\dot{u}-\dot{d}(t)+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}\underbrace{-\left(\frac{\partial f}{\partial q}\dot{q}+\frac{\partial f}{\partial\dot{q}}\left(f(q,\dot{q})+u\right)\right)}_{\triangleq\psi(q,\dot{q},u)}-\dot{u}\underbrace{-\frac{\partial f}{\partial\dot{q}}d(t)-\dot{d}(t)}_{\triangleq D(q,\dot{q},t)}+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}\\
+r_{2} & =\dot{r}_{1}+k_{2}r_{1}\\
+\dot{r}_{2} & =\ddot{r}_{1}+k_{2}\dot{r}_{1}\\
+ & =\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}+k_{2}\left(r_{2}-k_{2}r_{1}\right)\\
+ & =\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+k_{1}r_{2}-k_{1}k_{2}r_{1}-k_{1}^{2}\dot{e}+k_{2}r_{2}-k_{2}^{2}r_{1}\\
+ & =\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}-k_{1}^{2}\dot{e}\\
+\tilde{\gamma} & =\gamma^{\ast}-\gamma\\
+\dot{\tilde{\gamma}} & =-\dot{\gamma}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Proportional
+\size normal
+
+\begin_inset Formula 
+\[
+u(t)=\ddot{q}_{d}+\left(1+k_{1}k_{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}.
+\]
+
+\end_inset
+
+
+\size default
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r_{1}\\
+ & =\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)\left(\dot{e}+k_{1}e\right)\\
+ & =\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}+k_{1}\left(k_{1}+k_{2}\right)e\\
+ & =\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}+\left(k_{1}^{2}+k_{1}k_{2}\right)e\\
+ & =\ddot{q}_{d}+\left(1-\cancel{k_{1}^{2}}+\cancel{k_{1}^{2}}+k_{1}k_{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}\\
+ & =\ddot{q}_{d}+\left(1+k_{1}k_{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(\ddot{q}_{d}-f(q,\dot{q})-u(t)-d(t)+k_{1}r_{1}-k_{1}^{2}e\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(\ddot{q}_{d}-f(q,\dot{q})-\left(\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r_{1}\right)-d(t)+k_{1}r_{1}-k_{1}^{2}e\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(\cancel{\ddot{q}_{d}}-f(q,\dot{q})-\cancel{\ddot{q}_{d}}-\left(1-\cancel{k_{1}^{2}}\right)e-\left(\cancel{k_{1}}+k_{2}\right)r_{1}-d(t)+\cancel{k_{1}r_{1}}-\cancel{k_{1}^{2}e}\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(-f(q,\dot{q})-e-k_{2}r_{1}-d(t)\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(-e-k_{2}r_{1}\right)+r_{1}^{\top}\left(-f(q,\dot{q})-d(t)\right)\\
+ & =\cancel{e^{\top}r_{1}}-k_{1}e^{\top}e-\cancel{r_{1}^{\top}e}-k_{2}r_{1}^{\top}r_{1}-r_{1}^{\top}\left(f(q,\dot{q})+d(t)\right)\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-r_{1}^{\top}\left(f(q,\dot{q})+d(t)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Proportional + Neural Network
+\size normal
+
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\ddot{q}_{d}+\left(1+k_{1}k_{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}+\Phi\left(q,\dot{q},\hat{\theta}\right),\\
+\dot{\hat{\theta}} & =\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi\left(q,\dot{q},\hat{\theta}\right)r_{1}-\sigma_{1}\widehat{\Theta}\right).
+\end{align*}
+
+\end_inset
+
+
+\size default
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\ddot{q}_{d}+\left(1+k_{1}k_{2}\right)e+\left(k_{1}+k_{2}\right)\dot{e}+\Phi\left(x,\dot{x},\hat{\theta}\right),\\
+\dot{\hat{\theta}} & =\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi\left(x,\dot{x},\hat{\theta}\right)r_{1}-k_{4}\widehat{\Theta}\right)
+\end{align*}
+
+\end_inset
+
+ 
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+\hat{\theta}^{\top}\Gamma_{1}^{-1}\dot{\hat{\theta}}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(\ddot{q}_{d}-f(q,\dot{q})-u(t)-d(t)+k_{1}r_{1}-k_{1}^{2}e\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(\ddot{q}_{d}+\left(\Phi+\nabla_{\widehat{\theta}}\Phi(\kappa,\widehat{\theta})\widetilde{\theta}+\Delta\right)-\left(\ddot{q}_{d}+\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r_{1}+\Phi\right)-d(t)+k_{1}r_{1}-k_{1}^{2}e\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(\cancel{\ddot{q}_{d}}-f(q,\dot{q})-\cancel{\ddot{q}_{d}}-\left(1-\cancel{k_{1}^{2}}\right)e-\left(\cancel{k_{1}}+k_{2}\right)r_{1}-\Phi-d(t)+\cancel{k_{1}r_{1}}-\cancel{k_{1}^{2}e}\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(-f(q,\dot{q})-e-k_{2}r_{1}-d(t)\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}\left(-e-k_{2}r_{1}\right)+r_{1}^{\top}\left(-f(q,\dot{q})-d(t)\right)\\
+ & =\cancel{e^{\top}r_{1}}-k_{1}e^{\top}e-\cancel{r_{1}^{\top}e}-k_{2}r_{1}^{\top}r_{1}-r_{1}^{\top}\left(f(q,\dot{q})+d(t)\right)\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-r_{1}^{\top}\left(f(q,\dot{q})+d(t)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+RISE
+\size normal
+
+\begin_inset Formula 
+\[
+u(t)=\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+k_{4}\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau.
+\]
+
+\end_inset
+
+
+\size default
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{u} & =\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}+k_{4}\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}+k_{2}r_{1}\right)-\left(k_{1}k_{2}+k_{2}^{2}-1\right)\left(\dot{e}+k_{1}e\right)+k_{4}\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\left(\dot{e}+k_{1}e\right)\right)-\left(k_{1}k_{2}+k_{2}^{2}-1\right)\left(\dot{e}+k_{1}e\right)+k_{4}\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\dot{e}+k_{1}k_{2}e\right)-\left(k_{1}k_{2}+k_{2}^{2}-1\right)\left(\dot{e}+k_{1}e\right)+k_{4}\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+k_{4}\text{sgn}(r_{1})+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}+k_{2}+k_{3}\right)\left(k_{1}+k_{2}\right)\dot{e}+k_{1}k_{2}\left(k_{1}+k_{2}+k_{3}\right)e+\left(1-k_{1}k_{2}-k_{2}^{2}\right)\dot{e}+k_{1}\left(1-k_{1}k_{2}-k_{2}^{2}\right)e-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+k_{4}\text{sgn}(r_{1})+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}+\left(k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}\right)e+\left(1-k_{1}k_{2}-k_{2}^{2}\right)\dot{e}+\left(k_{1}-k_{1}^{2}k_{2}-k_{1}k_{2}^{2}\right)e-k_{1}^{2}\dot{e}\\
+ & =\dddot{q}_{d}+k_{4}\text{sgn}(r_{1})+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(\cancel{k_{1}^{2}}+\cancel{k_{1}k_{2}}+k_{1}k_{3}+k_{1}k_{2}+\cancel{k_{2}^{2}}+k_{2}k_{3}+1-\cancel{k_{1}k_{2}}-\cancel{k_{2}^{2}}-\cancel{k_{1}^{2}}\right)\dot{e}+\left(\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}k_{2}^{2}}+k_{1}k_{2}k_{3}+k_{1}-\cancel{k_{1}^{2}k_{2}}-\cancel{k_{1}k_{2}^{2}}\right)e\\
+ & =\dddot{q}_{d}+k_{4}\text{sgn}\left(\dot{e}+k_{1}e\right)+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)\dot{e}+\left(k_{1}k_{2}k_{3}+k_{1}\right)e\\
+\implies u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+k_{4}\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+r_{2}^{\top}\dot{r}_{2}+\dot{P}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}-k_{1}^{2}\dot{e}\right)+\dot{P}\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}r_{2}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\left(\dddot{q}_{d}+\psi(q,\dot{q},u)-\left(\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}+k_{4}\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\right)+D(q,\dot{q},t)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}-k_{1}^{2}\dot{e}\right)+\dot{P}\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}r_{2}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\left(\cancel{\dddot{q}_{d}}+\psi(q,\dot{q},u)-\cancel{\dddot{q}_{d}}-\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\left(-1+\cancel{k_{1}k_{2}+k_{2}^{2}}\right)r_{1}-k_{4}\text{sgn}(r_{1})+\cancel{k_{1}^{2}\dot{e}}+D(q,\dot{q},t)+\cancel{\left(k_{1}+k_{2}\right)r_{2}}-\cancel{\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}}-\cancel{k_{1}^{2}\dot{e}}\right)+\dot{P}\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}-\cancel{r_{2}^{\top}r_{1}}-k_{3}r_{2}^{\top}r_{2}+r_{2}^{\top}\left(\psi(q,\dot{q},u)+D(q,\dot{q},t)-k_{4}\text{sgn}(r_{1})\right)+\dot{P}\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+e^{\top}r_{1}+r_{2}^{\top}\left(\psi(q,\dot{q},u)+D(q,\dot{q},t)\right)+\dot{P}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+RISE + Neural Network
+\size normal
+
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+k_{4}\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau+\Phi\left(q,\dot{q},\hat{\theta}\right),\\
+\dot{\hat{\theta}} & =\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi\left(q,\dot{q},\hat{\theta}\right)r_{1}-\sigma_{1}\widehat{\Theta}\right).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Adaptive RISE
+\size normal
+
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\gamma(t)\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau,\\
+\gamma(t) & =\Gamma_{2}\left(\left|r_{1}(t)\right|-\left|r_{1}(t_{0})\right|+\int_{t_{0}}^{t}\left(k_{2}\left|r_{1}(\tau)\right|-\sigma_{2}\gamma(\tau)\right){\rm d}\tau\right).
+\end{align*}
+
+\end_inset
+
+
+\size default
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{u} & =\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}+\gamma\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\\
+\dot{\gamma} & =\Gamma_{2}\left(r_{2}^{\top}\text{sgn}(r_{1})-k_{5}\gamma\right)\\
+\implies u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\gamma(t)\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau\\
+\gamma(t) & =\Gamma_{2}\left(\left|r_{1}(t)\right|-\left|r_{1}(t_{0})\right|+\int_{t_{0}}^{t}\left(k_{2}\left|r_{1}(\tau)\right|-k_{5}\gamma(\tau)\right){\rm d}\tau\right)
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+r_{2}^{\top}\dot{r}_{2}+\dot{P}+\tilde{\gamma}^{\top}\Gamma_{2}^{-1}\dot{\tilde{\gamma}}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\dddot{q}_{d}+\psi(q,\dot{q},u)-\dot{u}+D(q,\dot{q},t)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}-k_{1}^{2}\dot{e}\right)+\dot{P}-\tilde{\gamma}^{\top}\dot{\gamma}\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}r_{2}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\left(\dddot{q}_{d}+\psi(q,\dot{q},u)-\left(\dddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}-1\right)r_{1}+\gamma\text{sgn}(r_{1})-k_{1}^{2}\dot{e}\right)+D(q,\dot{q},t)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}-k_{1}^{2}\dot{e}\right)+\dot{P}-\tilde{\gamma}^{\top}\Gamma_{2}^{-1}\Gamma_{2}\left(r_{2}^{\top}\text{sgn}(r_{1})-k_{5}\gamma\right)\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+r_{1}^{\top}r_{2}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\left(\cancel{\dddot{q}_{d}}+\psi(q,\dot{q},u)-\cancel{\dddot{q}_{d}}-\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\left(-1+\cancel{k_{1}k_{2}+k_{2}^{2}}\right)r_{1}-\gamma\text{sgn}(r_{1})+\cancel{k_{1}^{2}\dot{e}}+D(q,\dot{q},t)+\cancel{\left(k_{1}+k_{2}\right)r_{2}}-\cancel{\left(k_{1}k_{2}+k_{2}^{2}\right)r_{1}}-\cancel{k_{1}^{2}\dot{e}}\right)+\dot{P}-\tilde{\gamma}^{\top}r_{2}^{\top}\text{sgn}(r_{1})+k_{5}\tilde{\gamma}^{\top}\gamma\\
+ & =e^{\top}r_{1}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}-\cancel{r_{2}^{\top}r_{1}}-k_{3}r_{2}^{\top}r_{2}+r_{2}^{\top}\left(\psi(q,\dot{q},u)+D(q,\dot{q},t)-\gamma\text{sgn}(r_{1})\right)+\dot{P}-\tilde{\gamma}^{\top}r_{2}^{\top}\text{sgn}(r_{1})+k_{5}\tilde{\gamma}^{\top}(\gamma^{\ast}-\tilde{\gamma})\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+e^{\top}r_{1}+r_{2}^{\top}\left(\psi(q,\dot{q},u)+D(q,\dot{q},t)\right)+\dot{P}-k_{5}\tilde{\gamma}^{\top}\tilde{\gamma}+k_{5}\tilde{\gamma}^{\top}\gamma^{\ast}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Adaptive RISE + Neural Network
+\size normal
+
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\gamma(t)\text{sgn}\left(\dot{e}+k_{1}e\right)\right){\rm d}\tau+\Phi\left(q,\dot{q},\hat{\theta}\right),\\
+\dot{\hat{\theta}} & =\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi\left(q,\dot{q},\hat{\theta}\right)r_{1}-\sigma_{1}\widehat{\Theta}\right),\\
+\gamma(t) & =\Gamma_{2}\left(\left|r_{1}(t)\right|-\left|r_{1}(t_{0})\right|+\int_{t_{0}}^{t}\left(k_{2}\left|r_{1}(\tau)\right|-\sigma_{2}\gamma(\tau)\right){\rm d}\tau\right).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Adaptive RISE + Integrated Neural Network
+\size normal
+
+\begin_inset Formula 
+\begin{align*}
+u(t) & =\left[\ddot{q}_{d}+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{3}+k_{1}k_{2}+k_{2}k_{3}+1\right)e\right]_{t_{0}}^{t}+\int_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\gamma(t)\text{sgn}\left(\dot{e}+k_{1}e\right)+\Phi\left(q,\dot{q},u,\hat{\theta}\right)\right){\rm d}\tau,\\
+\dot{\hat{\theta}} & =k_{2}\Gamma_{1}\left(\nabla_{\widehat{\theta}}^{\top}\Phi\left(q,\dot{q},u,\hat{\theta}\right)r_{1}-\sigma_{1}\widehat{\Theta}\right),\\
+\gamma(t) & =\Gamma_{2}\left(\left|r_{1}(t)\right|-\left|r_{1}(t_{0})\right|+\int_{t_{0}}^{t}\left(k_{2}\left|r_{1}(\tau)\right|-\sigma_{2}\gamma(\tau)\right){\rm d}\tau\right).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
