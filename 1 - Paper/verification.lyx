@@ -284,7 +284,7 @@ Assume it has been shown elsewhere that
 \begin_inset Formula 
 \begin{align*}
 \dot{V} & =e^{\top}\dot{e}+r^{\top}\dot{r}+\dot{P}\\
- & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(\widetilde{N}+g\left(t\right)-k_{2}r-\beta r^{\top}\text{sgn}\left(e\right)-r^{\top}e\right)\\
+ & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(\widetilde{N}+g\left(t\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\right)\\
  & -\lambda_{P}P-r^{\top}g\left(t\right)+\beta r^{\top}\text{sgn}\left(e\right)\\
 \\
  & =\cancel{e^{\top}r}-k_{1}e^{\top}e+r^{\top}\widetilde{N}\left(x,x_{d},u,\theta^{\ast},\widehat{\theta}\right)+\cancel{r^{\top}g\left(t\right)}-k_{2}r^{\top}r-\cancel{\beta r^{\top}\text{sgn}\left(e\right)}-\cancel{r^{\top}e}\\
@@ -461,13 +461,13 @@ Differentiate
 
 
 \begin_inset Note Note
-status collapsed
+status open
 
 \begin_layout Plain Layout
-Note
+Note (for personal reference)
 \begin_inset Formula 
 \[
-\frac{d}{dt}\left(f_{\text{new}}\left(x,\theta^{\ast},\widehat{\theta}\right)\right)=\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\theta^{\ast}\right)}\dot{x}-\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}+\left.\frac{d\varepsilon}{dx}\right|_{x}\dot{x}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}
+\frac{d}{dt}\left(f_{\text{new}}\left(x,\theta^{\ast},\widehat{\theta}\right)\right)=\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\theta^{\ast}\right)}\dot{x}-\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}+\left.\frac{d\varepsilon}{dx}\right|_{x}\dot{x}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}
 \]
 
 \end_inset
@@ -597,8 +597,8 @@ We start from the
 Differentiate.
 \begin_inset Formula 
 \begin{align*}
-\ddot{x} & =\underbrace{\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\theta^{\ast}\right)}\dot{x}}_{\Psi\left(x,\dot{x},\theta^{\ast}\right)}-\underbrace{\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}}_{\Psi\left(x,\dot{x},\widehat{\theta}\right)}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}\\
- & =\Psi\left(x,\dot{x},\theta^{\ast}\right)-\Psi\left(x,\dot{x},\widehat{\theta}\right)-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}
+\ddot{x} & =\underbrace{\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\theta^{\ast}\right)}\dot{x}}_{\Psi\left(x,\dot{x},\theta^{\ast}\right)}-\underbrace{\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}}_{\Psi\left(x,\dot{x},\widehat{\theta}\right)}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}\\
+ & =\Psi\left(x,\dot{x},\theta^{\ast}\right)-\Psi\left(x,\dot{x},\widehat{\theta}\right)-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}
 \end{align*}
 
 \end_inset
@@ -606,7 +606,7 @@ Differentiate.
 Do a Taylor series.
 \begin_inset Formula 
 \[
-\Psi\left(x,\dot{x},\theta^{\ast}\right)=\Psi\left(x,\dot{x},\widehat{\theta}\right)+\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)
+\Psi\left(x,\dot{x},\theta^{\ast}\right)=\Psi\left(x,\dot{x},\widehat{\theta}\right)+\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)
 \]
 
 \end_inset
@@ -614,7 +614,7 @@ Do a Taylor series.
 Thus,
 \begin_inset Formula 
 \[
-\ddot{x}=\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}
+\ddot{x}=\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}
 \]
 
 \end_inset
@@ -624,9 +624,9 @@ Thus,
 \begin{align*}
 \dot{r} & =\ddot{e}+k_{1}\dot{e}\\
  & =\ddot{x}_{d}-\ddot{x}+k_{1}\dot{e}\\
- & =\ddot{x}_{d}-\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}\right)+k_{1}\dot{e}\\
- & =-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}\underbrace{-\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\frac{d\varepsilon}{dx}\dot{x}-\dot{d}}_{g_{\text{new}}\left(t\right)}+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\dot{u}_{RISE}+k_{1}\dot{e}\\
- & =-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\dot{u}_{RISE}+k_{1}\dot{e}
+ & =\ddot{x}_{d}-\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\frac{d\varepsilon}{dx}\dot{x}+\dot{d}+\dot{u}_{RISE}\right)+k_{1}\dot{e}\\
+ & =-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}\underbrace{-\mathcal{R}\left(x,\dot{x},\widetilde{\theta}\right)-\frac{d\varepsilon}{dx}\dot{x}-\dot{d}}_{g_{\text{new}}\left(t\right)}+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\dot{u}_{RISE}+k_{1}\dot{e}\\
+ & =-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\dot{u}_{RISE}+k_{1}\dot{e}
 \end{align*}
 
 \end_inset
@@ -646,9 +646,9 @@ Thus,
 Thus,
 \begin_inset Formula 
 \begin{align*}
-\dot{r} & =-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\left(k_{1}\dot{e}+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\ddot{x}_{d}+\beta\text{sgn}\left(e\right)+e+k_{2}r\right)+k_{1}\dot{e}\\
- & =-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\cancel{\ddot{x}_{d}}+\cancel{\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}-\cancel{k_{1}\dot{e}}-\cancel{\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}-\cancel{\ddot{x}_{d}}-\beta\text{sgn}\left(e\right)-e-k_{2}r+\cancel{k_{1}\dot{e}}\\
- & =-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r
+\dot{r} & =-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\ddot{x}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}-\left(k_{1}\dot{e}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}+\ddot{x}_{d}+\beta\text{sgn}\left(e\right)+e+k_{2}r\right)+k_{1}\dot{e}\\
+ & =-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)+\cancel{\ddot{x}_{d}}+\cancel{\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}-\cancel{k_{1}\dot{e}}-\cancel{\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}-\cancel{\ddot{x}_{d}}-\beta\text{sgn}\left(e\right)-e-k_{2}r+\cancel{k_{1}\dot{e}}\\
+ & =-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r
 \end{align*}
 
 \end_inset
@@ -656,7 +656,7 @@ Thus,
 Design
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)
 \]
 
 \end_inset
@@ -665,7 +665,7 @@ Thus,
 \begin_inset Formula 
 \begin{align*}
 \dot{\widetilde{\theta}} & =-\dot{\widehat{\theta}}\\
- & =-\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)
+ & =-\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)
 \end{align*}
 
 \end_inset
@@ -681,9 +681,9 @@ From Krstic's Appendix E.4,
 so
 \begin_inset Formula 
 \begin{align*}
-\widetilde{\theta}^{\top}\Gamma^{-1}\dot{\widetilde{\theta}} & =\widetilde{\theta}^{\top}\Gamma^{-1}\left(-\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\right)\\
- & =-\widetilde{\theta}^{\top}\Gamma^{-1}\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\\
- & \le\widetilde{\theta}^{\top}\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r
+\widetilde{\theta}^{\top}\Gamma^{-1}\dot{\widetilde{\theta}} & =\widetilde{\theta}^{\top}\Gamma^{-1}\left(-\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\right)\\
+ & =-\widetilde{\theta}^{\top}\Gamma^{-1}\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\\
+ & \le\widetilde{\theta}^{\top}\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r
 \end{align*}
 
 \end_inset
@@ -698,8 +698,8 @@ Closed-loop dynamics
 \dot{P}
 \end{array}\right]=\left[\begin{array}{c}
 r-k_{1}e\\
--\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r\\
--\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\\
+-\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r\\
+-\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r\right)\\
 -\lambda_{P}P-r^{\top}g_{\text{new}}\left(t\right)+\beta r^{\top}\text{sgn}\left(e\right)
 \end{array}\right]
 \]
@@ -718,11 +718,11 @@ Derivative.
 \begin_inset Formula 
 \begin{align*}
 \dot{V} & =e^{\top}\dot{e}+r^{\top}\dot{r}+\widetilde{\theta}^{\top}\Gamma^{-1}\dot{\widetilde{\theta}}+\dot{P}\\
- & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(-\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r\right)\\
+ & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(-\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}+g_{\text{new}}\left(t\right)-\beta\text{sgn}\left(e\right)-e-k_{2}r\right)\\
  & -\lambda_{P}P-r^{\top}g_{\text{new}}\left(t\right)+\beta r^{\top}\text{sgn}\left(e\right)+\widetilde{\theta}^{\top}\Gamma^{-1}\dot{\widetilde{\theta}}\\
 \\
- & \le\cancel{e^{\top}r}-k_{1}e^{\top}e-\cancel{r^{\top}\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}}+\cancel{r^{\top}g_{\text{new}}\left(t\right)}-\cancel{\beta r^{\top}\text{sgn}\left(e\right)}-\cancel{r^{\top}e}-k_{2}r^{\top}r\\
- & -\lambda_{P}P-\cancel{r^{\top}g_{\text{new}}\left(t\right)}+\cancel{\beta r^{\top}\text{sgn}\left(e\right)}+\cancel{\widetilde{\theta}^{\top}\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r}\\
+ & \le\cancel{e^{\top}r}-k_{1}e^{\top}e-\cancel{r^{\top}\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\widetilde{\theta}}+\cancel{r^{\top}g_{\text{new}}\left(t\right)}-\cancel{\beta r^{\top}\text{sgn}\left(e\right)}-\cancel{r^{\top}e}-k_{2}r^{\top}r\\
+ & -\lambda_{P}P-\cancel{r^{\top}g_{\text{new}}\left(t\right)}+\cancel{\beta r^{\top}\text{sgn}\left(e\right)}+\cancel{\widetilde{\theta}^{\top}\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}\right)^{\top}r}\\
 \\
  & \le-k_{1}e^{\top}e-k_{2}r^{\top}r-\lambda_{P}P
 \end{align*}
@@ -755,8 +755,8 @@ so
 \begin_inset Formula 
 \begin{align*}
 \intop_{t_{0}}^{t}\dot{u}d\tau & =\intop_{t_{0}}^{t}k_{2}rd\tau+\intop_{t_{0}}^{t}\ddot{x}_{d}d\tau+k_{1}\intop_{t_{0}}^{t}\dot{e}d\tau+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau\\
-u\left(t\right)-\cancelto{0}{u\left(t_{0}\right)} & =\intop_{t_{0}}^{t}k_{2}\left(\dot{e}+k_{1}e\right)d\tau+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+k_{1}e\left(t\right)-k_{1}e\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau\\
-{\color{green}u\left(t\right)} & {\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau}
+u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}k_{2}\left(\dot{e}+k_{1}e\right)d\tau+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+k_{1}e\left(t\right)-k_{1}e\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau\\
+{\color{green}u\left(t\right)} & {\color{green}=u\left(t_{0}\right)+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau}
 \end{align*}
 
 \end_inset
@@ -820,8 +820,8 @@ so
 \begin_inset Formula 
 \begin{align*}
 \intop_{t_{0}}^{t}\dot{u}_{RISE}d\tau & =\intop_{t_{0}}^{t}\left(k_{1}+k_{2}\right)\left(\dot{e}+k_{1}e\right)d\tau-k_{1}^{2}\intop_{t_{0}}^{t}ed\tau+\intop_{t_{0}}^{t}\ddot{x}_{d}d\tau+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e\right)d\tau\\
-u_{RISE}\left(t\right)-\cancel{u_{RISE}\left(t_{0}\right)} & =\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\left(\cancel{k_{1}}+k_{2}\right)\intop_{t_{0}}^{t}k_{1}ed\tau-\cancel{k_{1}^{2}\intop_{t_{0}}^{t}ed\tau}+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e\right)d\tau\\
-u_{RISE}\left(t\right) & =\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e\right)d\tau
+u_{RISE}\left(t\right)-u_{RISE}\left(t_{0}\right) & =\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\left(\cancel{k_{1}}+k_{2}\right)\intop_{t_{0}}^{t}k_{1}ed\tau-\cancel{k_{1}^{2}\intop_{t_{0}}^{t}ed\tau}+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+e\right)d\tau\\
+u_{RISE}\left(t\right) & =u_{RISE}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e\right)d\tau
 \end{align*}
 
 \end_inset
@@ -829,7 +829,7 @@ u_{RISE}\left(t\right) & =\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t
 so
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{purple}\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{purple}\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
 \]
 
 \end_inset
@@ -869,129 +869,26 @@ Try controller 3 but with update law
 
 \end_layout
 
-\begin_layout Subsection
-Velocity Estimates
-\end_layout
-
-\begin_layout Standard
-For all uses of 
-\begin_inset Formula $\dot{x}$
-\end_inset
-
- or 
-\begin_inset Formula $r$
-\end_inset
-
-, use 
-\begin_inset Formula $\dot{x}$
-\end_inset
-
- estimates from the filter below.
-\end_layout
-
 \begin_layout Section
-Rho Filter
+Experiment
 \end_layout
 
 \begin_layout Standard
-This is an exponentially convergent differentiator: 
-\begin_inset Formula $q$
-\end_inset
-
- is generalized position, 
-\begin_inset Formula $\widehat{q}$
-\end_inset
-
- is its estimate, 
-\begin_inset Formula $p$
-\end_inset
-
- is generalized velocity, 
-\begin_inset Formula $\widehat{p}$
-\end_inset
-
- is its estimate, 
-\begin_inset Formula $\mu$
-\end_inset
-
- and 
-\begin_inset Formula $\sigma$
-\end_inset
-
- are internal variables (not estimates, but the estimator must keep tabs
- on them).
- 
-\begin_inset Formula $k_{1}$
-\end_inset
-
-, 
-\begin_inset Formula $k_{2}$
-\end_inset
-
-, 
-\begin_inset Formula $k_{3}$
-\end_inset
-
-, and 
-\begin_inset Formula $k_{4}$
-\end_inset
-
- are gains distinct from those above.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{align*}
-\dot{\xi} & =\left[\begin{array}{c}
-\dot{\widehat{q}}\\
-\dot{\widehat{p}}\\
-\dot{\mu}\\
-\dot{\sigma}
-\end{array}\right]=\underbrace{\left[\begin{array}{cccc}
-\mathbf{0}_{n\times n} & I_{n} & \mathbf{0}_{n\times n} & \mathbf{0}_{n\times n}\\
--\left(3-k_{1}^{2}+\left(2k_{1}+k_{2}+k_{3}\right)\left(k_{1}+k_{2}\right)\right)I_{n} & \mathbf{0}_{n\times n} & -\left(\left(2k_{1}+k_{2}+k_{3}\right)\left(k_{1}+k_{2}\right)+1\right)I_{n} & -\left(2k_{1}+k_{2}+k_{3}\right)I_{n}\\
--\left(k_{1}+k_{2}\right)I_{n} & \mathbf{0}_{n\times n} & -\left(2k_{1}+k_{2}\right)I_{n} & -I_{n}\\
--\left(1+\left(k_{1}+k_{2}\right)\left(k_{3}-k_{1}\right)\right)I_{n} & \mathbf{0}_{n\times n} & -\left(k_{1}+k_{2}\right)\left(k_{3}-k_{1}\right)I_{n} & -k_{3}I_{n}
-\end{array}\right]}_{M\otimes I_{n}}\left[\begin{array}{c}
-\widehat{q}\\
-\widehat{p}\\
-\mu\\
-\sigma
-\end{array}\right]\\
- & +\underbrace{\left[\begin{array}{c}
-\mathbf{0}_{n\times n}\\
-\left(\left(3-k_{1}^{2}\right)+\left(2k_{1}+k_{2}+k_{3}\right)\left(k_{1}+k_{2}\right)\right)I_{n}\\
-\left(k_{1}+k_{2}\right)I_{n}\\
-\left(1+\left(k_{1}+k_{2}\right)\left(k_{3}-k_{1}\right)\right)I_{n}
-\end{array}\right]}_{N\otimes I_{n}}q+k_{4}\underbrace{\left[\begin{array}{c}
-\mathbf{0}_{n\times n}\\
-I_{n}\\
-\mathbf{0}_{n\times n}\\
-\mathbf{0}_{n\times n}
-\end{array}\right]}_{E\otimes I_{n}}\text{sgn}\left(S\xi+q\right)
-\end{align*}
-
-\end_inset
-
-where 
-\begin_inset Formula $S\triangleq\left[\begin{array}{cccc}
--1 & 0 & -1 & 0\end{array}\right]$
+Pick 
+\begin_inset Formula $u\left(t_{0}\right)=\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t_{0}\right)\right)$
 \end_inset
 
 .
- More simply, it's
-\begin_inset Formula 
-\begin{align*}
-\dot{\xi} & =\left(M\otimes I_{n}\right)\xi+\left(N\otimes I_{n}\right)q+k_{4}\left(E\otimes I_{n}\right)\text{sgn}\left(S\xi+q\right)
-\end{align*}
-
+ Let 
+\begin_inset Formula $e\triangleq x_{d}-x$
 \end_inset
 
+.
+ Let 
+\begin_inset Formula $r\triangleq\dot{e}+k_{1}e$
+\end_inset
 
-\end_layout
-
-\begin_layout Section
-Experiment
+.
 \end_layout
 
 \begin_layout Subsection
@@ -999,7 +896,7 @@ Proportional
 \end_layout
 
 \begin_layout Standard
-Default
+Existing code.
 \end_layout
 
 \begin_layout Subsection
@@ -1009,7 +906,7 @@ RISE
 \begin_layout Standard
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e\right)d\tau}
 \]
 
 \end_inset
@@ -1024,7 +921,16 @@ RISE + NN in Integral
 \begin_layout Standard
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e-\Phi\left(\kappa,\widehat{\theta}\right)\right)d\tau}
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\kappa\triangleq\left[\begin{array}{cc}
+x^{\top} & u^{\top}\end{array}\right]^{\top}
 \]
 
 \end_inset
@@ -1037,7 +943,7 @@ RISE + NN in Integral
 
 \end_inset
 
-or
+Baseline update law to compare against:
 \begin_inset Formula 
 \[
 \dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e\right)
@@ -1055,7 +961,7 @@ RISE + NN Outside Integral
 \begin_layout Standard
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)-\dot{x}_{d}\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{purple}\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}\right)d\tau}
 \]
 
 \end_inset
@@ -1068,15 +974,15 @@ RISE + NN Outside Integral
 
 \end_inset
 
-
+where
 \begin_inset Formula 
 \[
-\Psi\left(x,\dot{x},\widehat{\theta}\right)\triangleq\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\theta^{\ast}\right)}\dot{x}
+\Psi\left(x,\dot{x},\widehat{\theta}\right)\triangleq\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}
 \]
 
 \end_inset
 
-or
+Baseline update law to compare against:
 \begin_inset Formula 
 \[
 \dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e\right)
