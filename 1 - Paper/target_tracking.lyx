@@ -548,7 +548,7 @@ x^{\top}, & x_{d}^{\top}, & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{3n}
 with
 \begin_inset Formula 
 \[
-{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r\right)}
+{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
 \]
 
 \end_inset
@@ -559,7 +559,7 @@ or
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
@@ -592,7 +592,7 @@ u_{RISE}\left(t\right) & =\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t
 Thus,
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=-\Phi\left(x,x_{d},\widehat{\theta}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{purple}\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(X,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=-\Phi\left(x,x_{d},\widehat{\theta}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(X,\widehat{\theta}\right)}\dot{\widehat{\theta}}\right)d\tau}
 \]
 
 \end_inset
@@ -600,7 +600,7 @@ Thus,
 with
 \begin_inset Formula 
 \begin{align*}
-\dot{\widehat{\theta}} & =\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(X,\dot{X},\widehat{\theta}\right)}\right)^{\top}r\right)\\
+\dot{\widehat{\theta}} & =\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\widehat{\theta}}\right|_{\left(X,\dot{X},\widehat{\theta}\right)}\right)^{\top}r-k_{\theta}\widehat{\theta}\right)\\
 \Psi\left(X,\dot{X},\widehat{\theta}\right) & \triangleq\left.\frac{\partial\Phi}{\partial X}\right|_{\left(X,\widehat{\theta}\right)}\dot{X}
 \end{align*}
 
@@ -609,7 +609,7 @@ with
 or
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(X,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(X,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset

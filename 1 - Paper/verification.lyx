@@ -771,7 +771,7 @@ x^{\top} & u^{\top}\end{array}\right]^{\top}$
 
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
@@ -787,7 +787,7 @@ Controller 2
 Try controller 1 but with update law
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
@@ -837,7 +837,7 @@ so
 with update law
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r\right)}
+\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
 \]
 
 \end_inset
@@ -861,7 +861,7 @@ Controller 4
 Try controller 3 but with update law
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
@@ -938,7 +938,7 @@ x^{\top} & u^{\top}\end{array}\right]^{\top}
 
 \begin_inset Formula 
 \[
-{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r\right)}
+{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
 \]
 
 \end_inset
@@ -946,7 +946,7 @@ x^{\top} & u^{\top}\end{array}\right]^{\top}
 Baseline update law to compare against:
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
@@ -969,7 +969,7 @@ RISE + NN Outside Integral
 
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r\right)}
+\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
 \]
 
 \end_inset
@@ -985,7 +985,7 @@ where
 Baseline update law to compare against:
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
 
 \end_inset
