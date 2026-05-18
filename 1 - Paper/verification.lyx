@@ -938,16 +938,26 @@ x^{\top} & u^{\top}\end{array}\right]^{\top}
 
 \begin_inset Formula 
 \[
-{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
+{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)\right)}
 \]
 
 \end_inset
 
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
 Baseline update law to compare against:
 \begin_inset Formula 
 \[
 \dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
 \]
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -961,7 +971,7 @@ RISE + NN Outside Integral
 \begin_layout Standard
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}\right)d\tau}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{blue}\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
 \]
 
 \end_inset
@@ -969,7 +979,7 @@ RISE + NN Outside Integral
 
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)}
+\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)\right)}
 \]
 
 \end_inset
@@ -985,7 +995,7 @@ where
 Baseline update law to compare against:
 \begin_inset Formula 
 \[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
+\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)\right)
 \]
 
 \end_inset
