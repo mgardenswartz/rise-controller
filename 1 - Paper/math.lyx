@@ -947,9 +947,9 @@ So,
  & =\underbrace{\Phi\left(\kappa,\widehat{\theta}\right)-\Phi\left(\kappa,\theta^{\ast}\right)}_{N_{B}\left(\kappa,\theta^{\ast},\widehat{\theta}\right)}+\widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)+\widetilde{N}_{\nabla f}\left(x_{d},x\right)d\left(t\right)+D_{0}\left(\kappa_{d},t\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
  & =\underbrace{N_{B}\left(\kappa,\theta^{\ast},\widehat{\theta}\right)-N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)}_{\widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)}+N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)+\widetilde{N}_{\nabla f}\left(x_{d},x\right)d\left(t\right)+D_{0}\left(\kappa_{d},t\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
  & =N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\underbrace{\widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)+\widetilde{N}_{\nabla f}\left(x_{d},x\right)d\left(t\right)}_{\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)}+D_{0}\left(\kappa_{d},t\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
- & =N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+\underbrace{D_{0}\left(\kappa_{d},t\right)+\rho_{\varepsilon}\left(0\right)+\rho_{\Phi}\left(0\right)+\rho_{\widehat{\Phi}}\left(0\right)}_{D\left(\kappa_{d},t\right)}-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
- & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+\underbrace{N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+D\left(\kappa_{d},t\right)}_{g\left(t\right)}-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
- & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+g\left(t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e
+ & =N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+\underbrace{D_{0}\left(\kappa_{d},t\right)+\rho_{\varepsilon}\left(k_{1},0\right)+\rho_{\Phi}\left(k_{1},0\right)+\rho_{\widehat{\Phi}}\left(k_{1},0\right)}_{D\left(k_{1},\kappa_{d},t\right)}-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
+ & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+\underbrace{N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+D\left(k_{1},\kappa_{d},t\right)}_{g\left(k_{1},\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)}-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e\\
+ & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+g\left(k_{1},\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)-k_{2}r-\beta\text{sgn}\left(e\right)-e
 \end{align*}
 
 \end_inset
@@ -963,7 +963,7 @@ Let
  ensemble differential inclusion:
 \begin_inset Formula 
 \[
-\dot{r}\overset{\text{a.a.t}}{\in}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+g\left(t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)-k_{2}r-\beta K[\text{sgn}]\left(e\right)-e
+\dot{r}\overset{\text{a.a.t}}{\in}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)+g\left(k_{1},\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)-k_{2}r-\beta K[\text{sgn}]\left(e\right)-e
 \]
 
 \end_inset
@@ -1003,7 +1003,7 @@ Note that using EVT and by the assumption on
 
 \begin_inset Formula 
 \[
-\left\Vert D\left(\kappa_{d},t\right)\right\Vert \le\sup_{\left\Vert \kappa_{d}\right\Vert \le\overline{u}_{d}+\overline{x}_{d},t\in\mathbb{R}_{\ge t_{0}}}\left(-\dot{d}\left(t\right)-\varepsilon\left(\kappa_{d}\right)-\left.\frac{df}{dx}\right|_{x_{d}}d\left(t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\right)\triangleq\overline{D}
+\left\Vert D\left(k_{1},\kappa_{d},t\right)\right\Vert \le\sup_{\left\Vert \kappa_{d}\right\Vert \le\overline{u}_{d}+\overline{x}_{d},t\in\mathbb{R}_{\ge t_{0}}}\left(-\dot{d}\left(t\right)-\varepsilon\left(\kappa_{d}\right)-\left.\frac{df}{dx}\right|_{x_{d}}d\left(t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)\right)\triangleq\overline{D}
 \]
 
 \end_inset
@@ -1263,8 +1263,8 @@ for
 Define
 \begin_inset Formula 
 \begin{align*}
-\overline{\rho}_{u}\left(s\right) & \triangleq\rho_{f}\left(s\right)s+\left(k_{1}+1\right)s\\
-\rho_{u}\left(s\right) & \triangleq\overline{\rho}_{u}\left(s\right)+\rho_{u}\left(0\right)
+\overline{\rho}_{u}\left(k_{1},s\right) & \triangleq\rho_{f}\left(s\right)s+\left(k_{1}+1\right)s\\
+\rho_{u}\left(k_{1},s\right) & \triangleq\overline{\rho}_{u}\left(k_{1},s\right)+\rho_{u}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1272,7 +1272,7 @@ Define
 Thus,
 \begin_inset Formula 
 \[
-\left\Vert u\right\Vert \le\rho_{u}\left(\left\Vert z\right\Vert \right)
+\left\Vert u\right\Vert \le\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)
 \]
 
 \end_inset
@@ -1285,6 +1285,10 @@ where
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
+ with respect to 
+\begin_inset Formula $s$
+\end_inset
+
  and 
 \begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
@@ -1292,7 +1296,7 @@ where
  function defined as
 \begin_inset Formula 
 \[
-\rho_{u}\left(\left\Vert z\right\Vert \right)\triangleq\overline{\dot{x}_{d}}+\sigma_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +C_{f}+\overline{d}+\left(k_{1}+1\right)\left\Vert z\right\Vert 
+\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\triangleq\overline{\dot{x}_{d}}+\sigma_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +C_{f}+\overline{d}+\left(k_{1}+1\right)\left\Vert z\right\Vert 
 \]
 
 \end_inset
@@ -1335,8 +1339,8 @@ Write
 Notice that
 \begin_inset Formula 
 \begin{align*}
-\overline{\rho}_{u}\left(s\right) & =\alpha_{f}\left(s\right)s\\
-\alpha_{f}\left(s\right) & \triangleq\rho_{f}\left(s\right)+k_{1}+1
+\overline{\rho}_{u}\left(k_{1},s\right) & =\alpha_{f}\left(k_{1},s\right)s\\
+\alpha_{f}\left(k_{1},s\right) & \triangleq\rho_{f}\left(s\right)+k_{1}+1
 \end{align*}
 
 \end_inset
@@ -1344,8 +1348,8 @@ Notice that
 Thus,
 \begin_inset Formula 
 \begin{align*}
-\rho_{u}\left(s\right) & \le\overline{\rho}_{u}\left(s\right)+\rho_{u}\left(0\right)\\
- & \le\alpha_{f}\left(s\right)s+\rho_{u}\left(0\right)
+\rho_{u}\left(k_{1},s\right) & \le\overline{\rho}_{u}\left(k_{1},s\right)+\rho_{u}\left(k_{1},0\right)\\
+ & \le\alpha_{f}\left(k_{1},s\right)s+\rho_{u}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1393,13 +1397,13 @@ Recall
 \begin{align*}
 \left\Vert \widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)\right\Vert  & \le\sigma_{\varepsilon}\left(\left\Vert e_{d}\right\Vert \right)\left\Vert e_{d}\right\Vert \\
  & \le\sigma_{\varepsilon}\left(\left\Vert e\right\Vert +\left\Vert u_{d}\right\Vert +\left\Vert u\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert u_{d}\right\Vert +\left\Vert u\right\Vert \right)\\
- & \le\sigma_{\varepsilon}\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(\left\Vert z\right\Vert \right)\right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(\left\Vert z\right\Vert \right)\right)
+ & \le\sigma_{\varepsilon}\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)
 \end{align*}
 
 \end_inset
 
 Since 
-\begin_inset Formula $\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(\left\Vert z\right\Vert \right)\right)$
+\begin_inset Formula $\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)$
 \end_inset
 
  is strictly increasing and 
@@ -1429,7 +1433,7 @@ Since
 where
 \begin_inset Formula 
 \[
-\rho_{\varepsilon_{0}}\left(s\right)\triangleq\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)
+\rho_{\varepsilon_{0}}\left(k_{1},s\right)\triangleq\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)
 \]
 
 \end_inset
@@ -1449,7 +1453,7 @@ Let
  function defined as
 \begin_inset Formula 
 \[
-\overline{\rho}_{u}\left(s\right)\triangleq\rho_{u}\left(s\right)-\rho_{u}\left(0\right)
+\overline{\rho}_{u}\left(k_{1},s\right)\triangleq\rho_{u}\left(k_{1},s\right)-\rho_{u}\left(k_{1},0\right)
 \]
 
 \end_inset
@@ -1481,7 +1485,7 @@ Let
 ) function
 \begin_inset Formula 
 \[
-\overline{\rho}_{\varepsilon_{0}}\left(s\right)\triangleq\rho_{\varepsilon_{0}}\left(s\right)-\rho_{\varepsilon_{0}}\left(0\right)
+\overline{\rho}_{\varepsilon_{0}}\left(k_{1},s\right)\triangleq\rho_{\varepsilon_{0}}\left(k_{1},s\right)-\rho_{\varepsilon_{0}}\left(k_{1},0\right)
 \]
 
 \end_inset
@@ -1489,18 +1493,18 @@ Let
 Thus, we can also write
 \begin_inset Formula 
 \begin{align*}
-\rho_{\varepsilon_{0}}\left(s\right) & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
- & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\overline{\rho}_{u}\left(s\right)+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
- & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)+\overline{\rho}_{u}\left(s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
- & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)+\overline{\rho}_{u}\left(s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
+\rho_{\varepsilon_{0}}\left(k_{1},s\right) & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
+ & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\overline{\rho}_{u}\left(k_{1},s\right)+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
+ & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)+\overline{\rho}_{u}\left(k_{1},s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
+ & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)+\overline{\rho}_{u}\left(k_{1},s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
 \\
- & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)+\overline{\rho}_{u}\left(s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
- & -\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\\
+ & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)+\overline{\rho}_{u}\left(k_{1},s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
+ & -\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\\
 \\
- & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\left(\underbrace{\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)-\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)}_{\alpha_{a}\left(s\right)}\right)+\overline{\rho}_{u}\left(s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)\\
- & +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\\
+ & =\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\left(\underbrace{\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)-\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)}_{\alpha_{a}\left(k_{1},s\right)}\right)+\overline{\rho}_{u}\left(k_{1},s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)\\
+ & +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\\
 \\
- & \le\underbrace{\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\alpha_{f}\left(s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{a}\left(s\right)}_{\rho_{\varepsilon}\left(s\right)}+\underbrace{\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)}_{\text{y-intercept}}
+ & \le\underbrace{\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\alpha_{f}\left(k_{1},s\right)\sigma_{\varepsilon}\left(s+\overline{u}_{d}+\rho_{u}\left(k_{1},s\right)\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\alpha_{a}\left(k_{1},s\right)+\underbrace{\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)}_{\text{y-intercept}}}_{\rho_{\varepsilon}\left(s\right)}
 \end{align*}
 
 \end_inset
@@ -1508,7 +1512,7 @@ Thus, we can also write
 Thus,
 \begin_inset Formula 
 \[
-\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)\right\Vert \le\rho_{\varepsilon}\left(s\right)
+\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)\right\Vert \le\rho_{\varepsilon}\left(k_{1},s\right)
 \]
 
 \end_inset
@@ -1516,8 +1520,8 @@ Thus,
 Define
 \begin_inset Formula 
 \begin{align*}
-\rho_{\varepsilon}\left(s\right) & \triangleq\overline{\rho}_{\varepsilon}\left(s\right)+\rho_{\varepsilon}\left(0\right)\\
-\rho_{\varepsilon}\left(0\right) & =\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)
+\rho_{\varepsilon}\left(k_{1},s\right) & \triangleq\overline{\rho}_{\varepsilon}\left(k_{1},s\right)+\rho_{\varepsilon}\left(k_{1},0\right)\\
+\rho_{\varepsilon}\left(k_{1},0\right) & =\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\sigma_{\varepsilon}\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)
 \end{align*}
 
 \end_inset
@@ -1525,7 +1529,7 @@ Define
 Thus,
 \begin_inset Formula 
 \[
-\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)\right\Vert \le\rho_{\varepsilon}\left(\left\Vert z\right\Vert \right)
+\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)\right\Vert \le\rho_{\varepsilon}\left(k_{1},\left\Vert z\right\Vert \right)
 \]
 
 \end_inset
@@ -1554,14 +1558,14 @@ Since the (redefined)
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
- function 
-\begin_inset Formula $\alpha_{\varepsilon}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+ (w.r.t the second argument) function 
+\begin_inset Formula $\alpha_{\varepsilon}:\mathbb{R}_{>0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
 \end_inset
 
  such that 
 \begin_inset Formula 
 \[
-\overline{\rho}_{\varepsilon}\left(s\right)\le\alpha_{\varepsilon}\left(s\right)\cdot s
+\overline{\rho}_{\varepsilon}\left(k_{1},s\right)\le\alpha_{\varepsilon}\left(k_{1},s\right)\cdot s
 \]
 
 \end_inset
@@ -1569,9 +1573,9 @@ Since the (redefined)
 where
 \begin_inset Formula 
 \[
-\alpha_{\varepsilon}\left(s\right)\triangleq\begin{cases}
-\frac{1}{s}\overline{\rho}_{\varepsilon}\left(s\right) & s>0\\
-\overline{\rho}_{\varepsilon}^{\prime}\left(0^{+}\right) & s=0
+\alpha_{\varepsilon}\left(k_{1},s\right)\triangleq\begin{cases}
+\frac{1}{s}\overline{\rho}_{\varepsilon}\left(k_{1},s\right) & s>0\\
+\overline{\rho}_{\varepsilon}^{\prime}\left(k_{1},0^{+}\right) & s=0
 \end{cases}
 \]
 
@@ -1642,11 +1646,11 @@ where
 \left\Vert \gamma\left(\lambda_{L}\right)\right\Vert  & \le\lambda_{L}\left\Vert e_{d}\right\Vert +\left\Vert \kappa\right\Vert \\
  & \le\lambda_{L}\left(\left\Vert \kappa\right\Vert +\left\Vert \kappa_{d}\right\Vert \right)+\left\Vert \kappa\right\Vert \\
  & \le\lambda_{L}\left(\left\Vert x\right\Vert +\left\Vert u\right\Vert +\overline{\kappa}_{d}\right)+\left\Vert x\right\Vert +\left\Vert u\right\Vert \\
- & \le\lambda_{L}\left(\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\right)+\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\\
- & \le\lambda_{L}\left(\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\right)+\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\\
- & \le\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}+\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\\
- & \le2\overline{x}_{d}+2\left\Vert e\right\Vert +2\rho_{u}\left(\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\\
- & \le2\overline{x}_{d}+2\left\Vert z\right\Vert +2\rho_{u}\left(\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}
+ & \le\lambda_{L}\left(\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\right)+\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\\
+ & \le\lambda_{L}\left(\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\right)+\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\\
+ & \le\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}+\overline{x}_{d}+\left\Vert e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\\
+ & \le2\overline{x}_{d}+2\left\Vert e\right\Vert +2\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}\\
+ & \le2\overline{x}_{d}+2\left\Vert z\right\Vert +2\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{\kappa}_{d}
 \end{align*}
 
 \end_inset
@@ -1654,7 +1658,7 @@ where
  So,
 \begin_inset Formula 
 \[
-\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\gamma\left(\lambda_{L}\right),\theta^{\ast}\right)}\right\Vert \le\sigma_{\Phi}\left(s\right)\triangleq\sup_{\left\Vert \theta^{\ast}\right\Vert \le\overline{\theta},\left\Vert \zeta\right\Vert \le2\overline{x}_{d}+2s+2\rho_{u}\left(s\right)+\overline{\kappa}_{d}}\left(\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\zeta,\theta^{\ast}\right)}\right\Vert \right)
+\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\gamma\left(\lambda_{L}\right),\theta^{\ast}\right)}\right\Vert \le\sigma_{\Phi}\left(s\right)\triangleq\sup_{\left\Vert \theta^{\ast}\right\Vert \le\overline{\theta},\left\Vert \zeta\right\Vert \le2\overline{x}_{d}+2s+2\rho_{u}\left(k_{1},s\right)+\overline{\kappa}_{d}}\left(\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\zeta,\theta^{\ast}\right)}\right\Vert \right)
 \]
 
 \end_inset
@@ -1673,8 +1677,8 @@ where
  Let (by Lemma 3)
 \begin_inset Formula 
 \begin{align*}
-\rho_{\Phi_{0}}\left(s\right) & \triangleq\sigma_{\Phi}\left(s\right)+cs\\
-\sigma_{\Phi}\left(s\right) & \le\rho_{\Phi_{0}}\left(s\right)
+\rho_{\Phi_{0}}\left(k_{1},s\right) & \triangleq\sigma_{\Phi}\left(k_{1},s\right)+cs\\
+\sigma_{\Phi}\left(k_{1},s\right) & \le\rho_{\Phi_{0}}\left(k_{1},s\right)
 \end{align*}
 
 \end_inset
@@ -1699,7 +1703,7 @@ Thus,
  Let
 \begin_inset Formula 
 \[
-\overline{\rho}_{\Phi_{0}}\left(s\right)\triangleq\rho_{\Phi_{0}}\left(s\right)-\rho_{\Phi_{0}}\left(0\right)
+\overline{\rho}_{\Phi_{0}}\left(k_{1},s\right)\triangleq\rho_{\Phi_{0}}\left(k_{1},s\right)-\rho_{\Phi_{0}}\left(k_{1},0\right)
 \]
 
 \end_inset
@@ -1707,16 +1711,16 @@ Thus,
 Thus,
 \begin_inset Formula 
 \begin{align*}
-\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa,\theta^{\ast}\right)\right\Vert  & \le\left\Vert \kappa_{d}-\kappa\right\Vert \intop_{0}^{1}\sigma_{\Phi}\left(\left\Vert z\right\Vert \right)d\lambda_{L}\\
- & \le\sigma_{\Phi}\left(\left\Vert z\right\Vert \right)\left\Vert e_{d}\right\Vert \\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert u_{d}\right\Vert +\left\Vert u\right\Vert \right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(\left\Vert z\right\Vert \right)\right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\overline{\rho}_{u}\left(\left\Vert z\right\Vert \right)+\rho_{u}\left(0\right)\right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\alpha_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{u}\left(0\right)\right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\alpha_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\alpha_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\left(\overline{\rho}_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)+\rho_{\Phi_{0}}\left(0\right)\right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\alpha_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\overline{\rho}_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(0\right)\\
- & \le\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(\left\Vert z\right\Vert \right)\alpha_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(0\right)
+\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa,\theta^{\ast}\right)\right\Vert  & \le\left\Vert \kappa_{d}-\kappa\right\Vert \intop_{0}^{1}\sigma_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)d\lambda_{L}\\
+ & \le\sigma_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert e_{d}\right\Vert \\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert u_{d}\right\Vert +\left\Vert u\right\Vert \right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\overline{\rho}_{u}\left(k_{1},\left\Vert z\right\Vert \right)+\rho_{u}\left(k_{1},0\right)\right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left(\left\Vert z\right\Vert +\overline{u}_{d}+\alpha_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{u}\left(k_{1},0\right)\right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\alpha_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\alpha_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\left(\overline{\rho}_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)+\rho_{\Phi_{0}}\left(k_{1},0\right)\right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\alpha_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\overline{\rho}_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},0\right)\\
+ & \le\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi_{0}}\left(k_{1},\left\Vert z\right\Vert \right)\alpha_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\alpha_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1724,13 +1728,13 @@ Thus,
 Let
 \begin_inset Formula 
 \begin{align*}
-\overline{\rho}_{\Phi}\left(s\right) & \triangleq\rho_{\Phi}\left(s\right)-\rho_{\Phi}\left(0\right)\\
-\rho_{\Phi}\left(s\right) & \triangleq\rho_{\Phi_{0}}\left(s\right)s+\rho_{\Phi_{0}}\left(s\right)\alpha_{f}\left(s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(0\right)\\
+\overline{\rho}_{\Phi}\left(k_{1},s\right) & \triangleq\rho_{\Phi}\left(k_{1},s\right)-\rho_{\Phi}\left(k_{1},0\right)\\
+\rho_{\Phi}\left(k_{1},s\right) & \triangleq\rho_{\Phi_{0}}\left(k_{1},s\right)s+\rho_{\Phi_{0}}\left(k_{1},s\right)\alpha_{f}\left(k_{1},s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\alpha_{\Phi}\left(k_{1},s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},0\right)\\
 \\
-\rho_{\Phi}\left(s\right) & \triangleq\rho_{\Phi_{0}}\left(s\right)s+\rho_{\Phi_{0}}\left(s\right)\alpha_{f}\left(s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(0\right)\\
-\rho_{\Phi}\left(0\right) & =\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\rho_{\Phi_{0}}\left(0\right)\\
-\overline{\rho}_{\Phi}\left(s\right) & =\rho_{\Phi_{0}}\left(s\right)s+\rho_{\Phi_{0}}\left(s\right)\alpha_{f}\left(s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(s\right)s\\
-\alpha_{\Phi}\left(s\right) & \triangleq\rho_{\Phi_{0}}\left(s\right)+\rho_{\Phi_{0}}\left(s\right)\alpha_{f}\left(s\right)+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(s\right)
+\rho_{\Phi}\left(k_{1},s\right) & \triangleq\rho_{\Phi_{0}}\left(k_{1},s\right)s+\rho_{\Phi_{0}}\left(k_{1},s\right)\alpha_{f}\left(k_{1},s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\alpha_{\Phi}\left(k_{1},s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},0\right)\\
+\rho_{\Phi}\left(k_{1},0\right) & =\left(\overline{u}_{d}+\rho_{u}\left(k_{1},0\right)\right)\rho_{\Phi_{0}}\left(k_{1},0\right)\\
+\overline{\rho}_{\Phi}\left(k_{1},s\right) & =\rho_{\Phi_{0}}\left(k_{1},s\right)s+\rho_{\Phi_{0}}\left(k_{1},s\right)\alpha_{f}\left(k_{1},s\right)s+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(k_{1},s\right)s\\
+\alpha_{\Phi}\left(k_{1},s\right) & \triangleq\rho_{\Phi_{0}}\left(k_{1},s\right)+\rho_{\Phi_{0}}\left(k_{1},s\right)\alpha_{f}\left(k_{1},s\right)+\left(\overline{u}_{d}+\rho_{u}\left(0\right)\right)\alpha_{\Phi}\left(k_{1},s\right)
 \end{align*}
 
 \end_inset
@@ -1738,8 +1742,8 @@ Let
 Write
 \begin_inset Formula 
 \begin{align*}
-\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa,\theta^{\ast}\right)\right\Vert  & \le\rho_{\Phi}\left(\left\Vert z\right\Vert \right)\\
- & \le\alpha_{\Phi}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(0\right)
+\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa,\theta^{\ast}\right)\right\Vert  & \le\rho_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\\
+ & \le\alpha_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1755,7 +1759,7 @@ Likewise, since
  such that
 \begin_inset Formula 
 \begin{align*}
-\left\Vert \Phi\left(\kappa,\widehat{\theta}\right)-\Phi\left(\kappa_{d},\widehat{\theta}\right)\right\Vert  & \le\alpha_{\widehat{\Phi}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\widehat{\Phi}}\left(0\right)
+\left\Vert \Phi\left(\kappa,\widehat{\theta}\right)-\Phi\left(\kappa_{d},\widehat{\theta}\right)\right\Vert  & \le\alpha_{\widehat{\Phi}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\widehat{\Phi}}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1764,7 +1768,7 @@ Thus,
 \begin_inset Formula 
 \begin{align*}
 \left\Vert \widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)\right\Vert  & \le\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa,\theta^{\ast}\right)\right\Vert +\left\Vert \Phi\left(\kappa,\widehat{\theta}\right)-\Phi\left(\kappa_{d},\widehat{\theta}\right)\right\Vert \\
- & \le\alpha_{\Phi}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(0\right)+\alpha_{\widehat{\Phi}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\widehat{\Phi}}\left(0\right)
+ & \le\alpha_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(k_{1},0\right)+\alpha_{\widehat{\Phi}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\widehat{\Phi}}\left(k_{1},0\right)
 \end{align*}
 
 \end_inset
@@ -1772,8 +1776,8 @@ Thus,
 Thus,
 \begin_inset Formula 
 \begin{align*}
-\left\Vert \widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)\right\Vert  & \le\rho_{\widetilde{N_{0}}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(0\right)+\rho_{\widehat{\Phi}}\left(0\right)\\
-\rho_{\widetilde{N_{0}}}\left(\left\Vert z\right\Vert \right) & \triangleq\alpha_{\Phi}\left(\left\Vert z\right\Vert \right)+\alpha_{\widehat{\Phi}}\left(\left\Vert z\right\Vert \right)
+\left\Vert \widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)\right\Vert  & \le\rho_{\widetilde{N_{0}}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(k_{1},0\right)+\rho_{\widehat{\Phi}}\left(k_{1},0\right)\\
+\rho_{\widetilde{N_{0}}}\left(k_{1},\left\Vert z\right\Vert \right) & \triangleq\alpha_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)+\alpha_{\widehat{\Phi}}\left(k_{1},\left\Vert z\right\Vert \right)
 \end{align*}
 
 \end_inset
@@ -1804,10 +1808,10 @@ BOUNDING LEMMA 12
 \begin{align*}
 \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right) & \triangleq\widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)+\widetilde{N}_{\nabla f}\left(x_{d},x\right)d\left(t\right)\\
 \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right) & =\widetilde{N}_{0}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa_{d},\kappa\right)+\widetilde{N}_{\nabla f}\left(x_{d},x\right)d\left(t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\\
-\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\right\Vert  & \le\rho_{\widetilde{N_{0}}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(0\right)+\rho_{\widehat{\Phi}}\left(0\right)+\rho_{\varepsilon}\left(\left\Vert z\right\Vert \right)+\overline{d}\sigma_{\nabla f}\left(\left\Vert e\right\Vert \right)\left\Vert e\right\Vert -\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\\
- & \le\rho_{\widetilde{N_{0}}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\cancel{\rho_{\Phi}\left(0\right)+\rho_{\widehat{\Phi}}\left(0\right)}+\overline{\rho}_{\varepsilon}\left(\left\Vert z\right\Vert \right)+\cancel{\rho_{\varepsilon}\left(0\right)}+\overline{d}\sigma_{\nabla f}\left(\left\Vert e\right\Vert \right)\left\Vert e\right\Vert -\cancel{\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)}\\
- & \le\rho_{\widetilde{N_{0}}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\alpha_{\varepsilon}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{d}\sigma_{\nabla f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
- & \le\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\right\Vert  & \le\rho_{\widetilde{N_{0}}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi}\left(k_{1},0\right)+\rho_{\widehat{\Phi}}\left(k_{1},0\right)+\rho_{\varepsilon}\left(k_{1},\left\Vert z\right\Vert \right)+\overline{d}\sigma_{\nabla f}\left(\left\Vert e\right\Vert \right)\left\Vert e\right\Vert -\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)\\
+ & \le\rho_{\widetilde{N_{0}}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\cancel{\rho_{\Phi}\left(k_{1},0\right)+\rho_{\widehat{\Phi}}\left(k_{1},0\right)}+\overline{\rho}_{\varepsilon}\left(k_{1},\left\Vert z\right\Vert \right)+\cancel{\rho_{\varepsilon}\left(k_{1},0\right)}+\overline{d}\sigma_{\nabla f}\left(\left\Vert e\right\Vert \right)\left\Vert e\right\Vert -\cancel{\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)}\\
+ & \le\rho_{\widetilde{N_{0}}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\alpha_{\varepsilon}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{d}\sigma_{\nabla f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
 \end_inset
@@ -1815,7 +1819,7 @@ BOUNDING LEMMA 12
 where
 \begin_inset Formula 
 \[
-\rho_{\widetilde{N}}\left(s\right)\triangleq\rho_{\widetilde{N_{0}}}\left(s\right)+\alpha_{\varepsilon}\left(s\right)+\overline{d}\sigma_{\nabla f}\left(s\right)
+\rho_{\widetilde{N}}\left(k_{1},s\right)\triangleq\rho_{\widetilde{N_{0}}}\left(k_{1},s\right)+\alpha_{\varepsilon}\left(k_{1},s\right)+\overline{d}\sigma_{\nabla f}\left(s\right)
 \]
 
 \end_inset
@@ -1829,14 +1833,14 @@ BOUNDING LEMMA 13
 
 \begin_layout Plain Layout
 According to the ArXiV paper from our lab, there exists a 
-\begin_inset Formula $\rho_{\phi}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\begin_inset Formula $\rho_{\phi}:\mathbb{R}_{>0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
 \end_inset
 
  function of class 
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
-such that for all 
+ (w.r.t second argument) such that for all 
 \begin_inset Formula $\widehat{\theta}\in\overline{B}_{\overline{\theta}}\left(\mathbf{0}_{p}\right)$
 \end_inset
 
@@ -1845,11 +1849,11 @@ such that for all
 \begin{align*}
 \left\Vert \Phi\left(\kappa,\widehat{\theta}\right)\right\Vert  & \le\rho_{\phi_{0}}\left(\left\Vert \kappa\right\Vert \right)\\
  & \le\rho_{\phi_{0}}\left(\left\Vert x\right\Vert +\left\Vert u\right\Vert \right)\\
- & \le\rho_{\phi_{0}}\left(\left\Vert x\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\right)\\
- & \le\rho_{\phi_{0}}\left(\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\right)\\
- & \le\rho_{\phi_{0}}\left(\left\Vert x_{d}\right\Vert +\left\Vert e\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\right)\\
- & \le\underbrace{\rho_{\phi_{0}}\left(\overline{x_{d}}+\left\Vert z\right\Vert +\rho_{u}\left(\left\Vert z\right\Vert \right)\right)}_{\rho_{\phi}\left(\left\Vert z\right\Vert \right)}\\
- & \le\rho_{\phi}\left(\left\Vert z\right\Vert \right)
+ & \le\rho_{\phi_{0}}\left(\left\Vert x\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)\\
+ & \le\rho_{\phi_{0}}\left(\left\Vert x_{d}-e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)\\
+ & \le\rho_{\phi_{0}}\left(\left\Vert x_{d}\right\Vert +\left\Vert e\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)\\
+ & \le\underbrace{\rho_{\phi_{0}}\left(\overline{x_{d}}+\left\Vert z\right\Vert +\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)\right)}_{\rho_{\phi}\left(k_{1},\left\Vert z\right\Vert \right)}\\
+ & \le\rho_{\phi}\left(k_{1},\left\Vert z\right\Vert \right)
 \end{align*}
 
 \end_inset
@@ -1928,7 +1932,7 @@ which we assure is PD with a gain condition to ensure to
  Let
 \begin_inset Formula 
 \[
-\dot{P}\overset{\text{a.a.t}}{\in}-\lambda_{P}P-r^{\top}\left(g\left(t\right)-\beta K[\text{sgn}]\left(e\right)\right)
+\dot{P}\overset{\text{a.a.t}}{\in}-\lambda_{P}P-r^{\top}\left(g\left(k_{1},\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\beta K[\text{sgn}]\left(e\right)\right)
 \]
 
 \end_inset
@@ -1942,17 +1946,19 @@ where
 \begin_inset Formula 
 \begin{align*}
 \dot{V} & =e^{\top}\dot{e}+r^{\top}\dot{r}+\dot{P}\\
- & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)+g\left(t\right)-k_{2}r-\beta K[\text{sgn}]\left(e\right)-e\right)\\
+ & =e^{\top}\left(r-k_{1}e\right)+r^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)+g\left(t\right)-k_{2}r-\beta K[\text{sgn}]\left(e\right)-e\right)\\
  & -\lambda_{P}P-r^{\top}\left(g\left(t\right)-\beta K[\text{sgn}]\left(e\right)\right)\\
 \\
- & =\cancel{e^{\top}r}-k_{1}e^{\top}e+r^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\right)+\cancel{r^{\top}g\left(t\right)}-k_{2}r^{\top}r-\cancel{\beta r^{\top}K[\text{sgn}]\left(e\right)}-\cancel{r^{\top}e}\\
+ & =\cancel{e^{\top}r}-k_{1}e^{\top}e+r^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)\right)+\cancel{r^{\top}g\left(t\right)}-k_{2}r^{\top}r-\cancel{\beta r^{\top}K[\text{sgn}]\left(e\right)}-\cancel{r^{\top}e}\\
  & -\lambda_{P}P-\cancel{r^{\top}g\left(t\right)}+\cancel{\beta r^{\top}K[\text{sgn}]\left(e\right)}\\
 \\
- & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\left\Vert r\right\Vert \left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(0\right)-\rho_{\Phi}\left(0\right)-\rho_{\widehat{\Phi}}\left(0\right)\right\Vert \\
- & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\left\Vert r\right\Vert \rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
- & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert ^{2}\\
- & \underset{a.e.}{\le}-\min\left(k_{1},k_{2}\right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P+\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert ^{2}\\
- & \underset{a.e.}{\le}-\left(\min\left(k_{1},k_{2}\right)-\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P
+ & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\left\Vert r\right\Vert \left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\widehat{\theta},t\right)-\rho_{\varepsilon}\left(k_{1},0\right)-\rho_{\Phi}\left(k_{1},0\right)-\rho_{\widehat{\Phi}}\left(k_{1},0\right)\right\Vert \\
+ & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\left\Vert r\right\Vert \rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\left\Vert r\right\Vert \rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r\right\Vert \right)\\
+ & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert e\right\Vert \left\Vert r\right\Vert +\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert r\right\Vert ^{2}\\
+ & \underset{a.e.}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-\lambda_{P}P+\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert r\right\Vert ^{2}+\frac{1}{2}\left\Vert e\right\Vert ^{2}+\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert r\right\Vert ^{2}\\
+ & \underset{a.e.}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)-\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\right)\left\Vert r\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{a.e.}{\le}-\min\left(k_{1}-\frac{1}{2},k_{2}-\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)-\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P
 \end{align*}
 
 \end_inset
@@ -1964,25 +1970,14 @@ Our goal is to now find the set of
  such that
 \begin_inset Formula 
 \begin{align*}
--\left(\min\left(k_{1},k_{2}\right)-\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2} & \underset{a.e.}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}\\
--\left(\min\left(k_{1},k_{2}\right)-\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\right) & \underset{a.e.}{\le}-\frac{\lambda_{V}}{2}\\
--\min\left(k_{1},k_{2}\right)+\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right) & \underset{a.e.}{\le}-\frac{\lambda_{V}}{2}\\
-\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right) & \underset{a.e.}{\le}\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}\\
-\overline{\rho}_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)+\rho_{\widetilde{N}}\left(0\right) & \underset{a.e.}{\le}\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}\\
-\overline{\rho}_{\widetilde{N}}\left(\left\Vert z\right\Vert \right) & \underset{a.e.}{\le}\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\\
-\overline{\rho}_{\widetilde{N}}^{-1}\left(\overline{\rho}_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\right) & \underset{a.e.}{\le}\overline{\rho}_{\widetilde{N}}^{-1}\left(\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\right)\\
-\left\Vert z\right\Vert  & \underset{a.e.}{\le}\overline{\rho}_{\widetilde{N}}^{-1}\left(\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\right)
+-\min\left(k_{1}-\frac{1}{2},k_{2}-\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)-\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2} & \underset{a.e.}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}\\
+-\min\left(k_{1}-\frac{1}{2},k_{2}-\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)-\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\right) & \underset{a.e.}{\le}-\frac{\lambda_{V}}{2}\\
+\min\left(k_{1}-\frac{1}{2},k_{2}-\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\left\Vert z\right\Vert \right)-\rho_{\widetilde{N}}\left(k_{1},\left\Vert z\right\Vert \right)\right) & \underset{a.e.}{\ge}\frac{\lambda_{V}}{2}
 \end{align*}
 
 \end_inset
 
-Let 
-\begin_inset Formula $\mathcal{S}\triangleq\left\{ \zeta\in\mathbb{R}^{2n}:\left\Vert \zeta\right\Vert \le\overline{\rho}_{\widetilde{N}}^{-1}\left(\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\right)\right\} $
-\end_inset
-
-.
- Gain Conditions.
- Let the desired region of attraction be 
+Let the desired region of attraction be 
 \begin_inset Formula $\mathcal{S}\triangleq\left\{ \zeta\in\mathbb{R}^{2n}:\left\Vert \zeta\right\Vert \le\Delta\right\} $
 \end_inset
 
@@ -1991,29 +1986,43 @@ Let
 \end_inset
 
 .
- We want
+ First,
 \begin_inset Formula 
-\begin{align*}
-\Delta & \le\overline{\rho}_{\widetilde{N}}^{-1}\left(\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\right)\\
-\overline{\rho}_{\widetilde{N}}\left(\Delta\right) & \le\overline{\rho}_{\widetilde{N}}\left(\overline{\rho}_{\widetilde{N}}^{-1}\left(\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\right)\right)\\
-\overline{\rho}_{\widetilde{N}}\left(\Delta\right) & \le\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}-\rho_{\widetilde{N}}\left(0\right)\\
-\overline{\rho}_{\widetilde{N}}\left(\Delta\right)+\rho_{\widetilde{N}}\left(0\right) & \le\min\left(k_{1},k_{2}\right)-\frac{\lambda_{V}}{2}\\
-\rho_{\widetilde{N}}\left(\Delta\right) & \le\min\left(k_{1},k_{2}\right)\\
-\rho_{\widetilde{N}}\left(\Delta\right)+\frac{\lambda_{V}}{2} & \le\min\left(k_{1},k_{2}\right)
-\end{align*}
+\[
+k_{1}>\frac{\lambda_{V}}{2}+\frac{1}{2}
+\]
 
 \end_inset
 
-Thus we require
+Second,
 \begin_inset Formula 
-\begin{align*}
-k_{1} & \ge\rho_{\widetilde{N}}\left(\Delta\right)+\frac{\lambda_{V}}{2}\\
-k_{2} & \ge\rho_{\widetilde{N}}\left(\Delta\right)+\frac{\lambda_{V}}{2}
-\end{align*}
+\[
+k_{2}>\frac{1}{2}\rho_{\widetilde{N}}^{2}\left(k_{1},\Delta\right)+\rho_{\widetilde{N}}\left(k_{1},\Delta\right)
+\]
 
 \end_inset
 
-Thus, for all 
+Note that the convergence speed can be made arbitrarily large, but doing
+ requires 
+\begin_inset Formula $k_{1}\to\infty$
+\end_inset
+
+ and thus 
+\begin_inset Formula $k_{2}\to\infty$
+\end_inset
+
+.
+ For any fixed convergence speed, 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ can be made arbitrarily by making 
+\begin_inset Formula $k_{2}\to\infty$
+\end_inset
+
+.
+ Thus, we have USAS with exponential convergence.
+ Thus, for all 
 \begin_inset Formula $z\in\mathcal{S}$
 \end_inset
 
@@ -2049,6 +2058,94 @@ V\left(z_{P}\left(t\right)\right)\le V\left(z_{P}\left(t_{0}\right)\right){\rm e
 \color red
 Skipping remaining steps.
  Not important right now.
+\end_layout
+
+\begin_layout Subsection
+Boundedness of the Control
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset Formula $V$
+\end_inset
+
+ is bounded, so are 
+\begin_inset Formula $e$
+\end_inset
+
+ and 
+\begin_inset Formula $r$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $\dot{e}$
+\end_inset
+
+ is bounded.
+ Recall 
+\begin_inset Formula $\ddot{x}_{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+ are bounded by formulation.
+ Signum is inherently bounded.
+ Since 
+\begin_inset Formula $x_{d}$
+\end_inset
+
+ is bounded by formulation, so is 
+\begin_inset Formula $x$
+\end_inset
+
+ by the definition of 
+\begin_inset Formula $e$
+\end_inset
+
+.
+ From, 
+\begin_inset Formula $\left\Vert u\right\Vert \le\rho_{u}\left(k_{1},\left\Vert z\right\Vert \right)$
+\end_inset
+
+, 
+\begin_inset Formula $u$
+\end_inset
+
+ is bounded because the bound is finite for every possible argument set.
+ Since 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $u$
+\end_inset
+
+ are bounded, so is 
+\begin_inset Formula $\kappa$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is bounded by EVT.
+ Thus, 
+\begin_inset Formula $\dot{u}$
+\end_inset
+
+ is bounded.
+\begin_inset Formula 
+\[
+{\color{green}\dot{u}=k_{2}r+\ddot{x}_{d}-\Phi\left(\kappa,\widehat{\theta}\right)+k_{1}\dot{e}+\beta\text{sgn}\left(e\right)+e}
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -2160,8 +2257,8 @@ G Bound
 First,
 \begin_inset Formula 
 \begin{align*}
-g\left(t\right) & \triangleq N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+D\left(\kappa_{d},t\right)\\
- & =\Phi\left(\kappa_{d},\widehat{\theta}\right)-\Phi\left(\kappa_{d},\theta^{\ast}\right)+D\left(\kappa_{d},t\right)
+g\left(k_{1},t\right) & \triangleq N_{B}\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)+D\left(k_{1},\kappa_{d},t\right)\\
+ & =\Phi\left(\kappa_{d},\widehat{\theta}\right)-\Phi\left(\kappa_{d},\theta^{\ast}\right)+D\left(k_{1},\kappa_{d},t\right)
 \end{align*}
 
 \end_inset
@@ -6669,6 +6766,84 @@ Only then do we have UGES
 \series default
 \bar default
 .
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+For fun: 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Let
+\begin_inset Formula 
+\[
+\dot{x}=f\left(x,u\right)+d\left(t\right)
+\]
+
+\end_inset
+
+Errors
+\begin_inset Formula 
+\[
+e\triangleq x_{d}-x
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+r\triangleq\dot{e}+k_{1}e
+\]
+
+\end_inset
+
+Differentiate.
+\begin_inset Formula 
+\[
+\dot{e}=r-k_{1}e
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\dot{r} & =\ddot{e}+k_{1}\dot{e}\\
+ & =\ddot{x}_{d}-\ddot{x}+k_{1}\dot{e}\\
+ & =\ddot{x}_{d}-\left.\frac{\partial f}{\partial x}\right|_{\left(x,u\right)}\dot{x}-\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}\dot{u}+\dot{d}+k_{1}\dot{e}\\
+ & =\ddot{x}_{d}-\left.\frac{\partial f}{\partial x}\right|_{\left(x,u\right)}\left(f\left(x,u\right)+d\left(t\right)\right)-\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}\dot{u}+\dot{d}+k_{1}\dot{e}\\
+ & =\ddot{x}_{d}-\underbrace{\left.\frac{\partial f}{\partial x}\right|_{\left(x,u\right)}f\left(x,u\right)}_{h\left(\kappa\right)}-\left.\frac{\partial f}{\partial x}\right|_{\left(x,u\right)}d\left(t\right)-\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}\dot{u}+\dot{d}+k_{1}\dot{e}\\
+ & =\ddot{x}_{d}-\Phi\left(\kappa,\theta^{\ast}\right)-\varepsilon\left(\kappa\right)-\left.\frac{\partial f}{\partial x}\right|_{\left(x,u\right)}d\left(t\right)-\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}\dot{u}+\dot{d}+k_{1}\dot{e}
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $\kappa\triangleq\left[\begin{array}{cc}
+x^{\top} & u^{\top}\end{array}\right]^{\top}$
+\end_inset
+
+.
+ What do I need to assume about 
+\begin_inset Formula $\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}:\mathbb{R}^{n}\times\mathbb{R}^{m}\to\mathbb{R}^{n\times m}$
+\end_inset
+
+? Suppose its full row rank everywhere.
+ Suppose it's constant and known? Design
+\begin_inset Formula 
+\[
+\left.\frac{\partial f}{\partial u}\right|_{\left(x,u\right)}\dot{u}=\ddot{x}_{d}-\Phi\left(\kappa,\widehat{\theta}\right)+k_{2}r+k_{1}\dot{e}+\beta\text{sgn}\left(e\right)-e
+\]
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
