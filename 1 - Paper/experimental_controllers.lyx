@@ -873,6 +873,51 @@ Try controller 3 but with update law
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+{\color{blue}\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)\right)}
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\[
+\Psi\left(x,\dot{x},\widehat{\theta}\right)\triangleq\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Experiment
 \end_layout
@@ -900,7 +945,14 @@ Proportional
 \end_layout
 
 \begin_layout Standard
-Existing code.
+\begin_inset Formula 
+\[
+u\left(t\right)=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -942,26 +994,8 @@ x^{\top} & u^{\top}\end{array}\right]^{\top}
 
 \begin_inset Formula 
 \[
-{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)\right)}
+{\color{green}\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)\right)}
 \]
-
-\end_inset
-
-
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-Baseline update law to compare against:
-\begin_inset Formula 
-\[
-\dot{\widehat{\theta}}=\text{proj}\left(-\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa,\widehat{\theta}\right)}^{\top}e-k_{\theta}\widehat{\theta}\right)
-\]
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 
@@ -975,23 +1009,7 @@ RISE + NN Outside Integral
 \begin_layout Standard
 \begin_inset Formula 
 \[
-{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e+{\color{blue}\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x,\widehat{\theta}\right)}\dot{\widehat{\theta}}}\right)d\tau}
-\]
-
-\end_inset
-
-
-\begin_inset Formula 
-\[
-\dot{\widehat{\theta}}{\color{green}=\text{proj}\left(-\Gamma\left(\left.\frac{\partial\Psi}{\partial\theta}\right|_{\left(x,\dot{x},\widehat{\theta}\right)}^{\top}r-k_{\theta}\widehat{\theta}\right)\right)}
-\]
-
-\end_inset
-
-where
-\begin_inset Formula 
-\[
-\Psi\left(x,\dot{x},\widehat{\theta}\right)\triangleq\left.\frac{\partial\Phi}{\partial x}\right|_{\left(x,\widehat{\theta}\right)}\dot{x}
+{\color{green}u\left(t\right)}{\color{green}=\dot{x}_{d}\left(t\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\Phi\left(x,\widehat{\theta}\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(e\right)+\left(1+k_{1}k_{2}\right)e\right)d\tau}
 \]
 
 \end_inset
@@ -1042,8 +1060,7 @@ where
 \begin{align*}
 \left\Vert d\right\Vert  & \le\overline{d}\\
 \left\Vert \dot{d}\right\Vert  & \le\overline{\dot{d}}\\
-\left\Vert \ddot{d}\right\Vert  & \le\overline{\ddot{d}}\\
-\left\Vert \frac{df}{dx}\right\Vert  & \le L
+\left\Vert \ddot{d}\right\Vert  & \le\overline{\ddot{d}}
 \end{align*}
 
 \end_inset
@@ -1547,16 +1564,7 @@ or
 Second-Order Target Tracking
 \end_layout
 
-\begin_layout Itemize
-Second-order target tracking (Not complete): 
-\begin_inset Note Note
-status open
-
-\begin_layout Section
-Second-Order Target Tracking
-\end_layout
-
-\begin_layout Plain Layout
+\begin_layout Standard
 Let the target's dynamics be
 \begin_inset Formula 
 \[
@@ -1641,6 +1649,53 @@ r_{2} & \triangleq\dot{r}_{1}+k_{2}r_{1}+e
 
 \end_inset
 
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+Assume 
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widehat{\theta}\right\Vert  & \le\overline{\theta}\\
+\left\Vert \theta^{\ast}\right\Vert  & \le\overline{\theta}\\
+\left\Vert \dot{\widehat{\theta}}\right\Vert  & \le\eta_{1}
+\end{align*}
+
+\end_inset
+
+are known constants.
+ Goal:
+\begin_inset Formula 
+\begin{align*}
+e & \to0\\
+r_{1} & \to0\\
+r_{2} & \to0
+\end{align*}
+
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
 Error derivative
 \begin_inset Formula 
 \[
@@ -1653,7 +1708,6 @@ Error second derivative
 \begin_inset Formula 
 \begin{align*}
 \ddot{e} & =\ddot{q}_{d}-\ddot{q}\\
- & =h\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)-u-d\\
  & =h\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)-u-d
 \end{align*}
 
@@ -1714,7 +1768,7 @@ F\left(q,\dot{q},q_{d},\dot{q}_{d},u\right)=\Phi\left(\kappa,\theta^{\ast}\right
 Design the controller as the solution to
 \begin_inset Formula 
 \[
-\dot{u}=k_{3}r_{2}+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)
+\dot{u}=k_{3}r_{2}+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+r_{1}
 \]
 
 \end_inset
@@ -1738,123 +1792,25 @@ q_{d}^{\top} & \dot{q}_{d}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}
 \begin_inset Formula 
 \begin{align*}
 \dot{r}_{2} & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\\
- & -\left(k_{3}r_{2}+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+ & -\left(k_{3}r_{2}+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+r_{1}\right)\\
 \\
  & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)+\cancel{\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e}\\
- & \cancel{-\left(k_{1}+k_{2}\right)r_{2}-\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}-\left(k_{1}^{3}-2k_{1}-k_{2}\right)e}-k_{3}r_{2}-\beta\text{sgn}\left(r_{1}\right)-\Phi\left(\kappa,\hat{\theta}\right)\\
+ & \cancel{-\left(k_{1}+k_{2}\right)r_{2}-\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}-\left(k_{1}^{3}-2k_{1}-k_{2}\right)e}-k_{3}r_{2}-\beta\text{sgn}\left(r_{1}\right)-\Phi\left(\kappa,\hat{\theta}\right)-r_{1}\\
 \\
- & =-k_{3}r_{2}+\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)\\
- & =-k_{3}r_{2}+N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)\\
- & =-k_{3}r_{2}+\underbrace{N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)}+N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)\\
- & =-k_{3}r_{2}+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)
+ & =-k_{3}r_{2}+\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)-r_{1}\\
+ & =-k_{3}r_{2}+N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)-r_{1}\\
+ & =-k_{3}r_{2}+\underbrace{N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)}+N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)-\beta\text{sgn}\left(r_{1}\right)-r_{1}\\
+ & =-k_{3}r_{2}+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\underbrace{N_{d}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\varepsilon\left(\kappa\right)+D\left(q,\dot{q},t\right)}_{g\left(t\right)}-\beta\text{sgn}\left(r_{1}\right)-r_{1}
 \end{align*}
 
 \end_inset
 
-
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-
-\family roman
-\series medium
-\shape up
-\size normal
-\emph off
-\bar no
-\strikeout off
-\xout off
-\uuline off
-\uwave off
-\noun off
-\color none
-Sidebar
-\end_layout
-
-\begin_layout Plain Layout
-Let 
-\begin_inset Formula $\gamma\left(\lambda_{\gamma}\right)=\left(1-\lambda_{\gamma}\right)\widehat{\theta}+\lambda_{\gamma}\theta^{\ast}$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Plain Layout
-Fundamental theorem of calculus
-\begin_inset Formula 
-\begin{align*}
-\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right) & =\intop_{0}^{1}\left(\frac{d}{d\lambda_{\gamma}}\Phi\left(\kappa,\gamma\left(\lambda_{\gamma}\right)\right)\right)d\lambda_{\gamma}\\
- & =\intop_{0}^{1}\left(\frac{\partial\Phi}{\partial\theta}\left(\kappa,\gamma\left(\lambda_{\gamma}\right)\right)\frac{d}{d\lambda_{\gamma}}\gamma\left(\lambda_{\gamma}\right)\right)d\lambda_{\gamma}\\
- & =\intop_{0}^{1}\left(\frac{\partial\Phi}{\partial\theta}\left(\kappa,\gamma\left(\lambda_{\gamma}\right)\right)\left(\theta^{\ast}-\widehat{\theta}\right)\right)d\lambda_{\gamma}
-\end{align*}
-
-\end_inset
-
-Provided 
-\begin_inset Formula $\frac{\partial\Phi}{\partial\theta}$
-\end_inset
-
- is locally Lipschitz and either 
-\begin_inset Formula $\theta^{\ast}$
-\end_inset
-
- or 
-\begin_inset Formula $\widehat{\theta}$
-\end_inset
-
- are bounded (both, in fact), there exists a strictly increasing function,
- 
-\begin_inset Formula $\rho:\mathbb{R}^{d_{\kappa}}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
-\end_inset
-
-
+Thus,
 \begin_inset Formula 
 \[
-\left\Vert \Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)\right\Vert \le\rho_{\Phi1}\left(\kappa,\left\Vert \widetilde{\theta}\right\Vert \right)\left\Vert \widetilde{\theta}\right\Vert 
+\dot{r}_{2}\overset{\text{a.a.t}}{\in}-k_{3}r_{2}+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+g\left(t\right)-\beta K[\text{sgn}]\left(r_{1}\right)
 \]
 
-\end_inset
-
-Let
-\begin_inset Formula 
-\[
-N_{\Phi}\left(\kappa,\theta^{\ast},\hat{\theta}\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-Let 
-\begin_inset Formula $y\triangleq\left[\begin{array}{cc}
-e^{\top} & r_{1}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{2n}$
-\end_inset
-
-.
- It seems we would have to assume that 
-\begin_inset Formula $\left\Vert u\right\Vert \le\overline{u}$
-\end_inset
-
- where 
-\begin_inset Formula $\overline{u}$
-\end_inset
-
- is known.
- Then, via a Lemma (to be proved later),
-\begin_inset Formula 
-\begin{align*}
-\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert  & \le\rho_{\widetilde{N}}\left(\left\Vert y\right\Vert \right)\left\Vert y\right\Vert \\
- & \le\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
-\end{align*}
-
-\end_inset
-
-everywhere provided our activation functions are class 
-\begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
 
@@ -1870,165 +1826,145 @@ everywhere provided our activation functions are class
 \uwave default
 \noun default
 \color inherit
-.
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-SIDEBAR Can we do it without bounding 
-\begin_inset Formula $u$
-\end_inset
-
- a priori? Yes! Let 
-\begin_inset Formula $z\triangleq\left[\begin{array}{ccc}
-e^{\top} & r_{1}^{\top} & r_{2}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{3n}$
-\end_inset
-
-.
- Note that
-\begin_inset Formula 
-\begin{align*}
-r_{2}-k_{2}r_{1}-e & =\dot{r}_{1}\\
-r_{2}-k_{2}r_{1}-e & =\ddot{e}+k_{1}\dot{e}\\
-r_{2}-k_{2}r_{1}-e & =\ddot{q}_{d}-\ddot{q}+k_{1}\left(r_{1}-k_{1}e\right)\\
-r_{2}-k_{2}r_{1}-e & =\ddot{q}_{d}-\ddot{q}+k_{1}r_{1}-k_{1}^{2}e\\
-r_{2}-k_{2}r_{1}-e & =\ddot{q}_{d}-\ddot{q}+k_{1}r_{1}-k_{1}^{2}e\\
-\ddot{q} & =\ddot{q}_{d}+k_{1}r_{1}-k_{1}^{2}e-r_{2}+k_{2}r_{1}+e\\
-\left\Vert \ddot{q}\right\Vert  & \le\overline{\ddot{q}_{d}}+k_{1}\left\Vert r_{1}\right\Vert +k_{1}^{2}\left\Vert e\right\Vert +\left\Vert r_{2}\right\Vert +k_{2}\left\Vert r_{1}\right\Vert +\left\Vert e\right\Vert \\
-\left\Vert \ddot{q}\right\Vert  & \le\overline{\ddot{q}_{d}}+k_{1}\left\Vert z\right\Vert +k_{1}^{2}\left\Vert z\right\Vert +\left\Vert z\right\Vert +k_{2}\left\Vert z\right\Vert +\left\Vert z\right\Vert \\
-\left\Vert \ddot{q}\right\Vert  & \le\overline{\ddot{q}_{d}}+\left(k_{1}+k_{1}^{2}+k_{2}+2\right)\left\Vert z\right\Vert 
-\end{align*}
-
-\end_inset
-
-Let
-\begin_inset Formula 
-\[
-N_{f}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\triangleq f\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)
-\]
-
-\end_inset
-
-Since 
-\begin_inset Formula $f$
-\end_inset
-
- is 
-\begin_inset Formula $\mathcal{C}^{1}$
-\end_inset
-
- and 
-\begin_inset Formula $q_{d}$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{q}_{d}$
-\end_inset
-
- are bounded, 
-\begin_inset Formula 
-\begin{align*}
-\left\Vert N_{f}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert  & \le\rho_{f}\left(\left\Vert y\right\Vert \right)\left\Vert y\right\Vert \\
- & \le\rho_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
-\end{align*}
-
-\end_inset
-
-By EVT, 
-\begin_inset Formula $\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert \le C_{f}$
-\end_inset
-
-.
- Write
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Formula 
-\begin{align*}
-\ddot{q} & =f\left(q,\dot{q}\right)+u+d\left(t\right)\\
-u & =\ddot{q}-f\left(q,\dot{q}\right)-d\left(t\right)\\
-u & =\ddot{q}\underbrace{-f\left(q,\dot{q}\right)+f\left(q_{d},\dot{q}_{d}\right)}_{N_{f}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)}-f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)\\
-\left\Vert u\right\Vert  & \le\left\Vert \ddot{q}\right\Vert +\left\Vert N_{f}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert +\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\left\Vert d\left(t\right)\right\Vert \\
-\left\Vert u\right\Vert  & \le\overline{\ddot{q}_{d}}+\left(k_{1}+k_{1}^{2}+k_{2}+2\right)\left\Vert z\right\Vert +\rho_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\overline{d}\\
-\left\Vert u\right\Vert  & \le\overline{\ddot{q}_{d}}+C_{f}+\overline{d}+\left(k_{1}+k_{1}^{2}+k_{2}+2\right)\left\Vert z\right\Vert +\rho_{f}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
-\end{align*}
-
-\end_inset
-
-Since 
-\begin_inset Formula $z\in\mathcal{D}$
-\end_inset
-
- will be compact, we don't need to assume 
-\begin_inset Formula $u$
-\end_inset
-
- is bounded as priori.
-\end_layout
-
-\begin_layout Plain Layout
-END SIDEBAR
-\end_layout
-
-\end_inset
-
 Lyapunov function
-\color red
-
 \begin_inset Formula 
 \[
-V=\frac{1}{2}e^{\top}e+\frac{1}{2}
+V=\frac{1}{2}e^{\top}e+\frac{1}{2}r_{1}^{\top}r_{1}+\frac{1}{2}r_{2}^{\top}r_{2}+P
 \]
 
 \end_inset
 
-STOPPED HERE
+Let 
+\begin_inset Formula $z\triangleq\left[\begin{array}{ccc}
+e^{\top} & r_{1}^{\top} & r_{2}^{\top}\end{array}\right]^{\top}.$
+\end_inset
+
+ Let
+\begin_inset Formula 
+\[
+\dot{P}\overset{\text{a.a.t}}{\in}-\lambda_{P}P-r_{2}^{\top}\left(g\left(t\right)-\beta K[\text{sgn}]\left(r_{1}\right)\right)
+\]
+
+\end_inset
+
+Assume
+\begin_inset Formula 
+\[
+\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert \le\rho\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\rho$
+\end_inset
+
+ is a strictly increasing function.
+ Derivative.
+ 
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =e^{\top}\dot{e}+r_{1}^{\top}\dot{r}_{1}+r_{2}^{\top}\dot{r}_{2}+\dot{P}\\
+ & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}-e\right)+r_{2}^{\top}\left(-k_{3}r_{2}+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+g\left(t\right)-\beta K[\text{sgn}]\left(r_{1}\right)-r_{1}\right)-\lambda_{P}P-r_{2}^{\top}\left(g\left(t\right)-\beta K[\text{sgn}]\left(r_{1}\right)\right)\\
+ & =\cancel{e^{\top}r_{1}}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}-\cancel{r_{1}^{\top}e}-k_{3}r_{2}^{\top}r_{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\cancel{r_{2}^{\top}g\left(t\right)}-\cancel{\beta r_{2}^{\top}K[\text{sgn}]\left(r_{1}\right)}-\cancel{r_{2}^{\top}r_{1}}-\lambda_{P}P-\cancel{r_{2}^{\top}g\left(t\right)}+\cancel{\beta r_{2}^{\top}K[\text{sgn}]\left(r_{1}\right)}\\
+ & =-k_{1}e^{\top}e-k_{2}r_{1}^{\top}r_{1}-k_{3}r_{2}^{\top}r_{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)-\lambda_{P}P\\
+ & \le-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert -\lambda_{P}P\\
+ & \le-\left(\min\left(k_{1},k_{2},k_{3}\right)-\rho\left(\left\Vert z\right\Vert \right)\right)\left\Vert z\right\Vert ^{2}-\lambda_{P}P
+\end{align*}
+
+\end_inset
+
+This is enough to design the controller.
 \end_layout
 
 \begin_layout Subsection
 Implementable Controller
 \end_layout
 
-\begin_layout Plain Layout
-The implementable controller is
+\begin_layout Standard
+Recall
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
 \begin_inset Formula 
 \begin{align*}
-\intop_{t_{0}}^{t}\dot{u}\left(\tau\right)d\tau & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(\tau\right)+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}\left(\tau\right)+k_{2}r_{1}\left(\tau\right)+e\left(\tau\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(\tau\right)+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}\left(\tau\right)+k_{2}r_{1}\left(\tau\right)+e\left(\tau\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(\tau\right)\right)d\tau+\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}\left(\tau\right)+k_{2}r_{1}\left(\tau\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(\tau\right)\right)d\tau+\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}\left(\tau\right)+k_{2}\dot{e}\left(\tau\right)+k_{1}k_{2}e\left(\tau\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}\left(\tau\right)+k_{1}e\left(\tau\right)\right)\right)d\tau\\
- & +\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}\left(\tau\right)+k_{2}\dot{e}\left(\tau\right)\right)+\left(k_{1}+k_{2}+k_{3}\right)k_{1}k_{2}e\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}\left(\tau\right)\right)d\tau\\
- & +\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)e\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)k_{1}e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\dot{r}_{1}\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)k_{2}\dot{e}\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}\left(\tau\right)\right)d\tau\\
- & +\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)e\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)k_{1}e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)k_{1}k_{2}e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\dot{r}_{1}\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}\left(\tau\right)\right)d\tau\\
- & +\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)e\left(\tau\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)k_{1}e\left(\tau\right)+\left(k_{1}+k_{2}+k_{3}\right)k_{1}k_{2}e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right)-u\left(t_{0}\right) & =\left(k_{1}+k_{2}+k_{3}\right)\left(r_{1}\left(t\right)-r_{1}\left(t_{0}\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)\\
- & +\intop_{t_{0}}^{t}\left(\left(k_{1}^{3}-2k_{1}-k_{2}+k_{1}+k_{2}+k_{3}+k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}+k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}+k_{3}\right)\left(r_{1}\left(t\right)-r_{1}\left(t_{0}\right)\right)+\left(1-k_{1}^{2}+k_{2}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\left(k_{3}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}_{1}\left(t\right)+k_{1}e\left(t\right)-\dot{e}_{1}\left(t_{0}\right)-k_{1}e\left(t_{0}\right)\right)+\left(1-k_{1}^{2}+k_{2}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\left(k_{3}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-u\left(t\right) & =u\left(t_{0}\right)+\left(\left(k_{1}+k_{2}+k_{3}\right)\dot{e}_{1}\left(t\right)+k_{1}\left(k_{1}+k_{2}+k_{3}\right)e\left(t\right)-\left(k_{1}+k_{2}+k_{3}\right)\dot{e}_{1}\left(t_{0}\right)-k_{1}\left(k_{1}+k_{2}+k_{3}\right)e\left(t_{0}\right)\right)\\
- & +\left(1-k_{1}^{2}+k_{2}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\left(k_{3}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}_{1}\left(t\right)-\dot{e}_{1}\left(t_{0}\right)\right)\\
- & +\left(1-k_{1}^{2}+k_{2}k_{3}+k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\left(k_{3}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau\\
-\\
-u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}_{1}\left(t\right)-\dot{e}_{1}\left(t_{0}\right)\right)\\
- & +\left(1+k_{1}k_{2}+k_{2}k_{3}+k_{1}k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\intop_{t_{0}}^{t}\left(\left(k_{3}+k_{1}k_{2}k_{3}\right)e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau
+e & \triangleq q_{d}-q\\
+r_{1} & \triangleq\dot{e}+k_{1}e\\
+r_{2} & \triangleq\dot{r}_{1}+k_{2}r_{1}+e
 \end{align*}
 
 \end_inset
 
+Begin:
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
 
-\end_layout
+\begin_inset Formula 
+\begin{align*}
+\dot{u} & =k_{3}r_{2}+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+r_{1}\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}+k_{2}r_{1}+e\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}+k_{2}\left(\dot{e}+k_{1}e\right)+e\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\dot{e}+k_{1}k_{2}e+e\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}+k_{2}+k_{3}\right)\left(k_{1}+k_{2}\right)\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)\left(k_{1}k_{2}+1\right)e+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+\left(2k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}\right)e+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)\left(k_{1}k_{2}+1\right)e\\
+ & +\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+\left(2k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}\right)e+\left(k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(\cancel{k_{1}^{2}}+k_{1}k_{2}+k_{1}k_{3}+\cancel{k_{1}k_{2}}+\cancel{k_{2}^{2}}+k_{2}k_{3}+2-\cancel{k_{1}^{2}}-\cancel{k_{2}^{2}}-\cancel{k_{1}k_{2}}\right)\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)\left(k_{1}k_{2}+1\right)e\\
+ & +\left(2k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}+k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}+\left(k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}+k_{1}+k_{2}+k_{3}\right)e\\
+ & +\left(2k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}+k_{1}^{3}-2k_{1}-k_{2}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+\\
+ & =\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}\\
+ & +\left(\cancel{2k_{1}}-\cancel{k_{1}^{3}}-\cancel{k_{1}k_{2}^{2}}-\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}^{3}}-\cancel{2k_{1}}-\cancel{k_{2}}+\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}k_{2}^{2}}+k_{1}k_{2}k_{3}+k_{1}+\cancel{k_{2}}+k_{3}\right)e\\
+\\
+ & =\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}\\
+ & +\left(k_{1}k_{2}k_{3}+k_{1}+k_{3}\right)e
+\end{align*}
+
+\end_inset
+
+Integrate
+\begin_inset Formula 
+\begin{align*}
+\intop_{t_{0}}^{t}\dot{u}\left(\tau\right)d\tau & =\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+\left(k_{1}k_{2}k_{3}+k_{1}+k_{3}\right)e\right)d\tau+\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}\right)d\tau\\
+u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+\left(k_{1}k_{2}k_{3}+k_{1}+k_{3}\right)e\right)d\tau+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}\left(t\right)-\dot{e}\left(t_{0}\right)\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)
+\end{align*}
+
+\end_inset
+
+Let 
+\begin_inset Formula $u\left(t_{0}\right)$
+\end_inset
+
+ cancel the other initial conditions.
+ Finally,
+\begin_inset Formula 
+\[
+u\left(t\right)=\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)+\left(k_{1}k_{2}k_{3}+k_{1}+k_{3}\right)e\right)d\tau+\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)e
+\]
 
 \end_inset
 

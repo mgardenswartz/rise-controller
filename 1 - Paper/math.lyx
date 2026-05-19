@@ -6774,9 +6774,9 @@ Only then do we have UGES
 \end_layout
 
 \begin_layout Itemize
-For fun: 
+Nonaffine: 
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Let
