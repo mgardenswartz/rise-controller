@@ -1565,7 +1565,7 @@ Second-Order Target Tracking
 \end_layout
 
 \begin_layout Standard
-Let the target's dynamics be
+Let the target's dynamics
 \begin_inset Formula 
 \[
 \ddot{q}_{d}=h\left(q_{d},\dot{q}_{d}\right)
@@ -1573,7 +1573,12 @@ Let the target's dynamics be
 
 \end_inset
 
-Let the controlled agent's dynamics be
+where 
+\begin_inset Formula $h$
+\end_inset
+
+ is unknown (not necessarily linear-in-the-parameters).
+ Let the controlled agent's dynamics
 \begin_inset Formula 
 \[
 \ddot{q}=f\left(q,\dot{q}\right)+u+d\left(t\right)
@@ -1581,7 +1586,12 @@ Let the controlled agent's dynamics be
 
 \end_inset
 
-Assume 
+where 
+\begin_inset Formula $f$
+\end_inset
+
+ is unknown (not necessarily LIP).
+ Assume 
 \begin_inset Formula $q$
 \end_inset
 
