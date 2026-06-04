@@ -7840,10 +7840,10 @@ are known constants.
  Assume
 \begin_inset Formula 
 \begin{align*}
-\left\Vert q_{d}\left(t\right)\right\Vert  & \le\overline{q_{d}}\\
-\left\Vert \dot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dot{q}_{d}}\\
-\left\Vert \ddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\ddot{q}_{d}}\\
-\left\Vert \dddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dddot{q}_{d}}
+\left\Vert q_{d}\left(t\right)\right\Vert  & \le\overline{q}_{d}\\
+\left\Vert \dot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dot{q}}_{d}\\
+\left\Vert \ddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\ddot{q}}_{d}\\
+\left\Vert \dddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dddot{q}}_{d}
 \end{align*}
 
 \end_inset
@@ -7989,15 +7989,14 @@ Second:
 
 \begin_inset Formula 
 \begin{align*}
-\dot{r}_{2} & =\ddot{r}_{1}+k_{2}\dot{r}_{1}+\dot{e}\\
- & =\frac{d}{dt}\left(h\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)-u-d\left(t\right)+k_{1}r_{1}-k_{1}^{2}e\right)+k_{2}\dot{r}_{1}+r_{1}-k_{1}e\\
- & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\ddot{q}-\dot{u}-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}-k_{1}^{2}\dot{e}+k_{2}\dot{r}_{1}+r_{1}-k_{1}e\\
- & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\left(f\left(q,\dot{q}\right)+u+d\left(t\right)\right)-\dot{u}-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}-k_{1}^{2}\left(r_{1}-k_{1}e\right)+k_{2}\dot{r}_{1}+r_{1}-k_{1}e\\
- & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}f\left(q,\dot{q}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}u-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}-k_{1}^{2}\left(r_{1}-k_{1}e\right)+k_{2}\dot{r}_{1}+r_{1}-k_{1}e\\
- & =\underbrace{\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}f\left(q,\dot{q}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}u}_{F\left(\kappa\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)\dot{r}_{1}+\left(1-k_{1}^{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e\\
- & =F\left(\kappa\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)\left(r_{2}-k_{2}r_{1}\right)+\left(1-k_{1}^{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e\\
- & =F\left(\kappa\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}+k_{2}\right)k_{2}r_{1}+\left(1-k_{1}^{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e\\
- & =F\left(\kappa\right)-\dot{u}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}+\left(1-k_{1}^{2}-k_{1}k_{2}-k_{2}^{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e
+\dot{r}_{2} & =\ddot{r}_{1}+k_{2}\dot{r}_{1}\\
+ & =\frac{d}{dt}\left(h\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)-u-d\left(t\right)+k_{1}r_{1}-k_{1}^{2}e\right)+k_{2}\dot{r}_{1}\\
+ & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\ddot{q}-\dot{u}-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}-k_{1}^{2}\dot{e}+k_{2}\dot{r}_{1}\\
+ & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\left(f\left(q,\dot{q}\right)+u+d\left(t\right)\right)-\dot{u}-\dot{d}\left(t\right)+k_{1}\dot{r}_{1}-k_{1}^{2}\left(r_{1}-k_{1}e\right)+k_{2}\dot{r}_{1}\\
+ & =\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}f\left(q,\dot{q}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}u-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)\dot{r}_{1}-k_{1}^{2}r_{1}+k_{1}^{3}e\\
+ & =\underbrace{\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}f\left(q,\dot{q}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}u}_{F\left(\kappa\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)\left(r_{2}-k_{2}r_{1}\right)-k_{1}^{2}r_{1}+k_{1}^{3}e\\
+ & =F\left(\kappa\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}+k_{2}\right)k_{2}r_{1}-k_{1}^{2}r_{1}+k_{1}^{3}e\\
+ & =F\left(\kappa\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}+\left(-k_{1}k_{2}-k_{2}^{2}-k_{1}^{2}\right)r_{1}+k_{1}^{3}e
 \end{align*}
 
 \end_inset
@@ -8043,7 +8042,12 @@ NN Approximation (where
 \begin_inset Formula $\mathcal{C}^{2}$
 \end_inset
 
-): 
+).
+ NOTE: 
+\begin_inset Formula $u_{d}$
+\end_inset
+
+ will be defined later! 
 \family default
 \series default
 \shape default
@@ -8089,7 +8093,7 @@ q_{d}^{\top} & \dot{q}_{d}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u_{d}^{\
 Controller
 \begin_inset Formula 
 \[
-\dot{u}=\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)
+\dot{u}=\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)
 \]
 
 \end_inset
@@ -8101,15 +8105,18 @@ Controller
 Third:
 \begin_inset Formula 
 \begin{align*}
-\dot{r}_{2} & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
- & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\left(1-k_{1}^{2}-k_{1}k_{2}-k_{2}^{2}\right)r_{1}+\left(k_{1}+k_{2}\right)r_{2}+\left(k_{1}^{3}-k_{1}\right)e\\
- & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\cancelto{1}{\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)}r_{1}+\cancel{\left(k_{1}^{3}-k_{1}\right)e}+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
- & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\cancel{\left(1-k_{1}^{2}-k_{1}k_{2}-k_{2}^{2}\right)r_{1}}+\cancel{\left(k_{1}+k_{2}\right)r_{2}}+\cancel{\left(k_{1}^{3}-k_{1}\right)e}\\
- & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(k_{3}r_{2}+r_{1}+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
- & =\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa\right)-k_{3}r_{2}-r_{1}-\beta\text{sgn}\left(r_{1}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)-\varepsilon\left(\kappa_{d}\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)\\
- & =\underbrace{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)}+\underbrace{\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{d}\right)}_{\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)}-k_{3}r_{2}-r_{1}-\beta\text{sgn}\left(r_{1}\right)+\left(\underbrace{\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}}_{\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)}\right)d\left(t\right)-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)\\
- & =\underbrace{\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)d\left(t\right)}_{\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-k_{3}r_{2}-r_{1}-\beta\text{sgn}\left(r_{1}\right)\underbrace{-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}\\
- & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-\beta\text{sgn}\left(r_{1}\right)+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)
+\dot{r}_{2} & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+ & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}+\left(-k_{1}k_{2}-k_{2}^{2}-k_{1}^{2}\right)r_{1}+k_{1}^{3}e\\
+\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\left(1\cancel{-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}}\right)r_{1}+\cancel{k_{1}^{3}e}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+ & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\cancel{\left(k_{1}+k_{2}\right)r_{2}}+\cancel{\left(-k_{1}k_{2}-k_{2}^{2}-k_{1}^{2}\right)r_{1}}+\cancel{k_{1}^{3}e}\\
+\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(k_{3}r_{2}+r_{1}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\Phi\left(\kappa,\hat{\theta}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
+ & =\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)-\varepsilon\left(\kappa_{d}\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)\\
+ & =\underbrace{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)}+\underbrace{\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{d}\right)}_{\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\left(\underbrace{\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}}_{\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)}\right)d\left(t\right)-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)\\
+ & =\underbrace{\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)d\left(t\right)}_{\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\underbrace{-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)}_{D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}\\
+ & =\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)
 \end{align*}
 
 \end_inset
@@ -8127,7 +8134,7 @@ Let
  ensemble differential inclusion:
 \begin_inset Formula 
 \[
-\dot{r}_{2}\in\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-\beta K[\text{sgn}]\left(r_{1}\right)+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)
+\dot{r}_{2}\in\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}K[\text{sgn}]\left(r_{1}\right)+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)
 \]
 
 \end_inset
@@ -8174,14 +8181,15 @@ r_{2} & \triangleq\dot{r}_{1}+k_{2}r_{1}
 Simplify:
 \begin_inset Formula 
 \begin{align*}
-\dot{u} & =\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}+k_{2}r_{1}\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\left(\dot{e}+k_{1}e\right)\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\dot{e}+k_{1}k_{2}e\right)+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+k_{1}\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+k_{2}\left(k_{1}+k_{2}+k_{3}\right)\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)k_{1}k_{2}e+\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+k_{1}\left(2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)e+\left(k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}+2-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}+\left(k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}\right)e+\left(2k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}+k_{1}^{3}-k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(\cancel{k_{1}^{2}}+k_{1}k_{2}+k_{1}k_{3}+2-\cancel{k_{1}^{2}}-\cancel{k_{2}^{2}}\cancel{-k_{1}k_{2}+k_{1}k_{2}}+\cancel{k_{2}^{2}}+k_{2}k_{3}\right)\dot{e}+\left(\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}k_{2}^{2}}+k_{1}k_{2}k_{3}+\cancelto{1}{2}k_{1}-\cancel{k_{1}^{3}}-\cancel{k_{1}k_{2}^{2}}-\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}^{3}}-\cancel{k_{1}}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
- & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}+\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)
+\dot{u} & =\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{r}_{1}+k_{2}r_{1}\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\left(\dot{e}+k_{1}e\right)\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\left(\dot{e}+k_{1}e\right)+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\left(\ddot{e}+k_{1}\dot{e}+k_{2}\dot{e}+k_{1}k_{2}e\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)k_{1}e+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}+k_{2}+k_{3}\right)k_{1}\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)k_{2}\dot{e}+\left(k_{1}+k_{2}+k_{3}\right)k_{1}k_{2}e\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+\left(k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}\right)e+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}\right)\dot{e}+\left(k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}+\left(k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}\right)e+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)\dot{e}+\left(k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}\right)e+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}^{2}+k_{1}k_{2}+k_{1}k_{3}+1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}+k_{1}k_{2}+k_{2}^{2}+k_{2}k_{3}\right)\dot{e}+\left(k_{1}^{2}k_{2}+k_{1}k_{2}^{2}+k_{1}k_{2}k_{3}+k_{1}-k_{1}^{3}-k_{1}k_{2}^{2}-k_{1}^{2}k_{2}+k_{1}^{3}\right)e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(\cancel{k_{1}^{2}}+k_{1}k_{2}+k_{1}k_{3}+1-\cancel{k_{1}^{2}}-\cancel{k_{2}^{2}}\cancel{-k_{1}k_{2}+k_{1}k_{2}}+\cancel{k_{2}^{2}}+k_{2}k_{3}\right)\dot{e}+\left(\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}k_{2}^{2}}+k_{1}k_{2}k_{3}+k_{1}-\cancel{k_{1}^{3}}-\cancel{k_{1}k_{2}^{2}}-\cancel{k_{1}^{2}k_{2}}+\cancel{k_{1}^{3}}\right)e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\\
+ & =\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\right)\dot{e}+\left(k_{1}k_{2}k_{3}+k_{1}\right)e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)
 \end{align*}
 
 \end_inset
@@ -8202,8 +8210,8 @@ Simplify:
 Integrate
 \begin_inset Formula 
 \begin{align*}
-\intop_{t_{0}}^{t}\dot{u}\left(\tau\right)d\tau & =\intop_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)d\tau+\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\dot{e}\right)d\tau\\
-u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+\beta\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)d\tau+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}\left(t\right)-\dot{e}\left(t_{0}\right)\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)
+\intop_{t_{0}}^{t}\dot{u}\left(\tau\right)d\tau & =\intop_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)d\tau+\intop_{t_{0}}^{t}\left(\left(k_{1}+k_{2}+k_{3}\right)\ddot{e}+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\right)\dot{e}\right)d\tau\\
+u\left(t\right)-u\left(t_{0}\right) & =\intop_{t_{0}}^{t}\left(\left(k_{1}k_{2}k_{3}+k_{1}\right)e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)d\tau+\left(k_{1}+k_{2}+k_{3}\right)\left(\dot{e}\left(t\right)-\dot{e}\left(t_{0}\right)\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)
 \end{align*}
 
 \end_inset
@@ -8213,14 +8221,14 @@ Let
 \end_inset
 
  cancel the other initial conditions: 
-\begin_inset Formula $u\left(t_{0}\right)=\left(k_{1}+k_{2}+k_{3}\right)\dot{e}\left(t_{0}\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)e\left(t_{0}\right)$
+\begin_inset Formula $u\left(t_{0}\right)=\left(k_{1}+k_{2}+k_{3}\right)\dot{e}\left(t_{0}\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\right)e\left(t_{0}\right)$
 \end_inset
 
 .
  So,
 \begin_inset Formula 
 \[
-u\left(t\right)=\left(k_{1}+k_{2}+k_{3}\right)\dot{e}\left(t\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\right)e\left(t\right)+\intop_{t_{0}}^{t}\left(\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)+\left(k_{1}k_{2}k_{3}+k_{1}\right)e\left(\tau\right)\right)d\tau
+u\left(t\right)=\left(k_{1}+k_{2}+k_{3}\right)\dot{e}\left(t\right)+\left(k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\right)e\left(t\right)+\intop_{t_{0}}^{t}\left(K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)+\left(k_{1}k_{2}k_{3}+k_{1}\right)e\left(\tau\right)\right)d\tau
 \]
 
 \end_inset
@@ -8230,7 +8238,7 @@ u\left(t\right)=\left(k_{1}+k_{2}+k_{3}\right)\dot{e}\left(t\right)+\left(k_{1}k
 Simplify:
 \begin_inset Formula 
 \[
-u\left(t\right)=K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+\beta\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau
+u\left(t\right)=K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau
 \]
 
 \end_inset
@@ -8238,7 +8246,7 @@ u\left(t\right)=K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{
 where
 \begin_inset Formula 
 \begin{align*}
-K_{P} & \triangleq k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+2\\
+K_{P} & \triangleq k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\\
 K_{I} & \triangleq k_{1}k_{2}k_{3}+k_{1}\\
 K_{D} & \triangleq k_{1}+k_{2}+k_{3}
 \end{align*}
@@ -8263,7 +8271,7 @@ BOUNDING LEMMA 1.1
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert  & \le\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert \\
  & \le\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert \\
  & \le\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \\
- & \le\left(k_{1}+2\right)\left\Vert z\right\Vert 
+ & \le\left(k_{1}+1\right)\left\Vert z\right\Vert 
 \end{align*}
 
 \end_inset
@@ -8324,7 +8332,8 @@ noprefix "false"
 \left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert  & \le\sigma_{f}\left(\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
-\sigma_{f}\left(s\right) & \triangleq\sup_{x\in\overline{B}_{\overline{x}_{d}+s}\left(\boldsymbol{0}_{n}\right)}\left(\left\Vert \left.\frac{df}{d\left[\begin{array}{cc}
+\sigma_{f}\left(s\right) & \triangleq\sup_{\left[\begin{array}{cc}
+q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}\in\overline{B}_{\overline{q}_{d}+\overline{\dot{q}}_{d}+s}\left(0_{2n}\right)}\left(\left\Vert \left.\frac{df}{d\left[\begin{array}{cc}
 q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}}\right|_{\left(q,\dot{q}\right)}\right\Vert \right)
 \end{align*}
 
@@ -8369,7 +8378,7 @@ By Bounding Lemma 1.1,
 \left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert  & \le\rho_{f}\left(\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
- & \le\underbrace{\rho_{f}\left(\left(k_{1}+2\right)\left\Vert z\right\Vert \right)\left(k_{1}+2\right)}_{\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\underbrace{\rho_{f}\left(\left(k_{1}+1\right)\left\Vert z\right\Vert \right)\left(k_{1}+1\right)}_{\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
  & \le\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
@@ -8431,7 +8440,8 @@ noprefix "false"
 \left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\right\Vert  & \le\sigma_{f^{\prime}}\left(\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
 e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
-\sigma_{f^{\prime}}\left(s\right) & \triangleq\sup_{x\in\overline{B}_{\overline{x}_{d}+s}\left(\boldsymbol{0}_{n}\right)}\left(\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q,\dot{q}\right)}\right\Vert \right)
+\sigma_{f^{\prime}}\left(s\right) & \triangleq\sup_{\left[\begin{array}{cc}
+q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}\in\overline{B}_{\overline{q}_{d}+\overline{\dot{q}}_{d}+s}\left(0_{2n}\right)}\left(\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q,\dot{q}\right)}\right\Vert +\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}\partial q}\right|_{\left(q,\dot{q}\right)}\right\Vert \right)
 \end{align*}
 
 \end_inset
@@ -8472,7 +8482,7 @@ e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
 By Bounding Lemma 1.1,
 \begin_inset Formula 
 \begin{align*}
-\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert  & \le\underbrace{\rho_{f^{\prime}}\left(\left(k_{1}+2\right)\left\Vert z\right\Vert \right)\left(k_{1}+2\right)}_{\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert  & \le\underbrace{\rho_{f^{\prime}}\left(\left(k_{1}+1\right)\left\Vert z\right\Vert \right)\left(k_{1}+1\right)}_{\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
  & \le\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
@@ -8873,46 +8883,11 @@ Since
 \begin_inset Formula $\mathcal{C}^{2}$
 \end_inset
 
- in fact) By Fundamental Theorem of Calculus,
-\begin_inset Formula 
-\[
-\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert \le\left\Vert \widetilde{\kappa}\right\Vert \intop_{0}^{1}\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\gamma\left(\lambda_{L}\right),\theta\right)}\right\Vert d\lambda_{L}
-\]
-
+ in fact) and 
+\begin_inset Formula $\kappa_{d}$
 \end_inset
 
-where 
-\begin_inset Formula $\gamma:\left[0,1\right]\to\mathbb{R}^{5n}$
-\end_inset
-
- is a line connecting 
-\begin_inset Formula $\gamma\left(0\right)=\kappa_{d}$
-\end_inset
-
- and 
-\begin_inset Formula $\gamma\left(1\right)=\kappa$
-\end_inset
-
- defined as
-\begin_inset Formula 
-\begin{align*}
-\gamma\left(\lambda_{L}\right) & \triangleq-\lambda_{L}\widetilde{\kappa}+\kappa_{d}\\
- & =\left(1-\lambda_{L}\right)\kappa_{d}+\lambda_{L}\kappa
-\end{align*}
-
-\end_inset
-
-Note that
-\begin_inset Formula 
-\begin{align*}
-\left\Vert \gamma\left(\lambda_{L}\right)\right\Vert  & \le\left\Vert \widetilde{\kappa}\right\Vert +\left\Vert \kappa_{d}\right\Vert \\
- & \le\overline{\kappa}_{d}+\left\Vert \widetilde{\kappa}\right\Vert \\
- & \le\overline{\kappa}_{d}+\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
-\end{align*}
-
-\end_inset
-
-So by Lemma 
+ is bounded, by Lemma 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lem:non-decreasing-continuous-bound"
@@ -8934,19 +8909,12 @@ noprefix "false"
 \begin_inset Formula $\sigma_{\Phi\kappa}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
 \end_inset
 
- such that
+ such that 
 \begin_inset Formula 
-\[
-\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(s,\theta\right)}\right\Vert \le\sigma_{\Phi\kappa}\left(k_{1},k_{2},s\right)\triangleq\sup_{\left\Vert \theta\right\Vert \le\overline{\theta},\left\Vert \zeta\right\Vert \le\overline{\kappa}_{d}+s}\left(\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\zeta,\theta\right)}\right\Vert \right)
-\]
-
-\end_inset
-
-Thus,
-\begin_inset Formula 
-\[
-\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert \le\sigma_{\Phi\kappa}\left(\left\Vert \widetilde{\kappa}\right\Vert \right)\left\Vert \widetilde{\kappa}\right\Vert 
-\]
+\begin{align*}
+\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert  & \le\sigma_{\Phi\kappa}\left(\left\Vert \widetilde{\kappa}\right\Vert \right)\left\Vert \widetilde{\kappa}\right\Vert \\
+\sigma_{\Phi\kappa}\left(s\right) & \triangleq\sup_{\left\Vert \theta\right\Vert \le\overline{\theta},\left\Vert \zeta\right\Vert \le\overline{\kappa}_{d}+s}\left(\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\zeta,\theta\right)}\right\Vert \right)
+\end{align*}
 
 \end_inset
 
@@ -9064,8 +9032,8 @@ By Bounding Lemma 1.3, 3.1, and 3.3,
 \begin{align*}
 \left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert  & \le\left\Vert \widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert +\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert +\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert \left\Vert d\left(t\right)\right\Vert \\
  & \le\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\varepsilon}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{d}\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
- & \le\left(\underbrace{\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{\varepsilon}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{d}\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
- & \le\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+ & \le\left(\underbrace{\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{\varepsilon}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{d}\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
+ & \le\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
 \end_inset
@@ -9114,7 +9082,7 @@ BOUNDING LEMMA 4.2
 Differentiate
 \begin_inset Formula 
 \begin{align*}
-\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\dot{\kappa}_{d}+\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\dot{\kappa}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\cancelto{0_{p}}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\kappa}_{d}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\dot{\widehat{\theta}}\\
+\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\dot{\kappa}_{d}+\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\dot{\kappa}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\cancelto{0_{p}}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\kappa}_{d}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}\\
  & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\dot{\kappa}_{d}+\left(\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\right)\dot{\kappa}_{d}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}
 \end{align*}
 
@@ -9157,12 +9125,6 @@ P-Function
 \end_layout
 
 \begin_layout Standard
-
-\color red
-ALL WRONG BELOW HERE
-\end_layout
-
-\begin_layout Standard
 Recall
 \begin_inset Formula 
 \[
@@ -9177,8 +9139,8 @@ Introduce
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align*}
-\zeta\left(t\right) & \triangleq\beta\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
-\phi\left(t\right) & \triangleq r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+\left(k_{1}-\lambda_{P}\right)\zeta\left(t\right)
+\zeta\left(t\right) & \triangleq K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
+\phi\left(t\right) & \triangleq r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)
 \end{align*}
 
 \end_inset
@@ -9202,16 +9164,19 @@ P\left(t\right)\triangleq\zeta\left(t\right)+\eta\left(t\right)
 So,
 \begin_inset Formula 
 \begin{align*}
-\dot{P}\left(t\right) & \underset{a.a.t}{\in}\dot{\zeta}\left(t\right)+\dot{\eta}\left(t\right)\\
- & \underset{a.a.t}{\in}\beta\dot{e}^{\top}K[\text{sgn}](r_{1})-\dot{e}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-e^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+\phi\left(t\right)\\
- & \underset{a.a.t}{\in}\beta\dot{e}^{\top}K[\text{sgn}](r_{1})-\dot{e}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\cancel{e^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-\lambda_{P}\eta\left(t\right)+\cancel{e^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}+k_{1}\zeta\left(t\right)-\lambda_{P}\zeta\left(t\right)\\
- & \underset{a.a.t}{\in}\beta\dot{e}^{\top}K[\text{sgn}](r_{1})-\dot{e}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\left(\eta\left(t\right)+\zeta\left(t\right)\right)+k_{1}\zeta\left(t\right)\\
- & \underset{a.a.t}{\in}\beta\dot{e}^{\top}K[\text{sgn}](r_{1})-\dot{e}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+k_{1}\left(\beta\left\Vert e\left(t\right)\right\Vert _{1}-e^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
- & \underset{a.a.t}{\in}\beta\dot{e}^{\top}K[\text{sgn}](r_{1})-\dot{e}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+k_{1}\beta e^{\top}K[\text{sgn}](r_{1})-k_{1}e^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
- & \underset{a.a.t}{\in}\beta r^{\top}K[\text{sgn}](r_{1})-{\color{red}\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{2}r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-e^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)}\\
- & \underset{a.a.t}{\in}\beta r^{\top}K[\text{sgn}](r_{1})-r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)\\
- & \underset{a.a.t}{\in}-\lambda_{P}P\left(t\right)+r_{2}^{\top}\left(\beta K[\text{sgn}]\left(r_{1}\right)-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
- & \underset{a.a.t}{\in}-\lambda_{P}P\left(t\right)-r_{2}^{\top}\left(D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\beta K[\text{sgn}]\left(r_{1}\right)\right)
+\dot{P}\left(t\right) & \in\dot{\zeta}\left(t\right)+\dot{\eta}\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+\phi\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\cancel{r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-\lambda_{P}\eta\left(t\right)+\cancel{r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+k_{2}\zeta\left(t\right)-\lambda_{P}\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\left(\eta\left(t\right)+\zeta\left(t\right)\right)+k_{2}\left(K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-k_{2}r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\left(\dot{r}_{1}^{\top}\left(t\right)+k_{2}r_{1}^{\top}\left(t\right)\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}r_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)\\
+ & \in K_{\text{RISE}}\left(\dot{r}_{1}^{\top}\left(t\right)+k_{2}r_{1}^{\top}\left(t\right)\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)\\
+ & \in K_{\text{RISE}}r_{2}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)\\
+ & \in-\lambda_{P}P\left(t\right)+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}K[\text{sgn}]\left(r_{1}\left(t\right)\right)-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)
 \end{align*}
 
 \end_inset
@@ -9224,7 +9189,7 @@ NOTE:
 \begin_inset Formula 
 \begin{align*}
 P\left(t_{0}\right) & =\zeta\left(t_{0}\right)\\
- & =\beta\left\Vert e\left(t_{0}\right)\right\Vert _{1}-e^{\top}\left(t_{0}\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t_{0}\right)
+ & =K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)D\left(\kappa_{d}\left(t_{0}\right),\theta^{\ast},\hat{\theta}\left(t_{0}\right),t_{0}\right)
 \end{align*}
 
 \end_inset
@@ -9232,9 +9197,9 @@ P\left(t_{0}\right) & =\zeta\left(t_{0}\right)\\
 NOTE:
 \begin_inset Formula 
 \begin{align*}
-\left|P\left(t_{0}\right)\right| & \le\beta\left\Vert e\left(t_{0}\right)\right\Vert _{1}+\left\Vert e\left(t_{0}\right)\right\Vert \overline{D}\\
- & \le\sqrt{n}\beta\left\Vert e\left(t_{0}\right)\right\Vert +\left\Vert e\left(t_{0}\right)\right\Vert \overline{D}\\
- & \le\left(\sqrt{n}\beta+\overline{D}\right)\left\Vert e\left(t_{0}\right)\right\Vert 
+\left|P\left(t_{0}\right)\right| & \le K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}+\left\Vert r_{1}\left(t_{0}\right)\right\Vert \overline{D}\\
+ & \le\sqrt{n}K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert +\left\Vert r_{1}\left(t_{0}\right)\right\Vert \overline{D}\\
+ & \le\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert 
 \end{align*}
 
 \end_inset
@@ -9250,15 +9215,15 @@ How do we know
 
  for all time.
  Since 
-\begin_inset Formula $\left\Vert e\right\Vert _{1}\ge\left\Vert e\right\Vert $
+\begin_inset Formula $\left\Vert r\right\Vert _{1}\ge\left\Vert r\right\Vert $
 \end_inset
 
 
 \begin_inset Formula 
 \begin{align*}
-\beta\left\Vert e\left(t\right)\right\Vert _{1}-e^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \ge\beta\left\Vert e\right\Vert _{1}-\left\Vert e\right\Vert \overline{D}\\
- & \ge\beta\left\Vert e\right\Vert -\overline{D}\left\Vert e\right\Vert \\
- & \ge\left(\underbrace{\beta-\overline{D}}_{b_{1}}\right)\left\Vert e\right\Vert 
+K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \ge K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-\left\Vert r_{1}\left(t\right)\right\Vert \overline{D}\\
+ & \ge K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert -\overline{D}\left\Vert r_{1}\left(t\right)\right\Vert \\
+ & \ge\left(\underbrace{K_{\text{RISE}}-\overline{D}}_{b_{1}}\right)\left\Vert r_{1}\left(t\right)\right\Vert 
 \end{align*}
 
 \end_inset
@@ -9270,7 +9235,7 @@ To get
 , select
 \begin_inset Formula 
 \[
-\beta>\overline{D}
+K_{\text{RISE}}>\overline{D}
 \]
 
 \end_inset
@@ -9278,17 +9243,17 @@ To get
 and thus
 \begin_inset Formula 
 \[
-\left\Vert \zeta\left(t\right)\right\Vert \ge b_{1}\left\Vert e\right\Vert >0
+\left\Vert \zeta\left(t\right)\right\Vert \ge b_{1}\left\Vert r_{1}\left(t\right)\right\Vert >0
 \]
 
 \end_inset
 
 Next, we want: Let 
-\begin_inset Formula $\lambda_{P}\in\left(0,k_{1}\right)$
+\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
 \end_inset
 
  and 
-\begin_inset Formula $b_{2}\triangleq k_{1}-\lambda_{P}$
+\begin_inset Formula $b_{2}\triangleq k_{2}-\lambda_{P}$
 \end_inset
 
 .
@@ -9299,9 +9264,9 @@ Next, we want: Let
 .
 \begin_inset Formula 
 \begin{align*}
-e^{\top}\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+\left(k_{1}-\lambda_{P}\right)\zeta\left(t\right) & =e^{\top}\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+b_{2}\zeta\left(t\right)\\
- & >-\left\Vert e\right\Vert \overline{\dot{D}}+b_{1}b_{2}\left\Vert e\right\Vert \\
- & >\left(b_{1}b_{2}-\overline{\dot{D}}\right)\left\Vert e\right\Vert 
+r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right) & =r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+b_{2}\zeta\left(t\right)\\
+ & >-\left\Vert r_{1}\left(t\right)\right\Vert \overline{\dot{D}}+b_{1}b_{2}\left\Vert r_{1}\left(t\right)\right\Vert \\
+ & >\left(b_{1}b_{2}-\overline{\dot{D}}\right)\left\Vert r_{1}\left(t\right)\right\Vert 
 \end{align*}
 
 \end_inset
@@ -9311,9 +9276,9 @@ We need
 \begin{align*}
 b_{1}b_{2}-\overline{\dot{D}} & \ge0\\
 b_{1}b_{2} & \ge\overline{\dot{D}}\\
-b_{1} & \ge\frac{\overline{\dot{D}}}{k_{1}-\lambda_{P}}\\
-\beta-\overline{D} & \ge\frac{\overline{\dot{D}}}{k_{1}-\lambda_{P}}\\
-\beta & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{1}-\lambda_{P}}
+b_{1} & \ge\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}\\
+K_{\text{RISE}}-\overline{D} & \ge\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}\\
+K_{\text{RISE}} & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}
 \end{align*}
 
 \end_inset
@@ -9323,7 +9288,7 @@ So the only gain suggestion you need (well, it's sufficient)
 
 \begin_inset Formula 
 \[
-\beta\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{1}-\lambda_{P}}
+K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}
 \]
 
 \end_inset
@@ -9333,13 +9298,13 @@ So the only gain suggestion you need (well, it's sufficient)
 NOTE: The above requires
 \begin_inset Formula 
 \[
-\lambda_{P}\in\left(0,k_{1}\right)
+\lambda_{P}\in\left(0,k_{2}\right)
 \]
 
 \end_inset
 
 which can always be satisfied since 
-\begin_inset Formula $k_{1}>0$
+\begin_inset Formula $k_{2}>0$
 \end_inset
 
 .
@@ -9365,10 +9330,10 @@ Consider the differential inclusion
 z_{P} & \in H\left(z_{p},t\right)\\
 H\left(z_{p},t\right) & \triangleq\left\{ \left[\begin{array}{c}
 r_{1}-k_{1}e\\
-r_{2}-k_{2}r_{1}-e\\
-\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-\beta\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
-{\color{red}-\lambda_{P}P-r^{\top}\left(D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\beta\nu_{2}\right)}
-\end{array}\right]:\nu_{1},\nu_{2}\in K[\text{sgn}\left(r_{1}\right)]\right\} 
+r_{2}-k_{2}r_{1}\\
+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
+-\lambda_{P}P\left(t\right)+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}\nu_{2}-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)
+\end{array}\right]:\nu_{1},\nu_{2}\in K[\text{sgn}\left(r_{1}\left(t\right)\right)]\right\} 
 \end{align*}
 
 \end_inset
@@ -9377,7 +9342,7 @@ Stability.
  Consider the Lyapunov candidate
 \begin_inset Formula 
 \begin{align*}
-V\left(z\right) & =\frac{1}{2}z^{\top}z+P
+V\left(z_{P}\right) & =\frac{1}{2}z^{\top}z+P
 \end{align*}
 
 \end_inset
@@ -9385,9 +9350,11 @@ V\left(z\right) & =\frac{1}{2}z^{\top}z+P
 Trajectory derivative
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z\right) & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}-e\right)+r_{2}^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-\beta\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)-\lambda_{P}P-r_{2}^{\top}\left(D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\beta\nu_{2}\right)\\
- & =\cancel{e^{\top}r_{1}}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}-\cancel{r_{1}^{\top}e}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}^{\top}r_{2}-\cancel{r_{2}^{\top}r_{1}}-\beta r_{2}^{\top}\nu_{1}+r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P-r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+\beta r_{2}^{\top}\nu_{2}\\
- & =-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}+\cancel{r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-\lambda_{P}P-\cancel{r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}+\beta r_{2}^{\top}\left(\nu_{2}-\nu_{1}\right)
+\dot{V}\left(z_{p},t\right) & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)-\lambda_{P}P\left(t\right)+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}\nu_{2}-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
+ & ={\color{blue}e^{\top}r_{1}}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}^{\top}r_{2}-\cancel{r_{2}^{\top}r_{1}}-K_{\text{RISE}}r_{2}^{\top}\nu_{1}+\cancel{r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-\lambda_{P}P\left(t\right)+K_{\text{RISE}}r_{2}^{\top}\left(t\right)\nu_{2}-\cancel{r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}\\
+ & =-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+K_{\text{RISE}}r_{2}^{\top}\left(\nu_{2}-\nu_{1}\right)-\lambda_{P}P\left(t\right)+{\color{blue}\left\Vert e\right\Vert \left\Vert r_{1}\right\Vert }\\
+ & =-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+K_{\text{RISE}}r_{2}^{\top}\left(\nu_{2}-\nu_{1}\right)-\lambda_{P}P\left(t\right)+{\color{blue}\frac{1}{2}\left\Vert e\right\Vert ^{2}+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{2}}\\
+ & =-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)+K_{\text{RISE}}r_{2}^{\top}\left(\nu_{2}-\nu_{1}\right)-\lambda_{P}P\left(t\right)
 \end{align*}
 
 \end_inset
@@ -9400,7 +9367,7 @@ Note that
  So,
 \begin_inset Formula 
 \[
-\dot{V}\left(z\right)\underset{\text{a.e.}}{=}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P
+\dot{V}\left(z_{p},t\right)\underset{\text{a.e.}}{=}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P
 \]
 
 \end_inset
@@ -9408,11 +9375,13 @@ Note that
 Using Bounding Lemma 3.4 and triangle inequality,
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z\right) & \underset{\text{a.e.}}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +\left\Vert r_{2}\right\Vert \right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert e\right\Vert \left\Vert r_{2}\right\Vert +\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{1}\right\Vert \left\Vert r_{2}\right\Vert +\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-k_{1}\left\Vert e\right\Vert ^{2}-k_{2}\left\Vert r_{1}\right\Vert ^{2}+\frac{1}{2}\left\Vert e\right\Vert ^{2}+\frac{1}{2}\rho^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{2}+\frac{1}{2}\rho^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-\left(k_{3}-2\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\right)\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P
+\dot{V}\left(z\right) & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +\left\Vert r_{2}\right\Vert \right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert e\right\Vert \left\Vert r_{2}\right\Vert +\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{1}\right\Vert \left\Vert r_{2}\right\Vert +\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\frac{1}{2}\left\Vert e\right\Vert ^{2}+\frac{1}{2}\rho_{0}^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{2}+\frac{1}{2}\rho_{0}^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-1\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-1\right)\left\Vert r_{1}\right\Vert ^{2}+\frac{1}{2}\rho_{0}^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\frac{1}{2}\rho_{0}^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}+\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert r_{2}\right\Vert ^{2}-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-1\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-1\right)\left\Vert r_{1}\right\Vert ^{2}-\left(k_{3}-\left(\underbrace{\rho_{0}^{2}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}_{\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\right)\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\left(k_{1}-1\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-1\right)\left\Vert r_{1}\right\Vert ^{2}-\left(k_{3}-\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\right)\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P
 \end{align*}
 
 \end_inset
@@ -9450,7 +9419,7 @@ Pick
 So,
 \begin_inset Formula 
 \begin{align*}
--\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}-\left(k_{3}-2\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\right)\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P & \underset{\text{a.e.}}{\le}-\min\left\{ k_{1}-\frac{1}{2},k_{2}-\frac{1}{2},k_{3}-2\rho\left(k_{1},k_{2},\Delta\right)\right\} \left\Vert z\right\Vert ^{2}-\lambda_{P}P
+-\left(k_{1}-1\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-1\right)\left\Vert r_{1}\right\Vert ^{2}-\left(k_{3}-\rho\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\right)\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P & \underset{\text{a.e.}}{\le}-\min\left\{ k_{1}-1,k_{2}-1,k_{3}-\rho\left(k_{1},k_{2},\Delta\right)\right\} \left\Vert z\right\Vert ^{2}-\lambda_{P}P
 \end{align*}
 
 \end_inset
@@ -9458,8 +9427,8 @@ So,
 Compare
 \begin_inset Formula 
 \begin{align*}
--\min\left\{ k_{1}-\frac{1}{2},k_{2}-\frac{1}{2},k_{3}-2\rho\left(k_{1},k_{2},\Delta\right)\right\} \left\Vert z\right\Vert ^{2} & \underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}\\
-\min\left\{ k_{1}-\frac{1}{2},k_{2}-\frac{1}{2},k_{3}-2\rho\left(k_{1},k_{2},\Delta\right)\right\}  & \underset{\text{a.e.}}{\ge}\frac{\lambda_{V}}{2}
+-\min\left\{ k_{1}-1,k_{2}-1,k_{3}-\rho\left(k_{1},k_{2},\Delta\right)\right\} \left\Vert z\right\Vert ^{2} & \underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}\\
+\min\left\{ k_{1}-1,k_{2}-1,k_{3}-\rho\left(k_{1},k_{2},\Delta\right)\right\}  & \underset{\text{a.e.}}{\ge}\frac{\lambda_{V}}{2}
 \end{align*}
 
 \end_inset
@@ -9468,28 +9437,40 @@ Thus,
 \begin_inset Formula 
 \begin{align*}
 \dot{V}\left(z\right) & \underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-\underbrace{\min\left\{ \lambda_{V},\lambda_{P}\right\} }_{\lambda}\left(\frac{1}{2}\left\Vert z\right\Vert ^{2}+P\right)\\
- & \underset{\text{a.e.}}{\le}-\lambda\left(V\left(z\right)\right)
+ & \underset{\text{a.e.}}{\le}-\min\left\{ \lambda_{V},\lambda_{P}\right\} \left(\frac{1}{2}\left\Vert z\right\Vert ^{2}+P\right)
 \end{align*}
 
 \end_inset
 
-Solve
+Let
 \begin_inset Formula 
 \[
-\dot{V}\left(z\right)\underset{\text{a.e.}}{\le}-\lambda\left(V\left(z\right)\right)
+\lambda\triangleq\frac{1}{2}\min\left\{ \lambda_{V},\lambda_{P}\right\} 
 \]
 
 \end_inset
 
-Solve
+Thus,
+\begin_inset Formula 
+\[
+\dot{V}\left(z\right)\underset{\text{a.e.}}{\le}-2\lambda\left(V\left(z\right)\right)
+\]
+
+\end_inset
+
+Let 
+\begin_inset Formula $z_{0}\triangleq z\left(t_{0}\right)$
+\end_inset
+
+.
+ Solve the above.
 \begin_inset Formula 
 \begin{align*}
-s\mathcal{L}\left\{ V\left(z\right)\right\} -V\left(z\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-\lambda\mathcal{L}\left\{ V\left(z\right)\right\} \\
-\left(s+\lambda\right)\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}V\left(z\left(t_{0}\right)\right)\\
-\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}\frac{V\left(z\left(t_{0}\right)\right)}{s+\lambda}\\
-\mathcal{L}^{-1}\left\{ \mathcal{L}\left\{ V\left(z\right)\right\} \right\}  & \underset{\text{a.e.}}{\le}\mathcal{L}^{-1}\left\{ \frac{V\left(z\left(t_{0}\right)\right)}{s+\lambda}\right\} \\
-V\left(z\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{0}\right){\rm e}^{-\lambda\left(t-t_{0}\right)}
+s\mathcal{L}\left\{ V\left(z\right)\right\} -V\left(z\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-2\lambda\mathcal{L}\left\{ V\left(z\right)\right\} \\
+\left(s+2\lambda\right)\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}V\left(z\left(t_{0}\right)\right)\\
+\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}\frac{V\left(z\left(t_{0}\right)\right)}{s+2\lambda}\\
+\mathcal{L}^{-1}\left\{ \mathcal{L}\left\{ V\left(z\right)\right\} \right\}  & \underset{\text{a.e.}}{\le}\mathcal{L}^{-1}\left\{ \frac{V\left(z\left(t_{0}\right)\right)}{s+2\lambda}\right\} \\
+V\left(z\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{0}\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}
 \end{align*}
 
 \end_inset
@@ -9506,17 +9487,26 @@ V\left(z\left(t\right)\right) & =\frac{1}{2}z^{\top}\left(t\right)z\left(t\right
 and (recall)
 \begin_inset Formula 
 \[
-\left|P\left(t_{0}\right)\right|\le\left(\sqrt{n}\beta+\overline{D}\right)\left\Vert e\left(t_{0}\right)\right\Vert 
+\left|P\left(t_{0}\right)\right|\le\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert 
 \]
 
 \end_inset
 
-Thus,
+then,
 \begin_inset Formula 
-\[
-\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right)\underset{\text{a.e.}}{\le}\left(\frac{1}{2}z_{0}^{\top}z_{0}+P\left(t_{0}\right)\right){\rm e}^{-\lambda\left(t-t_{0}\right)}
-\]
+\begin{align*}
+\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right) & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}z_{0}^{\top}z_{0}+P\left(t_{0}\right)\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z_{0}\right\Vert ^{2}+\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z_{0}\right\Vert ^{2}+\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\sqrt{\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}}\\
+\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\underbrace{\underbrace{\sqrt{\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right)}}_{\alpha\in\mathcal{K}_{\infty}}{\rm e}^{-\lambda\left(t-t_{0}\right)}}_{\beta\in\mathcal{KL}_{\infty}}
+\end{align*}
 
+\end_inset
+
+
+\begin_inset Newline newline
 \end_inset
 
 GAIN CONDITIONS
@@ -9527,30 +9517,24 @@ Let
 \begin_inset Formula $\lambda$
 \end_inset
 
- be a desired convergence rate.
- Pick
-\begin_inset Formula 
-\begin{align*}
-\lambda_{V} & >\lambda\\
-\lambda_{P} & >\lambda\\
-k_{1} & >{\color{red}\max\left\{ \frac{1}{2}+\frac{\lambda_{V}}{2},\lambda_{P}\right\} }\\
-k_{2} & >\frac{1}{2}+\frac{\lambda_{V}}{2}\\
-k_{3} & >2\rho\left(k_{1},k_{2},\Delta\right)+\frac{\lambda_{V}}{2}
-\end{align*}
-
+ be a desired convergence rate and let 
+\begin_inset Formula $\Delta$
 \end_inset
 
+ be the size of desired initial conditions (radius of 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
 
-\end_layout
-
-\begin_layout Standard
+).
+ The sufficient gain conditions are:
 \begin_inset Formula 
 \begin{align*}
-\\
-\\
-\\
-\lambda_{P} & \in\left(0,k_{1}\right)\\
-\beta & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{1}-\lambda_{P}}
+\lambda_{V} & \ge2\lambda\\
+\lambda_{P} & \ge2\lambda\\
+k_{1} & >1+\frac{\lambda_{V}}{2}\\
+k_{2} & >\max\left\{ 1+\frac{\lambda_{V}}{2},\lambda_{P}\right\} \\
+k_{3} & >\rho\left(k_{1},k_{2},\Delta\right)+\frac{\lambda_{V}}{2}\\
+K_{\text{RISE}} & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}
 \end{align*}
 
 \end_inset
