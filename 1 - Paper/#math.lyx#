@@ -9308,7 +9308,6 @@ which can always be satisfied since
 \end_inset
 
 .
- However, we will need to mention this in the gain conditions.
 \end_layout
 
 \begin_layout Section
@@ -9465,7 +9464,7 @@ Let
 
 .
  Solve the above.
- (Really just invoke Comparison Lemma or Gronwall inequality)
+ (Really just invoke )
 \begin_inset Formula 
 \begin{align*}
 s\mathcal{L}\left\{ V\left(z\right)\right\} -V\left(z\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-2\lambda\mathcal{L}\left\{ V\left(z\right)\right\} \\
@@ -9511,10 +9510,6 @@ then,
 \begin_inset Newline newline
 \end_inset
 
-
-\end_layout
-
-\begin_layout Subsubsection*
 GAIN CONDITIONS
 \end_layout
 
