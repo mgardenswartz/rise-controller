@@ -7759,6 +7759,38 @@ unknown
 \end_layout
 
 \begin_layout Section
+REMARKs
+\end_layout
+
+\begin_layout Itemize
+
+\color blue
+ADAPTIVE RISE REMARK.
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\end_layout
+
+\begin_layout Itemize
+Bounded weights REMARK
+\end_layout
+
+\begin_layout Itemize
+REMARK about EPSILON PRIME
+\end_layout
+
+\begin_layout Section
 Setup
 \end_layout
 
@@ -7837,7 +7869,33 @@ where
 \end_inset
 
 are known constants.
- Assume
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color blue
+ 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Assume
 \begin_inset Formula 
 \begin{align*}
 \left\Vert q_{d}\left(t\right)\right\Vert  & \le\overline{q}_{d}\\
@@ -7887,12 +7945,20 @@ are known constants.
 \begin_inset Formula 
 \begin{align*}
 z & \triangleq\left[\begin{array}{ccc}
-e^{\top} & r_{1}^{\top} & r_{2}^{\top}\end{array}\right]^{\top}
+e^{\top} & r_{1}^{\top} & r_{2}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{3n}
 \end{align*}
 
 \end_inset
 
-Goal: find 
+
+\end_layout
+
+\begin_layout Subsubsection*
+Goal
+\end_layout
+
+\begin_layout Standard
+Find 
 \begin_inset Formula $u$
 \end_inset
 
@@ -8671,7 +8737,7 @@ By Bounding Lemma 1.2,
  & \le\left\Vert r_{2}\right\Vert +k_{1}\left\Vert r_{1}\right\Vert +k_{1}^{2}\left\Vert e\right\Vert +k_{2}\left\Vert r_{1}\right\Vert +\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
  & \le\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert +k_{1}^{2}\left\Vert z\right\Vert +k_{2}\left\Vert z\right\Vert +\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
  & \le\left(\underbrace{1+k_{1}+k_{1}^{2}+k_{2}+\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
- & \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\left\Vert \widetilde{u}\right\Vert  & \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
 \end_inset
@@ -9117,7 +9183,19 @@ By
 
 \end_inset
 
+NOTE: Since 
+\begin_inset Formula $\varepsilon$
+\end_inset
 
+ is unknown.
+\begin_inset Formula 
+\[
+\sup_{\kappa_{d}\le\overline{\kappa}_{d}}\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\right\Vert \le\overline{\varepsilon^{\prime}}
+\]
+
+\end_inset
+
+will 
 \end_layout
 
 \begin_layout Section
@@ -9308,6 +9386,7 @@ which can always be satisfied since
 \end_inset
 
 .
+ However, we will need to mention this in the gain conditions.
 \end_layout
 
 \begin_layout Section
@@ -9319,7 +9398,7 @@ Let
 \begin_inset Formula 
 \[
 z_{P}\triangleq\left[\begin{array}{cc}
-z^{\top} & P\end{array}\right]^{\top}\in\mathbb{R}^{5n+1}
+z^{\top} & P\end{array}\right]^{\top}\in\mathbb{R}^{3n+1}
 \]
 
 \end_inset
@@ -9464,7 +9543,7 @@ Let
 
 .
  Solve the above.
- (Really just invoke )
+ (Really just invoke Comparison Lemma or Gronwall inequality)
 \begin_inset Formula 
 \begin{align*}
 s\mathcal{L}\left\{ V\left(z\right)\right\} -V\left(z\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-2\lambda\mathcal{L}\left\{ V\left(z\right)\right\} \\
@@ -9510,6 +9589,10 @@ then,
 \begin_inset Newline newline
 \end_inset
 
+
+\end_layout
+
+\begin_layout Section
 GAIN CONDITIONS
 \end_layout
 
@@ -9541,6 +9624,729 @@ K_{\text{RISE}} & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+BOUNDEDNESS
+\end_layout
+
+\begin_layout Enumerate
+Stability analysis showed that 
+\begin_inset Formula $V\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n+1}\right)$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $e,r_{1},r_{2},\dot{e},\ddot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+, 
+\begin_inset Formula $P\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}\right)$
+\end_inset
+
+, and 
+\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $q_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ by formulation and 
+\begin_inset Formula $e\triangleq q_{d}-q$
+\end_inset
+
+ and 
+\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $q\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $\dot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ by formulation and 
+\begin_inset Formula $r_{1}=\dot{q}_{d}-\dot{q}+k_{1}e$
+\end_inset
+
+ and 
+\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\dot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $\ddot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ by formulation and 
+\begin_inset Formula $r_{2}=\ddot{q}_{d}-\ddot{q}+k_{1}\dot{e}+k_{2}r_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{1},\dot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\ddot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n}\right)$
+\end_inset
+
+, 
+\begin_inset Formula $\widetilde{u}\triangleq u_{d}-u$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \widetilde{u}\right\Vert \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+ (Bounding Lemma 2.4), then triangle inequality implies that 
+\begin_inset Formula $u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ because 
+\begin_inset Formula $\left\Vert u\right\Vert \le\overline{u}_{d}+\left\Vert \widetilde{u}\right\Vert $
+\end_inset
+
+ (Bounding Lemma 2.1 for 
+\begin_inset Formula $\overline{u}_{d}$
+\end_inset
+
+ bound).
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $q,\dot{q},q_{d},\dot{q}_{d},u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Since 
+\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{p}\right)$
+\end_inset
+
+ by formulation and 
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $\Phi\in\mathcal{C}^{0}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+ in fact), then by EVT, 
+\begin_inset Formula $\Phi\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Recall 
+\begin_inset Formula $\dot{u}=\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{p}\right)$
+\end_inset
+
+ by formulation and 
+\begin_inset Formula $e,r_{1},r_{2}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $\text{sgn}\left(r_{1}\left(t\right)\right)\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+ trivially and 
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\dot{u}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+FUNCTION APPROXIMATION
+\end_layout
+
+\begin_layout Subsubsection*
+DOMAIN OF APPROXIMATION
+\end_layout
+
+\begin_layout Standard
+Recall
+\begin_inset Formula 
+\[
+\kappa\triangleq\left[\begin{array}{ccccc}
+q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{5n}
+\]
+
+\end_inset
+
+By Bounding Lemma 2.4,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \kappa\right\Vert  & \le\left\Vert q\right\Vert +\left\Vert \dot{q}\right\Vert +\left\Vert q_{d}\right\Vert +\left\Vert \dot{q}_{d}\right\Vert +\left\Vert u\right\Vert \\
+ & \le\left\Vert q_{d}-e\right\Vert +\left\Vert \dot{q}_{d}-\dot{e}\right\Vert +\left\Vert q_{d}\right\Vert +\left\Vert \dot{q}_{d}\right\Vert +\left\Vert u\right\Vert \\
+ & \le\overline{q}_{d}+\left\Vert e\right\Vert +\overline{\dot{q}}_{d}+\left\Vert \dot{e}\right\Vert +\overline{q}_{d}+\overline{\dot{q}}_{d}+\overline{u}_{d}+\left\Vert \widetilde{u}\right\Vert \\
+ & \le2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert +\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert +\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left\Vert z\right\Vert +\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left(k_{1}+2\right)\left\Vert z\right\Vert +\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+Stability showed that 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is forward invariant.
+ Thus, 
+\begin_inset Formula $\left\Vert z\right\Vert \le\Delta$
+\end_inset
+
+.
+ Thus,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \kappa\right\Vert  & \le\overline{\kappa}\\
+\overline{\kappa} & \triangleq2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left(k_{1}+2\right)\Delta+\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)\Delta
+\end{align*}
+
+\end_inset
+
+Let the domain for function approximation be
+\begin_inset Formula 
+\[
+\Omega\triangleq\left\{ \zeta\in\mathbb{R}^{5n}:\left\Vert \zeta\right\Vert \le\overline{\kappa}\right\} .
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $\rho_{\widetilde{u}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\overline{u}_{d}$
+\end_inset
+
+ are assumed known a priori (and only depends on our user-defined 
+\begin_inset Formula $\Delta$
+\end_inset
+
+), we retroactively proclaim 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ to be our domain of approximation.
+\end_layout
+
+\begin_layout Subsubsection*
+WHAT CAN WE APPROXIMATE?
+\end_layout
+
+\begin_layout Standard
+Recall
+\begin_inset Formula 
+\[
+F\left(\kappa\right)\triangleq\left.\frac{\partial h}{\partial q_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial h}{\partial\dot{q}_{d}}\right|_{\left(q_{d},\dot{q}_{d}\right)}h\left(q_{d},\dot{q}_{d}\right)-\left.\frac{\partial f}{\partial q}\right|_{\left(q,\dot{q}\right)}\dot{q}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}f\left(q,\dot{q}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}u
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A deep residual neural network will approximate 
+\begin_inset Formula $F\left(\kappa\right)$
+\end_inset
+
+ in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ as 
+\begin_inset Formula $\Phi\left(\kappa,\widehat{\theta}\right)$
+\end_inset
+
+.
+ Here, 
+\begin_inset Formula $L_{\text{in}}=L_{\text{out}}=n$
+\end_inset
+
+.
+ The activation functions 
+\begin_inset Formula $\varsigma_{i,j}:\mathbb{R}\to\mathbb{R}$
+\end_inset
+
+ must be chosen to be of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Definition
+
+\emph on
+\begin_inset CommandInset label
+LatexCommand label
+name "def:activation-func"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Definition 3.1"
+key "Tabuada.Gharesifard2023"
+literal "false"
+
+\end_inset
+
+ The activation function 
+\begin_inset Formula $\varsigma:\mathbb{R}\to\mathbb{R}$
+\end_inset
+
+ is said to be of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ (denoted 
+\begin_inset Formula $\varsigma\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+) if it is (i) nondecreasing, (ii) non-constant, and (iii) there exists
+ an 
+\begin_inset Formula $\ell\in\mathbb{Z}_{\ge0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\varsigma$
+\end_inset
+
+ is a globally-defined solution to 
+\begin_inset Formula $\frac{d\zeta}{ds}=a_{0}+a_{1}\zeta+a_{2}\zeta^{2}$
+\end_inset
+
+, where 
+\begin_inset Formula $\zeta\triangleq\frac{d^{(\ell)}\varsigma}{ds^{(\ell)}}$
+\end_inset
+
+ is injective, 
+\begin_inset Formula $a_{0},a_{1},a_{2}\in\mathbb{R}$
+\end_inset
+
+, 
+\begin_inset Formula $a_{2}\ne0$
+\end_inset
+
+, and 
+\begin_inset Formula $\frac{d^{(0)}\varsigma}{ds^{(0)}}=\varsigma$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By consequence of Definition 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "def:activation-func"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, any 
+\begin_inset Formula $\varsigma\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ is necessarily an analytical function.
+ Thus, 
+\begin_inset Formula $\varsigma$
+\end_inset
+
+ and all its derivatives are locally Lipschitz on 
+\begin_inset Formula $\mathbb{R}$
+\end_inset
+
+.
+ Hyperbolic tangent, sigmoid, and softplus are of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ but ReLU, swish, and the identity mapping are not.
+ The function 
+\begin_inset Formula $\varsigma\left(s\right)=\frac{1}{c}\log\left(1+{\rm e}^{cs}\right)$
+\end_inset
+
+ approximates ReLU for large 
+\begin_inset Formula $c\in\mathbb{R}_{>0}$
+\end_inset
+
+ and is of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+.
+ Leaky ReLU is given as 
+\begin_inset Formula $\varsigma\left(s\right)=s$
+\end_inset
+
+ for all 
+\begin_inset Formula $s\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\varsigma\left(s\right)=rs$
+\end_inset
+
+ (with 
+\begin_inset Formula $r\in\mathbb{R}_{>0}$
+\end_inset
+
+) for all 
+\begin_inset Formula $s<0$
+\end_inset
+
+.
+ The function 
+\begin_inset Formula $\varsigma\left(s\right)=rs+\frac{1}{c}\log\left(1+{\rm e}^{\left(1-r\right)cs}\right)$
+\end_inset
+
+ approximates leaky ReLU for large 
+\begin_inset Formula $c\in\mathbb{R}_{>0}$
+\end_inset
+
+ and is of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The universal approximation theorem for ResNets is given as follows.
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:Universal-Approximation-Theorem"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+after "Corollary 5.2"
+key "Tabuada.Gharesifard2023"
+literal "false"
+
+\end_inset
+
+ (Universal Approximation Theorem for Residual Neural Networks).
+ For any compact domain 
+\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{L_{\text{in}}}$
+\end_inset
+
+, continuous function 
+\begin_inset Formula $F:\Omega\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+, and approximation accuracy 
+\begin_inset Formula $\overline{\varepsilon}\in\mathbb{R}_{>0}$
+\end_inset
+
+, there exists a number of blocks 
+\begin_inset Formula $b\in\mathbb{Z}_{>0}$
+\end_inset
+
+ (thus, a 
+\begin_inset Formula ${\tt p}\in\mathbb{Z}_{>0}$
+\end_inset
+
+) and a parameter vector 
+\begin_inset Formula $\theta^{\ast}\in\mathbb{R}^{{\tt p}}$
+\end_inset
+
+ such that for a ResNet architecture 
+\begin_inset Formula $\Psi:\mathbb{R}^{L_{\text{in}}}\times\mathbb{R}^{{\tt p}}\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+ with blocks of width 
+\begin_inset Formula $w=\max\left(L_{\text{in}},L_{\text{out}}\right)+1$
+\end_inset
+
+ (i.e., 
+\begin_inset Formula $L_{i,j}\ge w$
+\end_inset
+
+ for all 
+\begin_inset Formula $\left(i,j\right)\in\left\{ 0,\ldots,b\right\} \times\left\{ 1,\ldots,k_{i}\right\} $
+\end_inset
+
+) and depth 1 (i.e., 
+\begin_inset Formula $k_{i}\ge1$
+\end_inset
+
+ for all 
+\begin_inset Formula $i\in\left\{ 0,\ldots,b\right\} $
+\end_inset
+
+),
+\begin_inset Formula 
+\begin{equation}
+\sup_{x\in\Omega}\left\Vert \varepsilon\left(x\right)\right\Vert \le\overline{\varepsilon},\label{eq:lemma-ufat}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\varepsilon\left(x\right)\triangleq h\left(x\right)-\Psi\left(x,\theta^{\ast}\right)$
+\end_inset
+
+, provided that for all 
+\begin_inset Formula $\left(i,j\right)\in\left\{ 0,\ldots,b\right\} \times\left\{ 0,\ldots,k_{i}\right\} $
+\end_inset
+
+, the activation functions 
+\begin_inset Formula $\varsigma_{i,j}\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+
+\emph on
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By formulation, 
+\begin_inset Formula $F$
+\end_inset
+
+ is 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ on 
+\begin_inset Formula $\mathbb{R}^{n}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ in fact).
+ Thus, for any given compact set 
+\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{n}$
+\end_inset
+
+, Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Universal-Approximation-Theorem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ applies.
+ However, notice that the 
+\begin_inset Formula $\theta^{\ast}$
+\end_inset
+
+ resulting from a desired approximation set and desired approximation accuracy
+ lies in 
+\begin_inset Formula $\mathbb{R}^{{\tt p}}$
+\end_inset
+
+.
+ Surely, for any fixed 
+\begin_inset Formula $F$
+\end_inset
+
+, if there exists a 
+\begin_inset Formula $\theta^{\ast}$
+\end_inset
+
+ such that 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:lemma-ufat"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ holds, there exists a 
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert \theta^{\ast}\right\Vert \le\overline{\theta}$
+\end_inset
+
+.
+ However, there is no means of determining this 
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+.
+ Knowing it fundamentally conflicts with the underlying challenge of nonlinear
+ regression anyways! Conversely, in practice, 
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+ is specified a priori.
+ This results in a dilemma.
+ The user is force to pick two of the following three: (1) 
+\begin_inset Formula $F$
+\end_inset
+
+ can be any 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ function, (2) 
+\begin_inset Formula $F$
+\end_inset
+
+ can be approximated arbitrarily well (
+\begin_inset Formula $\overline{\varepsilon}\to0$
+\end_inset
+
+), (3) a known bound exists on the weights needed to achieve the desired
+ accuracy for the target function.
+ Recall that 
+\begin_inset Formula $\rho$
+\end_inset
+
+ must be known to verify the earlier gain conditions since it contains 
+\begin_inset Formula $\overline{\varepsilon}$
+\end_inset
+
+.
+ Thus, (2) is required.
+ Practical use of the developed controller dictates (3) be required.
+ Thus, 
+\begin_inset Formula $F$
+\end_inset
+
+ may not be ANY continuous function.
+ We are forced to the following assumption to resolve the dilemma.
+ Fix a 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ (i.e.,a number of blocks, width per block, and depth).
+ 
+\end_layout
+
+\begin_layout Standard
+ASSUMPTION.
+ The function 
+\begin_inset Formula $F$
+\end_inset
+
+ belongs to a strict subset of all continuous functions: those that can
+ be approximated arbitrarily well with bounded weights by the chosen ResNet
+ structure—the closure of all ResNets (under the uniform norm) of with inputs
+ in 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ and weights in 
+\begin_inset Formula $\mho\triangleq\overline{B}_{\overline{\theta}}\left(0_{p}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In practice, one needs to iterate with both 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ and 
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+ offline on similar systems to the desired application to ensure the above
+ assumption is met, albeit heuristically.
+ In this way, 
 \end_layout
 
 \end_body

@@ -419,9 +419,7 @@ reference "eq:DNN"
 \begin_inset Formula $p_{i}\triangleq\sum_{j=0}^{k_{i}}L_{i,j}^{a}L_{i,j+1}$
 \end_inset
 
-, 
-\color red
-and 
+, and 
 \begin_inset Formula $\text{vec}\left(V_{i,j}\right)$
 \end_inset
 
@@ -430,9 +428,7 @@ and
 \end_inset
 
  performed in column-major order (i.e., the columns are stacked sequentially
- to form a vector)
-\color inherit
-.
+ to form a vector).
  
 \color blue
 For all 
@@ -3607,7 +3603,7 @@ Then
 
 
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Section
 Cristian OLD PapeR
