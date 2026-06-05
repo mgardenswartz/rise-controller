@@ -940,7 +940,12 @@ Second:
 \uwave off
 \noun off
 \color none
-NN Approximation (where 
+Assume: 
+\begin_inset Formula $\Phi\in\mathcal{C}^{2}$
+\end_inset
+
+.
+ NN Approximation (where 
 \begin_inset Formula $F$
 \end_inset
 
