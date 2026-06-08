@@ -2146,22 +2146,12 @@ P\left(t_{0}\right) & =\zeta\left(t_{0}\right)\\
 
 \end_inset
 
-Define
-\begin_inset Formula 
-\[
-P_{0}\triangleq K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)D\left(\kappa_{d}\left(t_{0}\right),\theta^{\ast},\hat{\theta}\left(t_{0}\right),t_{0}\right)
-\]
-
-\end_inset
-
 NOTE:
 \begin_inset Formula 
 \begin{align*}
 \left|P\left(t_{0}\right)\right| & \le K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}+\left\Vert r_{1}\left(t_{0}\right)\right\Vert \overline{D}\\
  & \le\sqrt{n}K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert +\left\Vert r_{1}\left(t_{0}\right)\right\Vert \overline{D}\\
- & \le\left(\underbrace{\sqrt{n}K_{\text{RISE}}+\overline{D}}_{C_{P}}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert \\
- & \le C_{P}\left\Vert r_{1}\left(t_{0}\right)\right\Vert \\
- & \le C_{P}\left\Vert z\left(t_{0}\right)\right\Vert 
+ & \le\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert 
 \end{align*}
 
 \end_inset
@@ -2374,7 +2364,7 @@ Trajectory derivative
 Using Bounding Lemma 3.4 and triangle inequality,
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z_{P}\right) & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+\dot{V}\left(z\right) & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
  & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +\left\Vert r_{2}\right\Vert \right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
 \\
  & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}\\
@@ -2417,7 +2407,7 @@ Pick
 ,
 \begin_inset Formula 
 \[
-\dot{V}\left(z_{P}\right)\underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}-\lambda_{P}P
+\dot{V}\left(z\right)\underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}-\lambda_{P}P
 \]
 
 \end_inset
@@ -2442,8 +2432,8 @@ Compare
 Thus,
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z_{P}\right) & \underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
- & \underset{\text{a.e.}}{\le}-\min\left\{ \lambda_{V},\lambda_{P}\right\} \left(\underbrace{\frac{1}{2}\left\Vert z\right\Vert ^{2}+P}_{V\left(z_{P}\right)}\right)
+\dot{V}\left(z\right) & \underset{\text{a.e.}}{\le}-\frac{\lambda_{V}}{2}\left\Vert z\right\Vert ^{2}-\lambda_{P}P\\
+ & \underset{\text{a.e.}}{\le}-\min\left\{ \lambda_{V},\lambda_{P}\right\} \left(\frac{1}{2}\left\Vert z\right\Vert ^{2}+P\right)
 \end{align*}
 
 \end_inset
@@ -2459,9 +2449,61 @@ Let
 Thus,
 \begin_inset Formula 
 \[
-\dot{V}\left(z_{P}\right)\underset{\text{a.e.}}{\le}-2\lambda\left(V\left(z_{P}\right)\right)
+\dot{V}\left(z\right)\underset{\text{a.e.}}{\le}-2\lambda\left(V\left(z\right)\right)
 \]
 
+\end_inset
+
+Let 
+\begin_inset Formula $z_{0}\triangleq z\left(t_{0}\right)$
+\end_inset
+
+.
+ Solve the above.
+ (Really just invoke Comparison Lemma or Gronwall inequality)
+\begin_inset Formula 
+\begin{align*}
+s\mathcal{L}\left\{ V\left(z\right)\right\} -V\left(z\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-2\lambda\mathcal{L}\left\{ V\left(z\right)\right\} \\
+\left(s+2\lambda\right)\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}V\left(z\left(t_{0}\right)\right)\\
+\mathcal{L}\left\{ V\left(z\right)\right\}  & \underset{\text{a.e.}}{\le}\frac{V\left(z\left(t_{0}\right)\right)}{s+2\lambda}\\
+\mathcal{L}^{-1}\left\{ \mathcal{L}\left\{ V\left(z\right)\right\} \right\}  & \underset{\text{a.e.}}{\le}\mathcal{L}^{-1}\left\{ \frac{V\left(z\left(t_{0}\right)\right)}{s+2\lambda}\right\} \\
+V\left(z\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{0}\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}
+\end{align*}
+
+\end_inset
+
+Since
+\begin_inset Formula 
+\begin{align*}
+V\left(z\left(t_{0}\right)\right) & =\frac{1}{2}z_{0}^{\top}z_{0}+P\left(t_{0}\right)\\
+V\left(z\left(t\right)\right) & =\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right)
+\end{align*}
+
+\end_inset
+
+and (recall)
+\begin_inset Formula 
+\[
+\left|P\left(t_{0}\right)\right|\le\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert 
+\]
+
+\end_inset
+
+then,
+\begin_inset Formula 
+\begin{align*}
+\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right) & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}z_{0}^{\top}z_{0}+P\left(t_{0}\right)\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z_{0}\right\Vert ^{2}+\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert r_{1}\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z_{0}\right\Vert ^{2}+\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
+\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\sqrt{\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}}\\
+\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\underbrace{\underbrace{\sqrt{\left(\left\Vert z_{0}\right\Vert ^{2}+2\left(\sqrt{n}K_{\text{RISE}}+\overline{D}\right)\left\Vert z_{0}\right\Vert \right)}}_{\alpha\in\mathcal{K}_{\infty}}{\rm e}^{-\lambda\left(t-t_{0}\right)}}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Newline newline
 \end_inset
 
 
@@ -2480,27 +2522,19 @@ Let
 \begin_inset Formula $\Delta$
 \end_inset
 
- be the size of desired initial conditions (
-\begin_inset Formula $\left\Vert z\left(t_{0}\right)\right\Vert \le\Delta$
+ be the size of desired initial conditions (radius of 
+\begin_inset Formula $\mathcal{S}$
 \end_inset
 
 ).
- Let
-\begin_inset Formula 
-\[
-C_{\Delta}\triangleq\sqrt{\Delta^{2}+2C_{P}\Delta}
-\]
-
-\end_inset
-
-The sufficient gain conditions are
+ The sufficient gain conditions are:
 \begin_inset Formula 
 \begin{align*}
 \lambda_{V} & \ge2\lambda\\
 \lambda_{P} & \ge2\lambda\\
 k_{1} & >1+\frac{\lambda_{V}}{2}\\
 k_{2} & >\max\left\{ 1+\frac{\lambda_{V}}{2},\lambda_{P}\right\} \\
-k_{3} & >\rho\left(k_{1},k_{2},C_{\Delta}\right)+\frac{\lambda_{V}}{2}\\
+k_{3} & >\rho\left(k_{1},k_{2},\Delta\right)+\frac{\lambda_{V}}{2}\\
 K_{\text{RISE}} & \ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}
 \end{align*}
 
@@ -2517,199 +2551,6 @@ bad
  the disturbances and weight initialization are will affect the y-intercept
  of the convergence envelope, where as the gains themselves drive the time
  constant of that convergence envelope.
- Recall
-\begin_inset Formula 
-\[
-V\left(z_{P}\right)=\frac{1}{2}z^{\top}z+P
-\]
-
-\end_inset
-
-Since 
-\begin_inset Formula $P\ge0$
-\end_inset
-
-,
-\begin_inset Formula 
-\[
-\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2}\le V\left(z_{P}\left(t\right)\right)
-\]
-
-\end_inset
-
-Begin with the premise that
-\begin_inset Formula 
-\[
-\left\Vert z\left(t_{0}\right)\right\Vert \le\Delta
-\]
-
-\end_inset
-
-Since 
-\begin_inset Formula $\left|P\left(t_{0}\right)\right|\le C_{P}\left\Vert z\left(t_{0}\right)\right\Vert $
-\end_inset
-
-,
-\begin_inset Formula 
-\begin{align*}
-V\left(z_{P}\left(t_{0}\right)\right) & \le\frac{1}{2}\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \\
- & \le\frac{1}{2}\Delta^{2}+C_{P}\Delta
-\end{align*}
-
-\end_inset
-
-Define the sublevel set
-\begin_inset Formula 
-\[
-\Omega_{\mathcal{S}}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:V\left(z_{P}\left(t\right)\right)\le\frac{1}{2}\Delta^{2}+C_{P}\Delta\right\} 
-\]
-
-\end_inset
-
-Thus 
-\begin_inset Formula $\left\Vert z\left(t_{0}\right)\right\Vert \le\Delta$
-\end_inset
-
- implies that 
-\begin_inset Formula $z_{P}\left(t_{0}\right)\in\Omega_{\mathcal{S}}$
-\end_inset
-
-.
- Pick some 
-\begin_inset Formula $z_{P}\left(t\right)\in\Omega_{\mathcal{S}}$
-\end_inset
-
-.
- Since 
-\begin_inset Formula $\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2}\le V\left(z_{P}\left(t\right)\right)$
-\end_inset
-
-, it follows that for this 
-\begin_inset Formula $z_{P}\left(t\right)$
-\end_inset
-
- that
-\begin_inset Formula 
-\begin{align*}
-\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \le\frac{1}{2}\Delta^{2}+C_{P}\Delta\\
-\left\Vert z\left(t\right)\right\Vert ^{2} & \le\Delta^{2}+2C_{P}\Delta\\
-\left\Vert z\left(t\right)\right\Vert  & \le\underbrace{\sqrt{\Delta^{2}+2C_{P}\Delta}}_{C_{\Delta}}
-\end{align*}
-
-\end_inset
-
-Consider the set of initial states
-\begin_inset Formula 
-\[
-\mathcal{S}_{P}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:\left\Vert z\right\Vert \le C_{\Delta}\right\} 
-\]
-
-\end_inset
-
-Recall that 
-\begin_inset Formula $P$
-\end_inset
-
- is not independent of 
-\begin_inset Formula $z$
-\end_inset
-
-, hence why 
-\begin_inset Formula $P$
-\end_inset
-
- is not specified independently above.
- Thus 
-\begin_inset Formula $z_{P}\in\Omega_{\mathcal{S}}\implies z_{P}\in\mathcal{S}_{P}$
-\end_inset
-
- and it follows that
-\begin_inset Formula 
-\[
-\Omega_{\mathcal{S}}\subseteq\mathcal{S}_{P}
-\]
-
-\end_inset
-
-Since 
-\begin_inset Formula $z_{P}\left(t_{0}\right)\in\Omega_{\mathcal{S}}$
-\end_inset
-
- and 
-\begin_inset Formula $\Omega_{\mathcal{S}}\subseteq\mathcal{S}_{P}$
-\end_inset
-
-, our gain conditions guarantee that for all 
-\begin_inset Formula $z_{P}\in\mathcal{S}_{P}$
-\end_inset
-
-, 
-\begin_inset Formula 
-\[
-\dot{V}\left(z_{P}\left(t\right)\right)\underset{\text{a.e.}}{\le}-2\lambda\left(V\left(z_{P}\left(t\right)\right)\right)
-\]
-
-\end_inset
-
-It was shown that the above implies
-\begin_inset Formula 
-\begin{align*}
-V\left(z_{P}\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{P}\left(t_{0}\right)\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
- & \underset{\text{a.e.}}{\le}V\left(z_{P}\left(t_{0}\right)\right)\\
- & \underset{\text{a.e.}}{\le}\frac{1}{2}\Delta^{2}+C_{P}\Delta
-\end{align*}
-
-\end_inset
-
-Thus, 
-\begin_inset Formula $\Omega_{\mathcal{S}}$
-\end_inset
-
- is forward invariant.
- Solving the differential inequality...(Really just invoke Comparison Lemma
- or Gronwall inequality)
-\begin_inset Formula 
-\begin{align*}
-s\mathcal{L}\left\{ V\left(z_{P}\left(t\right)\right)\right\} -V\left(z_{P}\left(t_{0}\right)\right) & \underset{\text{a.e.}}{\le}-2\lambda\mathcal{L}\left\{ V\left(z\left(t\right)\right)\right\} \\
-\left(s+2\lambda\right)\mathcal{L}\left\{ V\left(z_{P}\left(t\right)\right)\right\}  & \underset{\text{a.e.}}{\le}V\left(z_{P}\left(t_{0}\right)\right)\\
-\mathcal{L}\left\{ V\left(z_{P}\left(t\right)\right)\right\}  & \underset{\text{a.e.}}{\le}\frac{V\left(z_{P}\left(t_{0}\right)\right)}{s+2\lambda}\\
-\mathcal{L}^{-1}\left\{ \mathcal{L}\left\{ V\left(z_{P}\left(t\right)\right)\right\} \right\}  & \underset{\text{a.e.}}{\le}\mathcal{L}^{-1}\left\{ \frac{V\left(z_{P}\left(t_{0}\right)\right)}{s+2\lambda}\right\} \\
-V\left(z_{P}\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{P}\left(t_{0}\right)\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}
-\end{align*}
-
-\end_inset
-
-Since
-\begin_inset Formula 
-\begin{align*}
-V\left(z_{P}\left(t_{0}\right)\right) & =\frac{1}{2}z^{\top}\left(t_{0}\right)z\left(t_{0}\right)+P\left(t_{0}\right)\\
-V\left(z_{P}\left(t\right)\right) & =\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right)
-\end{align*}
-
-\end_inset
-
-and
-\begin_inset Formula 
-\begin{align*}
-\left|P\left(t_{0}\right)\right|\le & C_{P}\left\Vert z\left(t_{0}\right)\right\Vert 
-\end{align*}
-
-\end_inset
-
-then, it follows that
-\begin_inset Formula 
-\begin{align*}
-\frac{1}{2}z^{\top}\left(t\right)z\left(t\right)+P\left(t\right) & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}z^{\top}\left(t_{0}\right)z\left(t_{0}\right)+P\left(t_{0}\right)\right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
-\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
-\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\frac{1}{2}\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
-\left\Vert z\left(t\right)\right\Vert ^{2} & \underset{\text{a.e.}}{\le}\left(\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+2C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}\\
-\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\sqrt{\left(\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+2C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-2\lambda\left(t-t_{0}\right)}}\\
-\left\Vert z\left(t\right)\right\Vert  & \underset{\text{a.e.}}{\le}\underbrace{\underbrace{\sqrt{\left(\left\Vert z\left(t_{0}\right)\right\Vert ^{2}+2C_{P}\left\Vert z\left(t_{0}\right)\right\Vert \right)}}_{\alpha\in\mathcal{K}_{\infty}}{\rm e}^{-\lambda\left(t-t_{0}\right)}}_{\beta\in\mathcal{KL}_{\infty}}
-\end{align*}
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -2899,6 +2740,81 @@ Recall
 
 \begin_layout Section
 FUNCTION APPROXIMATION
+\end_layout
+
+\begin_layout Subsubsection*
+FORWARD INVARIANCE
+\end_layout
+
+\begin_layout Standard
+Recall
+\begin_inset Formula 
+\[
+V\left(z_{P}\right)=\frac{1}{2}z^{\top}z+P
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $P\ge0$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+\frac{1}{2}\left\Vert z\right\Vert ^{2}\le V\left(z_{P}\right)
+\]
+
+\end_inset
+
+Consider the set
+\begin_inset Formula 
+\[
+\mathcal{S}_{P}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:\left\Vert z\right\Vert \le\Delta\right\} 
+\]
+
+\end_inset
+
+By the presented gain conditions, 
+\begin_inset Formula 
+\[
+\]
+
+\end_inset
+
+Since
+\begin_inset Formula 
+\[
+\dot{V}\left(z\right)\underset{\text{a.e.}}{\le}-2\lambda\left(V\left(z\right)\right)
+\]
+
+\end_inset
+
+the sublevel set
+\begin_inset Formula 
+\[
+\Omega_{V}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:V\left(z\right)\right\} 
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\color red
+Stability showed that 
+\begin_inset Formula $\mathcal{S}$
+\end_inset
+
+ is forward invariant.
+ Thus, 
+\begin_inset Formula $\left\Vert z\right\Vert \le\Delta$
+\end_inset
+
+.
+ 
 \end_layout
 
 \begin_layout Subsubsection*
