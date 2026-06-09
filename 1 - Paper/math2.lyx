@@ -114,7 +114,7 @@ Lemmas
 Notation/Lemmas
 \end_layout
 
-\begin_layout Definition
+\begin_layout Subsubsection*
 
 \shape italic
 DEFINITION (Class 
@@ -147,9 +147,10 @@ literal "false"
 
 \shape italic
 .
+\end_layout
 
-\shape default
- For 
+\begin_layout Standard
+For 
 \begin_inset Formula $a_{2}\in\overline{\mathbb{R}}_{>0}$
 \end_inset
 
@@ -306,7 +307,7 @@ Many of the functions in this work are similar to those of class
  The following convention is introduced to avoid subsequent repetition.
 \end_layout
 
-\begin_layout Definition
+\begin_layout Subsubsection*
 
 \shape italic
 DEFINITION (Class 
@@ -316,7 +317,11 @@ DEFINITION (Class
  functions).
 
 \shape default
- Let 
+ 
+\end_layout
+
+\begin_layout Standard
+Let 
 \begin_inset Formula $a_{3}\in\overline{\mathbb{R}}_{>0}$
 \end_inset
 
@@ -360,7 +365,7 @@ DEFINITION (Class
 
 \end_layout
 
-\begin_layout Lemma
+\begin_layout Subsubsection*
 LEMMA 
 \begin_inset CommandInset label
 LatexCommand label
@@ -368,6 +373,10 @@ name "lem:non-decreasing-bound"
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Standard
 Let 
 \begin_inset Formula $D\subseteq\mathbb{R}^{n}$
 \end_inset
@@ -459,7 +468,7 @@ If
 
 \end_layout
 
-\begin_layout Lemma
+\begin_layout Subsubsection*
 LEMMA 
 \begin_inset CommandInset label
 LatexCommand label
@@ -467,7 +476,11 @@ name "lem:non-decreasing-continuous-bound"
 
 \end_inset
 
- For the map 
+
+\end_layout
+
+\begin_layout Lemma
+For the map 
 \begin_inset Formula $f_{6}$
 \end_inset
 
@@ -538,8 +551,12 @@ noprefix "false"
 
 \end_layout
 
-\begin_layout Remark
-REMARK If 
+\begin_layout Subsubsection*
+REMARK
+\end_layout
+
+\begin_layout Standard
+If 
 \begin_inset Formula $f_{6}$
 \end_inset
 
@@ -587,7 +604,7 @@ noprefix "false"
 
 \end_layout
 
-\begin_layout Lemma
+\begin_layout Subsubsection*
 LEMMA 
 \begin_inset CommandInset label
 LatexCommand label
@@ -595,7 +612,11 @@ name "lem:strictly-increasing"
 
 \end_inset
 
- Let 
+
+\end_layout
+
+\begin_layout Standard
+Let 
 \begin_inset Formula $a_{8}\in\overline{\mathbb{R}}_{>0}$
 \end_inset
 
@@ -642,7 +663,7 @@ name "lem:strictly-increasing"
 \end_layout
 
 \begin_layout Section
-Setup
+PROBLEM STATEMENT
 \end_layout
 
 \begin_layout Standard
@@ -809,11 +830,11 @@ Goal
 \end_layout
 
 \begin_layout Standard
-Find 
+Find a continuous 
 \begin_inset Formula $u$
 \end_inset
 
- such that
+ such that 
 \begin_inset Formula 
 \begin{align*}
 z & \to0
@@ -821,7 +842,7 @@ z & \to0
 
 \end_inset
 
-
+exponentially.
 \end_layout
 
 \begin_layout Section
@@ -1193,9 +1214,12 @@ K_{D} & \triangleq k_{1}+k_{2}+k_{3}
 Bounding Lemmas
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsubsection*
 ASSUMPTION.
- Wherever a bound function is introduce below, it is assumed that this function
+\end_layout
+
+\begin_layout Standard
+Wherever a bound function is introduce below, it is assumed that this function
  (or a more conservative bound) is 
 \bar under
 known
@@ -2710,6 +2734,18 @@ then, it follows that
 \end_inset
 
 
+\color blue
+Thus the differential inclusion is uniformly semi-globally asymptotically
+ stable (USGAS) in the strong sense.
+ States converge exponentially but since 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ is not linear in 
+\begin_inset Formula $\left\Vert z\left(t_{0}\right)\right\Vert $
+\end_inset
+
+, the system is not USGES! 
 \end_layout
 
 \begin_layout Section
@@ -2929,11 +2965,19 @@ By Bounding Lemma 2.4,
 
 \end_inset
 
-Thus,
+Since stability showed that 
+\begin_inset Formula $\left\Vert z\right\Vert \le C_{\Delta}$
+\end_inset
+
+ (not 
+\begin_inset Formula $\Delta$
+\end_inset
+
+!), thus,
 \begin_inset Formula 
 \begin{align*}
 \left\Vert \kappa\right\Vert  & \le\overline{\kappa}\\
-\overline{\kappa} & \triangleq2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left(k_{1}+2\right)\Delta+\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)\Delta
+\overline{\kappa} & \triangleq2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\left(k_{1}+2\right)C_{\Delta}+\overline{u}_{d}+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)C_{\Delta}
 \end{align*}
 
 \end_inset
@@ -2993,9 +3037,9 @@ Recall
 Thus, the three candidate radii for our approximation set are:
 \begin_inset Formula 
 \begin{align*}
-R_{\Omega}^{\text{Candidate}} & \triangleq\overline{\kappa}_{d}+\left(k_{1}+2\right)\Delta+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)\Delta\\
+R_{\Omega}^{\text{Candidate}} & \triangleq\overline{\kappa}_{d}+\left(k_{1}+2\right)C_{\Delta}+\rho_{\widetilde{u}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}\\
 \overline{\kappa}_{d} & \triangleq2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\overline{u}_{d}\\
-\overline{\kappa} & \triangleq\underbrace{2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\overline{u}_{d}}_{\overline{\kappa}_{d}}+\left(k_{1}+2\right)\Delta+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)\Delta
+\overline{\kappa} & \triangleq\underbrace{2\overline{q}_{d}+2\overline{\dot{q}}_{d}+\overline{u}_{d}}_{\overline{\kappa}_{d}}+\left(k_{1}+2\right)C_{\Delta}+\rho_{\widetilde{u}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}
 \end{align*}
 
 \end_inset
@@ -3007,8 +3051,8 @@ in all three cases
 , let the domain for function approximation be
 \begin_inset Formula 
 \begin{align*}
-\Omega & \triangleq\left\{ \zeta\in\mathbb{R}^{5n}:\left\Vert \zeta\right\Vert \le R_{\Omega}\right\} .\\
-R_{\Omega} & \triangleq\overline{\kappa}_{d}+\left(k_{1}+2\right)\Delta+\rho_{\widetilde{u}}\left(k_{1},k_{2},\Delta\right)\Delta
+\Omega & \triangleq\left\{ \zeta\in\mathbb{R}^{5n}:\left\Vert \zeta\right\Vert \le\overline{\kappa}\right\} .\\
+\overline{\kappa} & \triangleq\overline{\kappa}_{d}+\left(k_{1}+2\right)C_{\Delta}+\rho_{\widetilde{u}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}
 \end{align*}
 
 \end_inset
@@ -3079,7 +3123,7 @@ A deep residual neural network will approximate
 .
 \end_layout
 
-\begin_layout Definition
+\begin_layout Subsection*
 
 \emph on
 DEFINITION 
@@ -3098,7 +3142,13 @@ literal "false"
 
 \end_inset
 
- The activation function 
+
+\end_layout
+
+\begin_layout Definition
+
+\emph on
+The activation function 
 \begin_inset Formula $\varsigma:\mathbb{R}\to\mathbb{R}$
 \end_inset
 
@@ -3232,7 +3282,7 @@ noprefix "false"
 The universal approximation theorem for ResNets is given as follows.
 \end_layout
 
-\begin_layout Lemma
+\begin_layout Subsubsection*
 LEMMA 
 \begin_inset CommandInset label
 LatexCommand label
@@ -3249,7 +3299,11 @@ literal "false"
 
 \end_inset
 
- (Universal Approximation Theorem for Residual Neural Networks).
+
+\end_layout
+
+\begin_layout Standard
+(Universal Approximation Theorem for Residual Neural Networks).
  For any compact domain 
 \begin_inset Formula $\Omega\subsetneq\mathbb{R}^{L_{\text{in}}}$
 \end_inset
@@ -3481,11 +3535,12 @@ noprefix "false"
 .
 \end_layout
 
-\begin_layout Standard
-
-\color green
+\begin_layout Subsubsection*
 ASSUMPTION.
- The function 
+\end_layout
+
+\begin_layout Standard
+The function 
 \begin_inset Formula $F$
 \end_inset
 
@@ -3521,11 +3576,12 @@ In practice, one needs to iterate with both
  assumption.
 \end_layout
 
-\begin_layout Standard
-
-\color green
+\begin_layout Subsubsection*
 ASSUMPTION.
- The weight update law 
+\end_layout
+
+\begin_layout Standard
+The weight update law 
 \begin_inset Formula $\dot{\widehat{\theta}}$
 \end_inset
 
@@ -4092,6 +4148,306 @@ This update law does not follow from the stability analysis above and that's
  fine.
  It's not meant to.
  We will show it works heuristically.
+\end_layout
+
+\begin_layout Section
+Experiment
+\end_layout
+
+\begin_layout Standard
+Baseline controller is
+\begin_inset Formula 
+\[
+u\left(t\right)=\Phi\left(x\left(t_{k+1}\right),\widehat{\theta}\left(t\right)\right)+K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)\right)d\tau
+\]
+
+\end_inset
+
+Developed controller is
+\begin_inset Formula 
+\[
+u\left(t\right)=K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align*}
+K_{P} & \triangleq k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\\
+K_{I} & \triangleq k_{1}k_{2}k_{3}+k_{1}\\
+K_{D} & \triangleq k_{1}+k_{2}+k_{3}\\
+\kappa & \triangleq\left[\begin{array}{ccccc}
+q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{5n}\\
+x & \triangleq\left[\begin{array}{cccc}
+q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{4n}\\
+e & \triangleq q_{d}-q\\
+r_{1} & \triangleq\dot{e}+k_{1}e\\
+n & =3
+\end{align*}
+
+\end_inset
+
+NOTE: the input to the ResNet in each controller is different! Both use
+ the update law
+\begin_inset Formula 
+\begin{align*}
+\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|^{\top}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)\\
+\mho & \triangleq\overline{B}_{\overline{\theta}}\left(0_{p}\right)
+\end{align*}
+
+\end_inset
+
+The desired trajectory will be generated by the time invariant (CRITICAL
+ to be time invariant!)
+\begin_inset Formula 
+\[
+\ddot{q}_{d}=h\left(q_{d},\dot{q}_{d}\right)
+\]
+
+\end_inset
+
+These experiments will be acceleration-level controllers for a quadcopter.
+ Linear accelerations only.
+ We can measure: 
+\begin_inset Formula $q$
+\end_inset
+
+ is my position, 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+ is the target's position.
+ 
+\begin_inset Formula $\dot{q}$
+\end_inset
+
+ is my velocity, 
+\begin_inset Formula $\dot{q}_{d}$
+\end_inset
+
+ is the target's velocity.
+ We cannot measure 
+\begin_inset Formula $\ddot{q}$
+\end_inset
+
+ or 
+\begin_inset Formula $\ddot{q}_{d}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection*
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+CONSIDERATIONS
+\end_layout
+
+\begin_layout Itemize
+State initial conditions
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Do we randomize.
+ Fix then? Test a fixed number per sim?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Do we design a heading controller too or do we just ignore it and not care?
+\end_layout
+
+\begin_layout Itemize
+Desired trajectory (must be second-order autonomous system)
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Do we test multiple? Just one?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Disturbances
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+What kind? Do we vary them? Do we combine with and without?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Initial neural network weights.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Normal? Xavier/He?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Noise in velocity estimate
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ignore in sim.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Normalize for the number of neurons
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+How many blocks? How many layers in the first block (
+\begin_inset Formula $k_{0}$
+\end_inset
+
+)? How many layers in the subsequent blocks (
+\begin_inset Formula $k_{i}$
+\end_inset
+
+)? How much width?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Activations functions
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Use swish for shortcut activation functions and hidden layers.
+ Use tanh for outer layers.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+How do we tune?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Tune without any ResNet first.
+ Fix the resulting 
+\begin_inset Formula $k_{1}\in\mathbb{R}_{>0}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{2}\in\mathbb{R}_{>0}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{3}\in\mathbb{R}_{>0}$
+\end_inset
+
+ (not 
+\begin_inset Formula $K_{P}$
+\end_inset
+
+, 
+\begin_inset Formula $K_{I}$
+\end_inset
+
+ and 
+\begin_inset Formula $K_{D}$
+\end_inset
+
+ directly!) and 
+\begin_inset Formula $K_{\text{RISE}}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Then, tune 
+\begin_inset Formula $\Gamma=\gamma I_{p}$
+\end_inset
+
+ (
+\begin_inset Formula $\gamma\in\mathbb{R}_{>0}$
+\end_inset
+
+), 
+\begin_inset Formula $\sigma_{\text{mod}}\in\mathbb{R}_{>0}$
+\end_inset
+
+, and 
+\begin_inset Formula $\overline{\theta}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+How do we choose a cost function for each stage of tuning? How do we not
+ fall into pitfalls there?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $J=\left\Vert e\right\Vert ^{2}+0.01\left\Vert u\right\Vert ^{2}$
+\end_inset
+
+? Something else? Why?
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+How many sims do we run for statistic significance?
+\end_layout
+
+\begin_layout Itemize
+How do we search for the best controller?
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Halton sequences? Optuna? Manual gridding?
+\end_layout
+
+\begin_layout Itemize
+How do we determine explainability of gains? For instance 
+\begin_inset Quotes eld
+\end_inset
+
+Learning rates above blah are always bad.
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset Quotes eld
+\end_inset
+
+If you select gains according to the tuning without NN, the NN cannot contribute
+ anything.
+ You have to un-tune a little so the NN can actually contribute.
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+If finding the best controller fails, what can we do? Can we find another
+ place it does better? Maybe we could do an inverse optimization?
+\end_layout
+
+\begin_layout Itemize
+How long should I run each sim?
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
