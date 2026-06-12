@@ -109,6 +109,1603 @@ IEEEPARstart{N}{eural}
 Preliminaries
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Section
+Cristian OLD PapeR
+\end_layout
+
+\begin_layout Section
+Problem Formulation
+\end_layout
+
+\begin_layout Plain Layout
+Consider the first-order nonlinear dynamical system described by the differentia
+l equation
+\begin_inset Formula 
+\begin{equation}
+\dot{q}=u,\label{eq:Agent Dynamics-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $q:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ represents the generalized position, 
+\begin_inset Formula $\dot{q}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ represents the generalized velocity and 
+\begin_inset Formula $u:\mathbb{R}_{\geq0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the control input, where 
+\begin_inset Formula $t_{0}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ is the initial time.
+ The target trajectory is governed by the autonomous first-order system
+\begin_inset Formula 
+\begin{equation}
+\dot{q}_{d}=f_{d}\left(q_{d}\right),\label{eq:Target Dynamics-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $q_{d}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the generalized target position, 
+\begin_inset Formula $\dot{q}_{d}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the generalized target velocity, and 
+\begin_inset Formula $f_{d}:\mathbb{R}^{n}\to\mathbb{R}^{n}$
+\end_inset
+
+ represents the unknown target dynamics.
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:target-bounds-1"
+
+\end_inset
+
+There exist known constants 
+\begin_inset Formula $\overline{q}_{d},\overline{\dot{q}}_{d}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge t_{0}}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert q_{d}\left(t\right)\right\Vert \le\overline{q}_{d},\left\Vert \dot{q}_{d}\left(t\right)\right\Vert \le\overline{\dot{q}}_{d}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:target-dynamics-1"
+
+\end_inset
+
+The function 
+\begin_inset Formula $f_{d}$
+\end_inset
+
+ is of class 
+\color red
+
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+
+\color inherit
+ on 
+\begin_inset Formula $\mathbb{R}^{n}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+The control objectiv
+\color black
+e is to design a ResNet-based adaptive controller such that the trajectory
+ of 
+\color inherit
+
+\begin_inset Formula $q$
+\end_inset
+
+ tracks 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+
+\color black
+ despite the presence of unknown dynamics and bounded disturbances.
+
+\color inherit
+ To facilitate the control objective, define the tracking error 
+\begin_inset Formula $e:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ as
+\begin_inset Formula 
+\begin{equation}
+e\triangleq q_{d}-q.\label{eq:Tracking Error-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Control 
+\color blue
+Synthesis
+\end_layout
+
+\begin_layout Plain Layout
+To facilitate the control design, the auxiliary tracking error function
+ 
+\begin_inset Formula $r:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+r\triangleq\dot{e}+k_{1}e,\label{eq: Filtered Tracking Error-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{1}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a constant control gain.
+ Differentiating 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error-1"
+
+\end_inset
+
+ with respect to time and substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error-1"
+
+\end_inset
+
+ and the time derivatives of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Agent Dynamics-1"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:Target Dynamics-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{r} & =\ddot{e}+k_{1}\dot{e}\\
+ & =\frac{{\rm d}}{{\rm d}t}\dot{q}_{d}\left(t\right)-\frac{{\rm d}}{{\rm d}t}\dot{q}+k_{1}\left(r-k_{1}e\right)\\
+ & =\frac{{\rm d}}{{\rm d}t}f_{d}\left(q_{d}\right)-\frac{{\rm d}}{{\rm d}t}\dot{q}+k_{1}\left(r-k_{1}e\right)\\
+ & =\frac{{\rm \partial}f_{d}}{\partial q_{d}}\frac{\partial q_{d}}{\partial t}-\frac{{\rm d}}{{\rm d}t}u+k_{1}r-k_{1}^{2}e\\
+ & =\frac{{\rm \partial}f_{d}}{\partial q_{d}}\frac{{\rm d}}{{\rm d}t}q_{d}-\dot{u}+k_{1}r-k_{1}^{2}e\\
+ & =\frac{{\rm \partial}f_{d}}{\partial q_{d}}\dot{q}_{d}-\dot{u}+k_{1}r-k_{1}^{2}e\\
+ & =\frac{\partial f_{d}}{\partial q_{d}}f\left(q_{d}\right)-\dot{u}+k_{1}r-k_{1}^{2}e\\
+ & =h\left(q_{d}\right)-\dot{u}+k_{1}r-k_{1}^{2}e
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{r} & =h\left(q_{d}\right)-\dot{u}+k_{1}r-k_{1}^{2}e,\end{aligned}
+\label{eq:rDot-1-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $h:\mathbb{R}^{n}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $h\left(q_{d}\right)\triangleq\left.\frac{\partial f}{\partial\zeta}\right|_{\zeta=q_{d}}f_{d}\left(q_{d}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Residual Neural Network Function Approximations
+\end_layout
+
+\begin_layout Plain Layout
+A deep residual neural network, constructed as described in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Deep-Residual-Neural"
+
+\end_inset
+
+, will approximate 
+\begin_inset Formula $h\left(q_{d}\right)$
+\end_inset
+
+ in 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-1-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ as 
+\begin_inset Formula $\Psi\left(q_{d},\widehat{\Theta}\right)$
+\end_inset
+
+, where the ResNet input vector is 
+\begin_inset Formula $q_{d}\in\mathbb{R}^{n}$
+\end_inset
+
+, 
+\begin_inset Formula $\Psi:\mathbb{R}^{n}\times\mathbb{R}^{p}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes the ResNet architecture mapping, and 
+\begin_inset Formula $\widehat{\Theta}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{{\tt p}}$
+\end_inset
+
+ denotes the subsequently-designed adaptive parameter estimate.
+ Here, 
+\begin_inset Formula $L_{\text{in}}=L_{\text{out}}=n$
+\end_inset
+
+.
+ The activation functions 
+\begin_inset Formula $\varsigma_{i,j}:\mathbb{R}\to\mathbb{R}$
+\end_inset
+
+ must be chosen to be of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+, defined as follows.
+\end_layout
+
+\begin_layout Definition
+
+\emph on
+\begin_inset CommandInset label
+LatexCommand label
+name "def:activation-func"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Definition 3.1"
+key "Tabuada.Gharesifard2023"
+literal "false"
+
+\end_inset
+
+ The activation function 
+\begin_inset Formula $\varsigma:\mathbb{R}\to\mathbb{R}$
+\end_inset
+
+ is said to be of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ (denoted 
+\begin_inset Formula $\varsigma\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+) if it is (i) non-decreasing (i.e., 
+\begin_inset Formula $\left.\frac{d\varsigma}{ds}\right|_{s}\ge0$
+\end_inset
+
+ for all 
+\begin_inset Formula $s\in\mathbb{R}$
+\end_inset
+
+) and (ii) non-constant and (iii) there exists an 
+\begin_inset Formula $\ell\in\mathbb{Z}_{\ge0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\varsigma$
+\end_inset
+
+ is a globally-defined solution to 
+\begin_inset Formula $\frac{d\zeta}{ds}=a_{0}+a_{1}\zeta+a_{2}\zeta^{2}$
+\end_inset
+
+, where 
+\begin_inset Formula $\zeta\triangleq\frac{d^{(\ell)}\varsigma}{ds^{(\ell)}}$
+\end_inset
+
+ is injective, 
+\begin_inset Formula $a_{0},a_{1},a_{2}\in\mathbb{R}$
+\end_inset
+
+, 
+\begin_inset Formula $a_{2}\ne0$
+\end_inset
+
+, and 
+\begin_inset Formula $\frac{d^{(0)}\varsigma}{ds^{(0)}}=\varsigma$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+By consequence of Definition 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "def:activation-func"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, any 
+\begin_inset Formula $\varsigma\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ is necessarily an analytical function.
+ Thus, 
+\begin_inset Formula $\varsigma$
+\end_inset
+
+ and all its derivatives are locally Lipschitz on 
+\begin_inset Formula $\mathbb{R}$
+\end_inset
+
+.
+ Hyperbolic tangent, sigmoid, and softplus are of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+ but ReLU, swish, and the identity mapping are not.
+ The function 
+\begin_inset Formula $\varsigma\left(s\right)=\frac{1}{c}\log\left(1+{\rm e}^{cs}\right)$
+\end_inset
+
+ approximates ReLU for large 
+\begin_inset Formula $c\in\mathbb{R}_{>0}$
+\end_inset
+
+ and is of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+.
+ Leaky ReLU is given as 
+\begin_inset Formula $\varsigma\left(s\right)=s$
+\end_inset
+
+ for all 
+\begin_inset Formula $s\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\varsigma\left(s\right)=rs$
+\end_inset
+
+ (with 
+\begin_inset Formula $r\in\mathbb{R}_{>0}$
+\end_inset
+
+) for all 
+\begin_inset Formula $s<0$
+\end_inset
+
+.
+ The function 
+\begin_inset Formula $\varsigma\left(s\right)=rs+\frac{1}{c}\log\left(1+{\rm e}^{\left(1-r\right)cs}\right)$
+\end_inset
+
+ approximates leaky ReLU for large 
+\begin_inset Formula $c\in\mathbb{R}_{>0}$
+\end_inset
+
+ and is of class 
+\begin_inset Formula $\mathcal{A}_{\text{quad}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+The universal approximation theorem for ResNets is given as follows.
+\end_layout
+
+\begin_layout Lemma
+\begin_inset CommandInset label
+LatexCommand label
+name "lem:Universal-Approximation-Theorem-1"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand citep
+after "Corollary 5.2"
+key "Tabuada.Gharesifard2023"
+literal "false"
+
+\end_inset
+
+ (Universal Approximation Theorem for Residual Neural Networks).
+ For any compact domain 
+\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{L_{\text{in}}}$
+\end_inset
+
+, continuous function 
+\begin_inset Formula $h:\Omega\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+, and approximation accuracy 
+\begin_inset Formula $\overline{\varepsilon}\in\mathbb{R}_{>0}$
+\end_inset
+
+, there exists a number of blocks 
+\begin_inset Formula $b\in\mathbb{Z}_{>0}$
+\end_inset
+
+ (thus, a 
+\begin_inset Formula ${\tt p}\in\mathbb{Z}_{>0}$
+\end_inset
+
+) and a parameter vector 
+\begin_inset Formula $\Theta^{\ast}\in\mathbb{R}^{{\tt p}}$
+\end_inset
+
+ such that for a ResNet architecture 
+\begin_inset Formula $\Psi:\mathbb{R}^{L_{\text{in}}}\times\mathbb{R}^{{\tt p}}\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+ with blocks of width 
+\begin_inset Formula $w=\max\left(L_{\text{in}},L_{\text{out}}\right)+1$
+\end_inset
+
+ (i.e., 
+\begin_inset Formula $L_{i,j}\ge w$
+\end_inset
+
+ for all 
+\begin_inset Formula $\left(i,j\right)\in\left\{ 0,\ldots,b\right\} \times\left\{ 1,\ldots,k_{i}\right\} $
+\end_inset
+
+) and depth 1 (i.e., 
+\begin_inset Formula $k_{i}\ge1$
+\end_inset
+
+ for all 
+\begin_inset Formula $i\in\left\{ 0,\ldots,b\right\} $
+\end_inset
+
+),
+\begin_inset Formula 
+\begin{equation}
+\sup_{x\in\Omega}\left\Vert \varepsilon\left(x\right)\right\Vert \le\overline{\varepsilon},\label{eq:lemma-ufat}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\varepsilon\left(x\right)\triangleq h\left(x\right)-\Psi\left(x,\Theta^{\ast}\right)$
+\end_inset
+
+, provided that for all 
+\begin_inset Formula $\left(i,j\right)\in\left\{ 0,\ldots,b\right\} \times\left\{ 0,\ldots,k_{i}\right\} $
+\end_inset
+
+, the activation functions 
+\begin_inset Formula $\varsigma_{i,j}\in\mathcal{A}_{\text{quad}}$
+\end_inset
+
+
+\emph on
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+By Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:target-dynamics-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $h$
+\end_inset
+
+ is continuous on 
+\begin_inset Formula $\mathbb{R}^{n}$
+\end_inset
+
+.
+ Thus, for any given compact set 
+\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{n}$
+\end_inset
+
+, Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Universal-Approximation-Theorem-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ applies to 
+\begin_inset Formula $h$
+\end_inset
+
+.
+ Consequently, there exists a corresponding ResNet architecture 
+\begin_inset Formula $\Psi$
+\end_inset
+
+ and a 
+\begin_inset Formula $\Theta^{\ast}\in\mathbb{R}^{{\tt p}}$
+\end_inset
+
+ such that 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:lemma-ufat"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ holds for all 
+\begin_inset Formula $q_{d}\in\Omega$
+\end_inset
+
+.
+ The ResNet-based approximation is written as
+\begin_inset Formula 
+\begin{equation}
+h\left(q_{d}\right)=\Psi\left(q_{d},\Theta^{\ast}\right)+\varepsilon\left(q_{d}\right).\label{eq:UFAT-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Subsequent adaptive estimation of 
+\begin_inset Formula $\Theta^{\ast}$
+\end_inset
+
+ requires a compact search space 
+\begin_inset Formula $\mho\subsetneq\mathbb{R}^{{\tt p}}$
+\end_inset
+
+.
+ The existence of such a 
+\begin_inset Formula $\mho$
+\end_inset
+
+ is guaranteed as there exists an 
+\begin_inset Formula $R>\left\Vert \Theta^{\ast}\right\Vert $
+\end_inset
+
+.
+ Pick 
+\begin_inset Formula $\mho\triangleq\left\{ \theta\in\mathbb{R}^{{\tt p}}:\left\Vert \theta\right\Vert \le R\right\} $
+\end_inset
+
+ for simplicity and thus 
+\begin_inset Formula $\Theta^{\ast}\in\mho$
+\end_inset
+
+.
+ However, since 
+\begin_inset Formula $\overline{\varepsilon}$
+\end_inset
+
+ can be chosen to be arbitrarily small, the size of 
+\begin_inset Formula $\left\Vert \Theta^{\ast}\right\Vert $
+\end_inset
+
+ is arbitrarily large.
+ Consequently, 
+\begin_inset Formula $\mho$
+\end_inset
+
+ may need to be arbitrarily large.
+ This situation is a consequence of the fact that there exist continuous
+ functions that cannot be approximated to arbitrary accuracy in the sense
+ of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:lemma-ufat"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ on compact sets using ResNets with bounded weights.
+ This challenge is shared by many function approximators.
+ Thus, unless 
+\begin_inset Formula $h$
+\end_inset
+
+ is restricted to a strict subclass of all continuous functions which may
+ be difficult to describe, there exists a tradeoff: either the choice of
+ 
+\begin_inset Formula $\mho$
+\end_inset
+
+ (and 
+\begin_inset Formula $\Omega$
+\end_inset
+
+) makes it so that the minimum 
+\begin_inset Formula $\overline{\varepsilon}$
+\end_inset
+
+ achievable might not be arbitrarily small or the choice of an arbitrarily
+ small 
+\begin_inset Formula $\overline{\varepsilon}$
+\end_inset
+
+ drives the choice of 
+\begin_inset Formula $\mho$
+\end_inset
+
+.
+ In practice, the informal design loop is to first select a desired accuracy
+ 
+\begin_inset Formula $\overline{\varepsilon}\in\mathbb{R}_{>0}$
+\end_inset
+
+ and an 
+\begin_inset Formula $R\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Second, increase the number of blocks 
+\begin_inset Formula $b$
+\end_inset
+
+ (starting from 
+\begin_inset Formula $b=1$
+\end_inset
+
+) until the trained network's approximation accuracy plateaus to some 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ on a representative dataset or via experiments on the target platform.
+ If 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}>\overline{\varepsilon}$
+\end_inset
+
+, increase 
+\begin_inset Formula $R\in\mathbb{R}_{>0}$
+\end_inset
+
+, then repeat the previous step until 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}\le\overline{\varepsilon}$
+\end_inset
+
+.
+ These observations can be formalized as follows.
+\end_layout
+
+\begin_layout Plain Layout
+Let 
+\begin_inset Formula $S_{\Theta}^{\ast}\triangleq\arg\min_{\vartheta\in\mho}\sup_{\kappa\in\Omega}\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\vartheta\right)\right\Vert $
+\end_inset
+
+ for some chosen 
+\begin_inset Formula $\mho\subsetneq\mathbb{R}^{{\tt p}}$
+\end_inset
+
+ and some fixed 
+\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{n}$
+\end_inset
+
+ and 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $\Psi:\mathbb{R}^{L_{\text{in}}}\times\mathbb{R}^{{\tt p}}\to\mathbb{R}^{L_{\text{out}}}$
+\end_inset
+
+ resulting from
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Universal-Approximation-Theorem-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Define 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}\triangleq\sup_{\kappa\in\Omega}\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\Theta\right)\right\Vert \in\mathbb{R}_{>0}$
+\end_inset
+
+, which holds the same value for any 
+\begin_inset Formula $\Theta\in S_{\Theta}^{\ast}$
+\end_inset
+
+.
+ By joint continuity of 
+\begin_inset Formula $\left(\kappa,\vartheta\right)\mapsto\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\vartheta\right)\right\Vert $
+\end_inset
+
+ on 
+\begin_inset Formula $\Omega\times\mho$
+\end_inset
+
+ and compactness of 
+\begin_inset Formula $\Omega$
+\end_inset
+
+, the map 
+\begin_inset Formula $\vartheta\mapsto\sup_{\kappa\in\Omega}\left\Vert h\left(\kappa\right)-\Psi\left(\kappa,\vartheta\right)\right\Vert $
+\end_inset
+
+ is continuous.
+ Thus, 
+\begin_inset Formula $S_{\Theta}^{\ast}$
+\end_inset
+
+ is nonempty by Weierstrass's Theorem (e.g., 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Theorem 10.55"
+key "Laczkovich.Sos2015"
+literal "false"
+
+\end_inset
+
+).
+ Pick some 
+\begin_inset Formula $\Theta\in S_{\Theta}^{\ast}$
+\end_inset
+
+ and fix 
+\begin_inset Formula $\Theta^{\ast}\triangleq\Theta$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $h$
+\end_inset
+
+ and 
+\begin_inset Formula $\kappa\mapsto\Psi\left(\kappa,\Theta^{\ast}\right)$
+\end_inset
+
+ are continuous on 
+\begin_inset Formula $\Omega$
+\end_inset
+
+, 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ is continuous on 
+\begin_inset Formula $\Omega$
+\end_inset
+
+.
+ Because the Euclidean norm preserves continuity, 
+\begin_inset Formula $\kappa\mapsto\left\Vert \varepsilon\left(\kappa\right)\right\Vert $
+\end_inset
+
+ is continuous on 
+\begin_inset Formula $\Omega$
+\end_inset
+
+.
+ Thus, by extreme value theorem, 
+\begin_inset Formula $\sup_{x\in\Omega}\left\Vert \varepsilon\left(x\right)\right\Vert $
+\end_inset
+
+ is finite.
+ Furthermore, 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}=\sup_{\xi\in\Omega}\left\Vert \varepsilon\left(\xi\right)\right\Vert $
+\end_inset
+
+ by construction.
+ Since 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}$
+\end_inset
+
+ follows from the choice of 
+\begin_inset Formula $\mho\subsetneq\mathbb{R}^{{\tt p}}$
+\end_inset
+
+, Lemma 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lem:Universal-Approximation-Theorem-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ implies that 
+\begin_inset Formula $\mho$
+\end_inset
+
+ 
+\color red
+must be driven to be arbritrarily large to
+\color inherit
+ ensure 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}\le\overline{\varepsilon}$
+\end_inset
+
+ for some desired accuracy 
+\begin_inset Formula $\overline{\varepsilon}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ The example below provides a simple application to illustate the tradeoff
+ further.
+\end_layout
+
+\begin_layout Example
+Take 
+\begin_inset Formula $f\left(x\right)=x$
+\end_inset
+
+ on 
+\begin_inset Formula $\Omega=\left[-1,1\right]$
+\end_inset
+
+ and 
+\begin_inset Formula $\Psi\left(x,\omega\right)=\omega x$
+\end_inset
+
+ with 
+\begin_inset Formula $\omega\in\mho\triangleq\left[-R,R\right]$
+\end_inset
+
+ for some 
+\begin_inset Formula $R\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Define
+\begin_inset Formula 
+\begin{equation}
+\overline{\varepsilon}_{\text{act}}\triangleq\sup_{\left|x\right|\leq1}\left|f\left(x\right)-\Psi\left(x,\omega\right)\right|=\left|1-\omega\right|.\label{eq:example}
+\end{equation}
+
+\end_inset
+
+Clearly, the 
+\begin_inset Formula $\omega=1$
+\end_inset
+
+ would make 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}=0$
+\end_inset
+
+, but the choice of 
+\begin_inset Formula $R$
+\end_inset
+
+makes it such that
+\begin_inset Formula 
+\[
+\overline{\varepsilon}_{\text{act}}=\inf_{\left|\omega\right|\leq R}\left|1-\omega\right|=\max\left\{ 0,1-R\right\} .
+\]
+
+\end_inset
+
+Restricting 
+\begin_inset Formula $R<1$
+\end_inset
+
+ results in 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}>0$
+\end_inset
+
+, but any 
+\begin_inset Formula $R\ge1$
+\end_inset
+
+ makes 
+\begin_inset Formula $\overline{\varepsilon}_{\text{act}}=0$
+\end_inset
+
+.
+ Here, the architecture 
+\begin_inset Formula $\Psi$
+\end_inset
+
+ is sufficiently expressive and the approximation accuracy is only limited
+ by 
+\begin_inset Formula $R$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+
+\color red
+Only search spaces 
+\begin_inset Formula $\mho$
+\end_inset
+
+ with 
+\begin_inset Formula $\mathcal{C}^{\infty}$
+\end_inset
+
+ boundaries with 
+\begin_inset Formula $0_{p}\in\text{int}\left(\mho\right)$
+\end_inset
+
+ and that are convex are considered.
+\end_layout
+
+\end_inset
+
+ Based on 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-1-1"
+
+\end_inset
+
+ and the subsequent stability analysis, the control input 
+\begin_inset Formula ${\color{blue}u:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}}$
+\end_inset
+
+ is designed as
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{equation}
+u\left(t\right)=\left(k_{1}+k_{2}\right)e\left(t\right)+\varrho,\label{eq: controller-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula ${\color{blue}\varrho:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}}$
+\end_inset
+
+ is the generalized solution to
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{\varrho} & =\left(1+{\color{red}k_{1}k_{2}}\right)e+\alpha_{1}\text{sgn}\left(e\right)\\
+ & +\Psi\left(q_{d},\widehat{\Theta}\right),\hspace{1em}{\color{red}\varrho\left(t_{0}\right)=0}.
+\end{aligned}
+\label{eq:u integrand-2}
+\end{equation}
+
+\end_inset
+
+Taking the time derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: controller-1"
+
+\end_inset
+
+ and using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:u integrand-2"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Cristian's math
+\begin_inset Formula 
+\begin{align*}
+\dot{u} & =\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r+\alpha_{1}\text{sgn}\left(e\right)+\Psi\left(q_{d},\widehat{\Theta}\right)\\
+\implies\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}u\left(\tau\right){\rm d}\tau & =\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}\right)r\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau\\
+\implies\left.u\left(\tau\right)\right|_{t_{0}}^{t} & =\left(k_{1}+k_{2}\right)\int_{t_{0}}^{t}r\left(\tau\right){\rm d}\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau\\
+\implies u\left(t\right)-u\left(t_{0}\right) & =\left(k_{1}+k_{2}\right)\int_{t_{0}}^{t}\left(\dot{e}\left(\tau\right)+k_{1}e\left(\tau\right)\right){\rm d}\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau\\
+\implies u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}e\left(\tau\right){\rm d}\tau+\left(k_{1}^{2}+k_{1}k_{2}\right)\int_{t_{0}}^{t}e\left(\tau\right){\rm d}\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau\\
+ & =u\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(\left.e\left(\tau\right)\right|_{t_{0}}^{t}\right)+\int_{t_{0}}^{t}\left(\left(1-\cancel{k_{1}^{2}}+\cancel{k_{1}^{2}}+k_{1}k_{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau\\
+ & =u\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\int_{t_{0}}^{t}\left(\left(1+k_{1}k_{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right){\rm d}\tau
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Max's math
+\begin_inset Formula 
+\begin{align*}
+\dot{u} & =\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r+\alpha_{1}\text{sgn}\left(e\right)+\Psi\left(q_{d},\widehat{\Theta}\right)\\
+\implies\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}u\left(\tau\right){\rm d}\tau & =\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\left(k_{1}+k_{2}\right)r\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies\left.u\left(\tau\right)\right|_{t_{0}}^{t} & =\left(k_{1}+k_{2}\right)\int_{t_{0}}^{t}\left(\dot{e}\left(\tau\right)+k_{1}e\left(\tau\right)\right)d\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies u\left(t\right)-u\left(t_{0}\right) & =\left(k_{1}+k_{2}\right)\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}e\left(\tau\right)d\tau+\left(k_{1}+k_{2}\right)k_{1}\int_{t_{0}}^{t}e\left(\tau\right)d\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}\right)\left.e\left(\tau\right)\right|_{t_{0}}^{t}+\left(k_{1}+k_{2}\right)k_{1}\int_{t_{0}}^{t}e\left(\tau\right)d\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}\right)e\left(\tau\right)+\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies u\left(t\right) & =u\left(t_{0}\right)-\left(k_{1}+k_{2}\right)e\left(t_{0}\right)+\left(k_{1}+k_{2}\right)e\left(t\right)+\alpha_{1}\int_{t_{0}}^{t}\text{sgn}\left(e\left(\tau\right)\right)d\tau+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}+\left(k_{1}+k_{2}\right)k_{1}\right)e\left(\tau\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies u\left(t\right) & =u\left(t_{0}\right)-\left(k_{1}+k_{2}\right)e\left(t_{0}\right)+\left(k_{1}+k_{2}\right)e\left(t\right)+\alpha_{1}\left(\left\Vert e\left(t\right)\right\Vert _{1}-\left\Vert e\left(t_{0}\right)\right\Vert _{1}\right)+\int_{t_{0}}^{t}\left(\left(1-k_{1}^{2}+k_{1}^{2}+k_{1}k_{2}\right)e\left(\tau\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau\\
+\implies u\left(t\right) & =u\left(t_{0}\right)+\left(k_{1}+k_{2}\right)e\left(t\right)-\left(k_{1}+k_{2}\right)e\left(t_{0}\right)+\alpha_{1}\left\Vert e\left(t\right)\right\Vert _{1}-\alpha_{1}\left\Vert e\left(t_{0}\right)\right\Vert _{1}+\int_{t_{0}}^{t}\left(\left(1+k_{1}k_{2}\right)e\left(\tau\right)+\Psi\left(q_{d}\left(\tau\right),\widehat{\Theta}\left(\tau\right)\right)\right)d\tau
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{u} & =\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r+\alpha_{1}\text{sgn}\left(e\right)+\Psi\left(q_{d},\widehat{\Theta}\right),\end{aligned}
+\label{eq:controller-time-derivative}
+\end{equation}
+
+\end_inset
+
+Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:UFAT-1"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:controller-time-derivative"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ into 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-1-1"
+
+\end_inset
+
+, and adding and subtracting by 
+\begin_inset Formula $\Psi\left(q_{d},\widehat{\Theta}\right)$
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{r} & =h\left(q_{d}\right)-\dot{u}+k_{1}r-k_{1}^{2}e\\
+ & =h\left(q_{d}\right)-\left(\left(1-k_{1}^{2}\right)e+\left(k_{1}+k_{2}\right)r+\alpha_{1}\text{sgn}\left(e\right)+\Psi\left(q_{d},\widehat{\Theta}\right)\right)+k_{1}r-k_{1}^{2}e\\
+ & =\Psi\left(q_{d},\Theta^{\ast}\right)+\varepsilon\left(q_{d}\right)-\left(1-k_{1}^{2}\right)e-\left(k_{1}+k_{2}\right)r-\alpha_{1}\text{sgn}\left(e\right)-\Psi\left(q_{d},\widehat{\Theta}\right)+k_{1}r-k_{1}^{2}e\\
+ & =\underbrace{\Psi\left(q_{d},\Theta^{\ast}\right)-\Psi\left(q_{d},\widehat{\Theta}\right)}_{\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)}+\varepsilon\left(q_{d}\right)-e+k_{1}^{2}e-k_{1}r-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{1}r-k_{1}^{2}e\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-e+\cancel{k_{1}^{2}e}-\cancel{k_{1}r}-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+\cancel{k_{1}r}-\cancel{k_{1}^{2}e}\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\dot{r}=\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right),\label{eq:rDot-2}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\widetilde{N}:\mathbb{R}^{n}\times\mathbb{R}^{{\tt p}}\times\mathbb{R}^{{\tt p}}\to\mathbb{R}^{n}$
+\end_inset
+
+ is defined as 
+\begin_inset Formula $\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)\triangleq\Psi\left(q_{d},\Theta^{\ast}\right)-\Psi\left(q_{d},\widehat{\Theta}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Remark
+
+\color red
+REMARK ABOUT BOUNDEDNESS OF THETAHAT ASSUMPTION IN VALID CONTROLLER
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Observer Design
+\end_layout
+
+\begin_layout Plain Layout
+The control design requires knowledge of the auxiliary tracking error 
+\begin_inset Formula $r$
+\end_inset
+
+
+\color red
+ (NO IT DOESN'T)
+\color inherit
+ defined previously.
+ However, since 
+\begin_inset Formula $r$
+\end_inset
+
+ depends on the unknown target dynamics through 
+\begin_inset Formula $h\left(q_{d}\right)$
+\end_inset
+
+, it cannot be directly computed.
+ To address this challenge, an estimate 
+\begin_inset Formula $\hat{r}\in\mathbb{R}^{n}$
+\end_inset
+
+ of 
+\begin_inset Formula $r$
+\end_inset
+
+ must be constructed.
+ To enable the design of the state estimate, the filtered tracking error
+ 
+\begin_inset Formula $s_{1}\in\mathbb{R}^{n}$
+\end_inset
+
+ is defined as
+\begin_inset Formula 
+\begin{equation}
+s_{1}\triangleq e-\mu,\label{filtered tracking error-1}
+\end{equation}
+
+\end_inset
+
+where the internal dynamic filter state 
+\color blue
+
+\begin_inset Formula $\mu:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+
+\color inherit
+ evolves according to the first-order dynamics
+\begin_inset Formula 
+\begin{equation}
+\dot{\mu}=-k_{1}\mu+\hat{r},\hspace{1em}\mu\left(t_{0}\right)=\mu_{0},\label{eq:mu-1}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mu_{0}\in{\color{red}\mathbb{R}_{\geq0}}$
+\end_inset
+
+.
+ The estimation error 
+\color blue
+
+\begin_inset Formula $\tilde{r}:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+
+\color inherit
+ between the true auxiliary tracking error and its estimate is defined as
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align}
+\tilde{r} & \triangleq r-\hat{r}.\label{eq:r_tilde}
+\end{align}
+
+\end_inset
+
+Here, the state estimate 
+\color blue
+
+\begin_inset Formula $\hat{r}:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}$
+\end_inset
+
+
+\color inherit
+ is defined as
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{\hat{r}} & =-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{3}\tilde{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{3}\left(r-\hat{r}\right)+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{3}r-k_{3}\hat{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-e-\left(k_{2}-k_{3}\right)r-\alpha_{1}\text{sgn}\left(e\right)-k_{3}\hat{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-e-\left(k_{2}-k_{3}\right)\left(\dot{e}+k_{1}e\right)-\alpha_{1}\text{sgn}\left(e\right)-k_{3}\hat{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-e-\left(k_{2}-k_{3}\right)\dot{e}-k_{1}\left(k_{2}-k_{3}\right)e-\alpha_{1}\text{sgn}\left(e\right)-k_{3}\hat{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+ & =-\left(k_{2}-k_{3}\right)\dot{e}-\left(1+k_{1}\left(k_{2}-k_{3}\right)\right)e-\alpha_{1}\text{sgn}\left(e\right)-k_{3}\hat{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\\
+\implies\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}\hat{r}\left(\tau\right){\rm d}\tau & =\int_{t_{0}}^{t}\left(-\left(k_{2}-k_{3}\right)\dot{e}\left(\tau\right)-\left(1+k_{1}\left(k_{2}-k_{3}\right)\right)e\left(\tau\right)-\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)-k_{3}\hat{r}\left(\tau\right)+\alpha_{2}\text{sgn}\left(s_{1}\left(\tau\right)\right)+s_{1}\left(\tau\right)\right){\rm d}\tau\\
+\implies\left.\hat{r}\left(\tau\right)\right|_{t_{0}}^{t} & =-\left(k_{2}-k_{3}\right)\int_{t_{0}}^{t}\frac{{\rm d}}{{\rm d}\tau}e\left(\tau\right){\rm d}\tau+\int_{t_{0}}^{t}\left(-\left(1+k_{1}\left(k_{2}-k_{3}\right)\right)e\left(\tau\right)-\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\alpha_{2}\text{sgn}\left(s_{1}\left(\tau\right)\right)-k_{3}\hat{r}\left(\tau\right)+s_{1}\left(\tau\right)\right){\rm d}\tau\\
+\implies\hat{r}\left(t\right)-\hat{r}\left(t_{0}\right) & =-\left(k_{2}-k_{3}\right)\left(\left.e\left(\tau\right)\right|_{t_{0}}^{t}\right)+\int_{t_{0}}^{t}\left(-\left(1+k_{1}\left(k_{2}-k_{3}\right)\right)e\left(\tau\right)-\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\alpha_{2}\text{sgn}\left(s_{1}\left(\tau\right)\right)-k_{3}\hat{r}\left(\tau\right)+s_{1}\left(\tau\right)\right){\rm d}\tau\\
+\implies\hat{r}\left(t\right) & =\hat{r}\left(t_{0}\right)-\left(k_{2}-k_{3}\right)\left(e\left(t\right)-e\left(t_{0}\right)\right)+\int_{t_{0}}^{t}\left(\underbrace{-\left(1+k_{1}\left(k_{2}-k_{3}\right)\right)e\left(\tau\right)-\alpha_{1}\text{sgn}\left(e\left(\tau\right)\right)+\alpha_{2}\text{sgn}\left(s_{1}\left(\tau\right)\right)-k_{3}\hat{r}\left(\tau\right)+s_{1}\left(\tau\right)}_{\psi}\right){\rm d}\tau
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\color red
+
+\begin_inset Formula 
+\begin{align}
+\hat{r} & =-\left(k_{2}+k_{3}\right)e\left(t\right)+\psi\left(t\right),\label{eq:rHat-1-1}
+\end{align}
+
+\end_inset
+
+
+\color inherit
+where 
+\begin_inset Formula ${\color{blue}\psi:\mathbb{R}_{\geq t_{0}}\to\mathbb{R}^{n}}$
+\end_inset
+
+ is the generalized solution to
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\dot{\psi} & =s_{1}-\left(1+k_{1}\left(k_{2}+k_{3}\right)\right)e-k_{3}\hat{r}\\
+ & +\alpha_{2}\text{sgn}\left(s_{1}\right)-\alpha_{1}\text{sgn}\left(e\right),\hspace{1em}\psi\left(t_{0}\right)=\psi_{0}.
+\end{aligned}
+\label{eq:u integrand-1-1}
+\end{equation}
+
+\end_inset
+
+Here, 
+\begin_inset Formula $k_{3},\alpha_{2}\in\mathbb{R}_{>0}$
+\end_inset
+
+ are constant control gains.
+ Taking the time derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rHat-1-1"
+
+\end_inset
+
+ and using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:u integrand-1-1"
+
+\end_inset
+
+ yields
+\begin_inset Formula 
+\begin{equation}
+\dot{\hat{r}}=-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{3}\tilde{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1},\label{eq:rHatDot}
+\end{equation}
+
+\end_inset
+
+Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rDot-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rHatDot"
+
+\end_inset
+
+ into the time derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:r_tilde"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{\tilde{r}} & =\dot{r}-\dot{\hat{r}}\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)-\left(-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)+k_{3}\tilde{r}+\alpha_{2}\text{sgn}\left(s_{1}\right)+s_{1}\right)\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-\cancel{e}-\cancel{k_{2}r}-\cancel{\alpha_{1}\text{sgn}\left(e\right)}+\cancel{e}+\cancel{k_{2}r}+\cancel{\alpha_{1}\text{sgn}\left(e\right)}-k_{3}\tilde{r}-\alpha_{2}\text{sgn}\left(s_{1}\right)-s_{1}\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-k_{3}\tilde{r}-\alpha_{2}\text{sgn}\left(s_{1}\right)-s_{1}\\
+ & =\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-k_{3}\tilde{r}-\alpha_{2}\text{sgn}\left(s_{1}\right)-s_{1}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\dot{\tilde{r}}=\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-k_{3}\tilde{r}-\alpha_{2}\text{sgn}\left(s_{1}\right)-s_{1}.\label{eq:rTildeDot-1}
+\end{equation}
+
+\end_inset
+
+Substituting 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq: Filtered Tracking Error-1"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:mu-1"
+
+\end_inset
+
+ into the time derivative of 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "filtered tracking error-1"
+
+\end_inset
+
+ and using 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:r_tilde"
+
+\end_inset
+
+ yields
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{s}_{1} & =\dot{e}-\dot{\mu}\\
+ & =r-k_{1}e-\left(-k_{1}\mu+\hat{r}\right)\\
+ & =r-k_{1}e+k_{1}\mu-\hat{r}\\
+ & =\tilde{r}-k_{1}\left(e-\mu\right)\\
+ & =\tilde{r}-k_{1}s
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{equation}
+\dot{s}_{1}=\tilde{r}-k_{1}s_{1}.\label{eq:sDot-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Stability
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+V=\frac{1}{2}s_{1}^{\top}s_{1}+\frac{1}{2}\widetilde{r}^{\top}\widetilde{r}+\frac{1}{2}r^{\top}r+\frac{1}{2}e^{\top}e+P
+\]
+
+\end_inset
+
+Derivative
+\begin_inset Formula 
+\begin{align*}
+V & =s_{1}^{\top}\dot{s}_{1}+\widetilde{r}^{\top}\dot{\widetilde{r}}+r^{\top}\dot{r}+e^{\top}\dot{e}+\dot{P}\\
+ & =s_{1}^{\top}\left(\tilde{r}-k_{1}s_{1}\right)+\widetilde{r}^{\top}\left(\varepsilon\left(q_{d}\right)-\alpha_{2}\text{sgn}\left(s_{1}\right)-k_{3}\tilde{r}-s_{1}+\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)\right)+r^{\top}\left(\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\varepsilon\left(q_{d}\right)-e-k_{2}r-\alpha_{1}\text{sgn}\left(e\right)\right)+e^{\top}\left(r-k_{1}e\right)+\dot{P}\\
+ & =s_{1}^{\top}\tilde{r}-k_{1}s_{1}^{\top}s_{1}+\widetilde{r}^{\top}\varepsilon\left(q_{d}\right)-\alpha_{2}\widetilde{r}^{\top}\text{sgn}\left(s_{1}\right)-k_{3}\widetilde{r}^{\top}\tilde{r}-\widetilde{r}^{\top}s_{1}+\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+r^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+r^{\top}\varepsilon\left(q_{d}\right)-r^{\top}e-k_{2}r^{\top}r-\alpha_{1}r^{\top}\text{sgn}\left(e\right)+e^{\top}r-k_{1}e^{\top}e+\dot{P}\\
+ & =\cancel{s_{1}^{\top}\tilde{r}}-k_{1}e^{\top}e-k_{1}s_{1}^{\top}s_{1}-k_{2}r^{\top}r-k_{3}\widetilde{r}^{\top}\tilde{r}+\widetilde{r}^{\top}\varepsilon\left(q_{d}\right)-\alpha_{2}\widetilde{r}^{\top}\text{sgn}\left(s_{1}\right)-\cancel{\widetilde{r}^{\top}s_{1}}+\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+r^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+r^{\top}\varepsilon\left(q_{d}\right)-\cancel{r^{\top}e}-\alpha_{1}r^{\top}\text{sgn}\left(e\right)+\cancel{e^{\top}r}+\dot{P}\\
+ & =-k_{1}e^{\top}e-k_{1}s_{1}^{\top}s_{1}-k_{2}r^{\top}r-k_{3}\widetilde{r}^{\top}\tilde{r}+2\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+2r^{\top}\varepsilon\left(q_{d}\right)+\dot{P}-\alpha_{2}\widetilde{r}^{\top}\text{sgn}\left(s_{1}\right)-\alpha_{1}r^{\top}\text{sgn}\left(e\right)
+\end{align*}
+
+\end_inset
+
+We need
+\begin_inset Formula 
+\begin{align*}
+\dot{P} & =-\lambda_{P}P-\widetilde{r}^{\top}\left(2\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)-\alpha_{2}K[\text{sgn}]\left(s_{1}\left(t\right)\right)\right)-r^{\top}\left(2\varepsilon\left(q_{d}\right)-\alpha_{1}\text{sgn}\left(e\right)\right)\\
+ & =-\lambda_{P}P-2\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)+\alpha_{2}\widetilde{r}^{\top}K[\text{sgn}]\left(s_{1}\left(t\right)\right)-2r^{\top}\varepsilon\left(q_{d}\right)+\alpha_{1}r^{\top}\text{sgn}\left(e\right)
+\end{align*}
+
+\end_inset
+
+So
+\begin_inset Formula 
+\begin{align*}
+ & =-k_{1}e^{\top}e-k_{1}s_{1}^{\top}s_{1}-k_{2}r^{\top}r-k_{3}\widetilde{r}^{\top}\tilde{r}-\lambda_{P}P+\cancel{2\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)}+r^{\top}\left(2\varepsilon\left(q_{d}\right)-\alpha_{1}\text{sgn}\left(e\right)\right)\\
+ & -\alpha_{2}\widetilde{r}^{\top}\text{sgn}\left(s_{1}\right)-\cancel{2\widetilde{r}^{\top}\widetilde{N}\left(q_{d},\Theta^{\ast},\widehat{\Theta}\right)}+\alpha_{2}\widetilde{r}^{\top}K[\text{sgn}]\left(s_{1}\left(t\right)\right)-2r^{\top}\varepsilon\left(q_{d}\right)+\alpha_{1}r^{\top}\text{sgn}\left(e\right)\\
+\\
+ & =-k_{1}e^{\top}e-k_{1}s_{1}^{\top}s_{1}-k_{2}r^{\top}r-k_{3}\widetilde{r}^{\top}\tilde{r}-\lambda_{P}P+\cancel{r^{\top}\left(2\varepsilon\left(q_{d}\right)-\alpha_{1}\text{sgn}\left(e\right)\right)}\\
+ & \cancel{-\alpha_{2}\widetilde{r}^{\top}\text{sgn}\left(s_{1}\right)+\alpha_{2}\widetilde{r}^{\top}K[\text{sgn}]\left(s_{1}\left(t\right)\right)}-\cancel{2r^{\top}\varepsilon\left(q_{d}\right)+\alpha_{1}r^{\top}\text{sgn}\left(e\right)}\\
+\\
+ & =-k_{1}\left\Vert e\right\Vert ^{2}-k_{1}\left\Vert s_{1}\right\Vert ^{2}-k_{2}\left\Vert r\right\Vert ^{2}-k_{3}\left\Vert \tilde{r}\right\Vert ^{2}-\lambda_{P}P
+\end{align*}
+
+\end_inset
+
+We must ensure 
+\begin_inset Formula $P\ge0$
+\end_inset
+
+.
+ Then, solve for 
+\begin_inset Formula $P$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Notation
 \end_layout

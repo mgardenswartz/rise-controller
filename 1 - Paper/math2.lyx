@@ -106,6 +106,10 @@ REMARK about EPSILON PRIME
 REMARK ABOUT EXPONENTIAL CONVERGENCE
 \end_layout
 
+\begin_layout Itemize
+REMARK ABOUT FIRST-order/second-order or a regular tracking controller.
+\end_layout
+
 \begin_layout Section
 Lemmas
 \end_layout
@@ -1225,6 +1229,7 @@ Wherever a bound function is introduce below, it is assumed that this function
 known
 \bar default
 .
+ 
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1477,7 +1482,7 @@ u_{d} & =\ddot{q}_{d}-f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)
 
 \end_inset
 
-By the stated assumptions and EVT, there exists a known constant
+By the stated assumptions and EVT, there exists an unknown constant
 \begin_inset Formula 
 \[
 \overline{u}_{d}\triangleq\overline{\ddot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert \right)+\overline{d}
@@ -1493,7 +1498,7 @@ such that
 
 \end_inset
 
-
+We assume this constant is known.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -1509,7 +1514,7 @@ Taking the derivative of the ideal controller gives
 
 \end_inset
 
-By the stated assumptions and EVT, there exists a known constant
+By the stated assumptions and EVT, there exists an unknown constant
 \begin_inset Formula 
 \[
 \overline{\dot{u}}_{d}\triangleq\overline{\dddot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert \left.\frac{\partial f}{\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \right)\overline{\dot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \right)\overline{\ddot{q}}_{d}+\overline{\dot{d}}
@@ -1525,7 +1530,7 @@ such that
 
 \end_inset
 
-
+We assume this constant is known.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -3052,7 +3057,21 @@ in all three cases
 \begin_inset Formula 
 \begin{align*}
 \Omega & \triangleq\left\{ \zeta\in\mathbb{R}^{5n}:\left\Vert \zeta\right\Vert \le\overline{\kappa}\right\} .\\
-\overline{\kappa} & \triangleq\overline{\kappa}_{d}+\left(k_{1}+2\right)C_{\Delta}+\rho_{\widetilde{u}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}
+\overline{\kappa} & =\text{\overline{\kappa}_{d}+\ensuremath{\underbrace{\left(k_{1}+2\right)C_{\Delta}+\rho_{\widetilde{u}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}}}}\\
+\overline{\kappa} & \triangleq\overline{\kappa}_{d}+\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{\kappa}\right\Vert  & \le\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert +\left\Vert \widetilde{u}\right\Vert \\
+ & \le\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert +\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert +\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(k_{1}+2\right)\left\Vert z\right\Vert +\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(\underbrace{k_{1}+2+\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}_{\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
+ & \le\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
 \end{align*}
 
 \end_inset
@@ -4151,15 +4170,15 @@ This update law does not follow from the stability analysis above and that's
 \end_layout
 
 \begin_layout Section
-Experiment
+Experiment (Continuous)
 \end_layout
 
 \begin_layout Standard
 Baseline controller is
 \begin_inset Formula 
-\[
-u\left(t\right)=\Phi\left(x\left(t_{k+1}\right),\widehat{\theta}\left(t\right)\right)+K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)\right)d\tau
-\]
+\begin{align*}
+u\left(t\right) & =\Phi\left(x\left(t\right),\widehat{\theta}\left(t\right)\right)+K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)\right)d\tau
+\end{align*}
 
 \end_inset
 
@@ -4192,7 +4211,7 @@ NOTE: the input to the ResNet in each controller is different! Both use
  the update law
 \begin_inset Formula 
 \begin{align*}
-\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|^{\top}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)\\
+\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|^{\top}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)\right)\\
 \mho & \triangleq\overline{B}_{\overline{\theta}}\left(0_{p}\right)
 \end{align*}
 
@@ -4236,6 +4255,39 @@ These experiments will be acceleration-level controllers for a quadcopter.
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Section
+Experiment (Discrete)
+\end_layout
+
+\begin_layout Standard
+Baseline is
+\begin_inset Formula 
+\[
+u\left(t_{k}\right)=\Phi\left(x\left(t_{k}\right),\widehat{\theta}\left(t_{k}\right)\right)+K_{P}e\left(t_{k}\right)+K_{D}\dot{e}\left(t_{k}\right)+\frac{1}{2}\Delta t\left(K_{I}e\left(t_{k}\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(t_{k}\right)\right)\right)+\Delta t\sum_{\tau=t_{0}}^{t_{k-1}}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)\right)
+\]
+
+\end_inset
+
+Developed is
+\begin_inset Formula 
+\[
+u\left(t_{k}\right)=K_{P}e\left(t_{k}\right)+K_{D}\dot{e}\left(t_{k}\right)+\frac{1}{2}\Delta t\left(K_{I}e\left(t_{k}\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(t_{k}\right)\right)\right)+\Delta t\sum_{\tau=t_{0}}^{t_{k-1}}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)
+\]
+
+\end_inset
+
+Update law is
+\begin_inset Formula 
+\begin{align*}
+\dot{\widehat{\theta}}\left(t_{k}\right) & =\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|^{\top}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)\right)\\
+\mho & \triangleq\overline{B}_{\overline{\theta}}\left(0_{p}\right)
+\end{align*}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection*
