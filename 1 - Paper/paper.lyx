@@ -155,6 +155,10 @@ literal "false"
 \end_inset
 
 .
+ 
+\color red
+CHANGE ALL C2 to LIPSCHITZ.
+ YOUR EPSILON ARGUMENT ARE WRONG; NEEDS THETA, TOO;
 \end_layout
 
 \begin_layout Section
@@ -176,7 +180,11 @@ Let
 \end_inset
 
  means 2-norm.
- A continuous function 
+ The 
+\begin_inset Formula $\left\Vert \right\Vert _{1}$
+\end_inset
+
+ means 1-norm A continuous function 
 \begin_inset Formula $\mathcal{C}^{2}$
 \end_inset
 
@@ -193,7 +201,13 @@ Let
 .
  Closure.
  Filippov regularization.
- Singum.
+ Signum.
+ 
+\begin_inset Formula $C^{1}$
+\end_inset
+
+ norm.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -202,6 +216,7 @@ Nonsmooth Analysis
 
 \begin_layout Standard
 See latest Cristian paper.
+ Filippov regularization.
 \end_layout
 
 \begin_layout Subsection
@@ -543,6 +558,10 @@ of the
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 \begin_inset Float figure
 wide false
 sideways false
@@ -564,6 +583,11 @@ status collapsed
 
 \begin_layout Plain Layout
 Deep Residual Neural Network Architecture
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -695,9 +719,10 @@ with output
 \end_inset
 
 .
-\end_layout
+\begin_inset Note Note
+status collapsed
 
-\begin_layout Standard
+\begin_layout Plain Layout
 The partial derivative of the ResNet with respect to the parameters is represent
 ed as 
 \begin_inset Formula $\frac{\partial}{\partial\Theta}\Psi\left(\kappa,\Theta\right)=\left[\begin{array}{ccc}
@@ -3505,7 +3530,7 @@ where
 .
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 The Jacobian 
 \begin_inset Formula $\frac{\partial\phi_{i,j}\left(\varphi_{i,j-1}\left(v\right)\right)}{\partial\varphi_{i,j-1}\left(v\right)}:\mathbb{R}^{L_{i,j}}\to\mathbb{R}^{L_{i,j}^{a}\times L_{i,j}}$
 \end_inset
@@ -3628,6 +3653,11 @@ Then
  & =\left[\begin{array}{ccccc}
 \left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{1}}\varsigma_{1}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{1}\right)\right)\mathbf{e}_{1}^{\top} & \left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{2}}\varsigma_{2}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{2}\right)\right)\mathbf{e}_{2}^{\top} & \cdots & \left(\frac{{\rm d}}{{\rm d}\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}}\varsigma_{L_{i,j}}\left(\left(\varphi_{i,j-1}\left(v\right)\right)_{L_{i,j}}\right)\right)\mathbf{e}_{L_{i,j}}^{\top} & \mathbf{0}_{L_{i,j}}^{\top}\end{array}\right]^{\top}
 \end{align*}
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -3895,6 +3925,12 @@ where
 .
 \end_layout
 
+\begin_layout Standard
+
+\color red
+HAVE TO MENTION HIGHER-ORDER APPROXIMATION.
+\end_layout
+
 \begin_layout Section
 Problem Formulation
 \end_layout
@@ -3918,27 +3954,27 @@ where
 \end_inset
 
  denotes the control input, 
-\begin_inset Formula $d:\mathbb{R}_{\ge0}\to\mathbb{R}^{n}$
-\end_inset
-
- denotes an time-variant exogenous disturbances, and 
 \begin_inset Formula $f:\mathbb{R}^{n}\times\mathbb{R}^{n}\to\mathbb{R}^{n}$
 \end_inset
 
- denotes unknown drift dynamics.
+ denotes unknown drift dynamics of class 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+, and 
+\begin_inset Formula $d:\mathbb{R}_{\ge0}\to\mathbb{R}^{n}$
+\end_inset
+
+ denotes an unknown, time-variant exogenous disturbance of class 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+.
  For an initial condition set 
 \begin_inset Formula $\left(t_{0},q_{0},\dot{q}_{0}\right)\in\mathbb{R}_{\ge0}\times\mathbb{R}^{n}\times\mathbb{R}^{n}$
 \end_inset
 
- and an interval of existence 
-\begin_inset Formula $\mathcal{I}\triangleq\left[0,T_{\max}\right)$
-\end_inset
-
- (
-\begin_inset Formula $T_{\max}\in\mathbb{R}_{>t_{0}}\cup\left\{ \infty\right\} $
-\end_inset
-
-), let 
+, let 
 \begin_inset Formula $q:\mathcal{I}\to\mathbb{R}^{n}$
 \end_inset
 
@@ -3969,118 +4005,15 @@ noprefix "false"
 \begin_inset Formula $\dot{q}\left(t_{0}\right)=\dot{q}_{0}$
 \end_inset
 
-.
-\end_layout
-
-\begin_layout Assumption
-\begin_inset CommandInset label
-LatexCommand label
-name "asm:f-C2"
-
+ and whose interval of existence is 
+\begin_inset Formula $\mathcal{I}\triangleq\left[0,T_{\max}\right)$
 \end_inset
 
- 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Need citations for all assumptions.
-\end_layout
-
-\end_inset
-
- The dynamics 
-\begin_inset Formula $f:\mathbb{R}^{n}\times\mathbb{R}^{n}\to\mathbb{R}^{n}$
-\end_inset
-
-in (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:agent-dynamics"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-) are of class 
-\begin_inset Formula $\mathcal{C}^{2}$
+ for 
+\begin_inset Formula $T_{\max}\in\left(t_{0},\infty\right]$
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Assumption
-\begin_inset CommandInset label
-LatexCommand label
-name "asm:d-C2-bounded"
-
-\end_inset
-
- The disturbance 
-\begin_inset Formula $d:\mathbb{R}_{\ge0}\to\mathbb{R}^{n}$
-\end_inset
-
-in (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:agent-dynamics"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-) is of class 
-\begin_inset Formula $\mathcal{C}^{2}$
-\end_inset
-
- and there exist known constants 
-\begin_inset Formula $\overline{d},\overline{\dot{d}},\overline{\ddot{d}}\in\mathbb{R}_{\ge0}$
-\end_inset
-
- such that 
-\begin_inset Formula $\left\Vert d\left(t\right)\right\Vert \le\overline{d}$
-\end_inset
-
-, 
-\begin_inset Formula $\left\Vert d\left(t\right)\right\Vert \le\overline{\dot{d}}$
-\end_inset
-
-, and 
-\begin_inset Formula $\left\Vert d\left(t\right)\right\Vert \le\overline{\ddot{d}}$
-\end_inset
-
- for all 
-\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
-\end_inset
-
-.
- 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Footnote about adaptive RISE.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -4106,12 +4039,16 @@ where
 \begin_inset Formula $h:\mathbb{R}^{n}\times\mathbb{R}^{n}\to\mathbb{R}^{n}$
 \end_inset
 
- is an unknown function.
+ is an unknown function of class 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+.
  For an initial condition set 
 \begin_inset Formula $\left(t_{0},q_{d,0},\dot{q}_{d,0}\right)\in\mathbb{R}_{\ge0}\times\mathbb{R}^{n}\times\mathbb{R}^{n}$
 \end_inset
 
- and 
+, let 
 \begin_inset Formula $q_{d}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
 \end_inset
 
@@ -4123,40 +4060,8 @@ where
 \begin_inset Formula $\ddot{q}_{d}:\mathbb{R}_{\ge t_{0}}\to\mathbb{R}^{n}$
 \end_inset
 
- denote generalized desired position, velocity, and acceleration, respectively.
- 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Later control development assumes 
-\begin_inset Formula $q_{d}$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{q}_{d}$
-\end_inset
-
- to be known.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Assumption
-\begin_inset CommandInset label
-LatexCommand label
-name "asm:h-C2-bounded"
-
-\end_inset
-
- The dynamics 
-\begin_inset Formula $h:\mathbb{R}^{n}\times\mathbb{R}^{n}\to\mathbb{R}^{n}$
-\end_inset
-
- in (
+ denote generalized desired position, velocity, and acceleration, respectively,
+ of the resulting solution to (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:reference-dynamics"
@@ -4166,11 +4071,52 @@ noprefix "false"
 
 \end_inset
 
-) are of class 
-\begin_inset Formula $\mathcal{C}^{2}$
+) such that 
+\begin_inset Formula $q_{d}\left(t_{0}\right)=q_{d,0}$
 \end_inset
 
- and there exists known constants 
+ and 
+\begin_inset Formula $\dot{q}_{d}\left(t_{0}\right)=\dot{q}_{d,0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The control objective is to design a controller such that 
+\begin_inset Formula $q$
+\end_inset
+
+ converges exponentially to 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+ despite the presence of non-vanishing disturbances, unknown dynamics, and
+ lack of knowledge of 
+\begin_inset Formula $\ddot{q}_{d}$
+\end_inset
+
+.
+ The subsequent assumptions ensure feasibility of this objective.
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:qd-bounds"
+
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Assumption 1"
+key "Nino.Patil.ea2025"
+literal "false"
+
+\end_inset
+
+ There exist known constants 
 \begin_inset Formula $\overline{q}_{d},\overline{\dot{q}}_{d},\overline{\ddot{q}}_{d},\overline{\dddot{q}}_{d}\in\mathbb{R}_{\ge0}$
 \end_inset
 
@@ -4204,22 +4150,92 @@ noprefix "false"
 
 \end_layout
 
-\begin_layout Standard
-The control objective to is to design a controller such that 
-\begin_inset Formula $q$
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:d-bounds"
+
 \end_inset
 
- converges exponentially to 
-\begin_inset Formula $q_{d}$
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Nino.Patil.ea2025"
+literal "false"
+
 \end_inset
 
- despite the presence of non-vanishing disturbances, unknown dynamics, and
- lack of knowledge of 
-\begin_inset Formula $\ddot{q}_{d}$
+ There exist known constants 
+\begin_inset Formula $\overline{d},\overline{\dot{d}},\overline{\ddot{d}}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert d\left(t\right)\right\Vert \le\overline{d}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \dot{d}\left(t\right)\right\Vert \le\overline{\dot{d}}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \ddot{d}\left(t\right)\right\Vert \le\overline{\ddot{d}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
 \end_inset
 
 .
- We introduce the tracking component of the ideal controller 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+While adaptive RISE techniques like 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Bidikli.Tatlicioglu.ea2014a"
+literal "false"
+
+\end_inset
+
+ could be used to compensate for unknown bounds 
+\begin_inset Formula $\overline{d},\overline{\dot{d}},\overline{\ddot{d}}$
+\end_inset
+
+, the described formulation therein yields asymptotic convergence.
+ Achieving exponential convergence (as desired in this work) without Assumption
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:d-bounds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ remains an open challenge.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Control Design
+\end_layout
+
+\begin_layout Standard
+For subsequent analysis, let the tracking component of the controller obtained
+ from feedback linearization 
 \begin_inset Formula $u_{d}:\mathbb{R}_{\ge0}\to\mathbb{R}^{n}$
 \end_inset
 
@@ -4231,31 +4247,25 @@ u_{d}\left(t\right)\triangleq d\left(t\right)+f\left(q_{d}\left(t\right),\dot{q}
 
 \end_inset
 
-Note that since all terms in (
+Since 
+\begin_inset Formula $f$
+\end_inset
+
+ is 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+, Assumption 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "eq:u_d"
+reference "asm:qd-bounds"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
-) are unknown, 
-\begin_inset Formula $u_{d}$
-\end_inset
-
- is unknown.
-\end_layout
-
-\begin_layout Assumption
-\begin_inset CommandInset label
-LatexCommand label
-name "asm:ud_bounded"
-
-\end_inset
-
- There exist a known constants 
+ and extreme value theorem (EVT) guarantee that there exist constants 
 \begin_inset Formula $\overline{f},\overline{\dot{f}}\in\mathbb{R}_{\ge0}$
 \end_inset
 
@@ -4272,60 +4282,20 @@ name "asm:ud_bounded"
 \end_inset
 
 .
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-We emphasize that 
-\begin_inset Formula $f$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{f}$
-\end_inset
-
- themselves need not be bounded.
- Since 
-\begin_inset Formula $f$
-\end_inset
-
- is of class 
-\begin_inset Formula $\mathcal{C}^{2}$
-\end_inset
-
- and 
-\begin_inset Formula $q_{d}$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{q}_{d}$
-\end_inset
-
- are bounded, there exists a bound follows by extreme value theorem.
- Assumption 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "asm:ud_bounded"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- assumes that a bound on 
-\begin_inset Formula $f$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{f}$
-\end_inset
-
- long these trajectories is known.
 \end_layout
 
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:ud_bounded"
+
 \end_inset
 
+ The constants 
+\begin_inset Formula $\overline{f},\overline{\dot{f}}\in\mathbb{R}_{\ge0}$
+\end_inset
 
+ are known.
 \end_layout
 
 \begin_layout Standard
@@ -4448,7 +4418,7 @@ such that
 \begin_inset Formula $\widetilde{u}\triangleq u_{d}-u$
 \end_inset
 
- in terms of the ensemble system state 
+ in terms of the ensemble error state 
 \begin_inset Formula $z:\mathcal{I}\to\mathbb{R}^{3n}$
 \end_inset
 
@@ -4458,20 +4428,38 @@ e^{\top}\left(t\right) & r_{1}^{\top}\left(t\right) & r_{2}^{\top}\left(t\right)
 \end_inset
 
 .
-\end_layout
+ Since 
+\begin_inset Formula $f$
+\end_inset
 
-\begin_layout Assumption
-\begin_inset CommandInset label
-LatexCommand label
-name "asm:rho_f"
+ is 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+, EVT, Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:qd-bounds"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
- There exists a known function 
-\begin_inset Formula $\rho_{f}:\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+, and 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 4"
+key "arxivKamalapurkar.Klotz.ea2013"
+literal "false"
+
 \end_inset
 
- that is class 
+ guarantee that there exist functions 
+\begin_inset Formula $\rho_{f},\rho_{f^{\prime}}:\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ that are class 
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
@@ -4479,35 +4467,11 @@ name "asm:rho_f"
 \begin_inset Formula $\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert \le\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
 \end_inset
 
- for all 
-\begin_inset Formula $q_{d}$
-\end_inset
-
  and 
-\begin_inset Formula $\dot{q}_{d}$
-\end_inset
-
- satisfying Assumption 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "asm:h-C2-bounded"
-plural "false"
-caps "false"
-noprefix "false"
-
+\begin_inset Formula $\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\right\Vert \le\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
 \end_inset
 
 .
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-Remove continuity requirements.
-\end_layout
-
-\end_inset
-
-
 \begin_inset Note Note
 status collapsed
 
@@ -4555,17 +4519,7 @@ Since
 \begin_inset Formula $\mathcal{C}^{2}$
 \end_inset
 
- in fact), by Lemma 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lem:non-decreasing-continuous-bound"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-, there exists a 
+ in fact), by Rushi's Lemma, there exists a 
 \begin_inset Formula $\mathcal{C}^{0}$
 \end_inset
 
@@ -4590,17 +4544,7 @@ q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}}\right|_{\left(q,\dot{q}\righ
 
 \end_inset
 
-By Lemma 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lem:strictly-increasing"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-, there exists a class 
+By Rushi's Lemma, there exists a class 
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
@@ -4638,9 +4582,111 @@ e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
 
 \end_layout
 
+\begin_layout Subsubsection*
+BOUNDING LEMMA 1.3
+\end_layout
+
+\begin_layout Plain Layout
+Let
+\begin_inset Formula 
+\[
+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\triangleq\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{q}_{d}$
+\end_inset
+
+ are bounded and 
+\begin_inset Formula $\frac{\partial f}{\partial\dot{q}}$
+\end_inset
+
+ is class 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+, by Rushi's Lemma, there exists a 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ nondecreasing function 
+\begin_inset Formula $\sigma_{f^{\prime}}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}\right\Vert  & \le\sigma_{f^{\prime}}\left(\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
+\sigma_{f^{\prime}}\left(s\right) & \triangleq\sup_{\left[\begin{array}{cc}
+q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}\in\overline{B}_{\overline{q}_{d}+\overline{\dot{q}}_{d}+s}\left(0_{2n}\right)}\left(\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q,\dot{q}\right)}\right\Vert +\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}\partial q}\right|_{\left(q,\dot{q}\right)}\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+There exists a class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ function 
+\begin_inset Formula $\rho_{f^{\prime}}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that (for some 
+\begin_inset Formula $c>0$
+\end_inset
+
+)
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert  & \le\rho_{f^{\prime}}\left(\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
+\rho_{f^{\prime}}\left(s\right) & \triangleq\sigma_{f^{\prime}}\left(s\right)+cs
+\end{align*}
+
+\end_inset
+
+By Bounding Lemma 1.1,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert  & \le\underbrace{\rho_{f^{\prime}}\left(\left(k_{1}+1\right)\left\Vert z\right\Vert \right)\left(k_{1}+1\right)}_{\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
 \end_inset
 
 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:rho_f"
+
+\end_inset
+
+ The functions 
+\begin_inset Formula $\rho_{f}$
+\end_inset
+
+ and 
+\begin_inset Formula $\rho_{f^{\prime}}$
+\end_inset
+
+ are known.
 \end_layout
 
 \begin_layout Standard
@@ -4704,7 +4750,10 @@ noprefix "false"
 ) gives that
 \begin_inset Formula 
 \begin{equation}
-\widetilde{u}\left(t\right)=r_{2}\left(t\right)-k_{1}\dot{e}\left(t\right)-k_{2}r_{1}\left(t\right)-f\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)+f\left(q\left(t\right),\dot{q}\left(t\right)\right),\label{eq:u_tilde}
+\begin{alignedat}{1}\widetilde{u}\left(t\right) & =r_{2}\left(t\right)-k_{1}\dot{e}\left(t\right)-k_{2}r_{1}\left(t\right)\\
+ & -f\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)+f\left(q\left(t\right),\dot{q}\left(t\right)\right),
+\end{alignedat}
+\label{eq:u_tilde}
 \end{equation}
 
 \end_inset
@@ -4714,21 +4763,7 @@ for all
 \end_inset
 
 .
- (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:u_tilde"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-) can be bound as 
-\begin_inset Formula $\left\Vert \widetilde{u}\right\Vert \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
-\end_inset
-
- by Assumption 
+ By Assumption 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "asm:rho_f"
@@ -4738,15 +4773,19 @@ noprefix "false"
 
 \end_inset
 
- where 
+, there exists a known function 
 \begin_inset Formula $\rho_{\widetilde{u}}:\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
 \end_inset
 
- is class 
+that is of class 
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
- with respect to each argument defined as 
+ with respect to each argument such that 
+\begin_inset Formula $\left\Vert \widetilde{u}\right\Vert \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+ where 
 \begin_inset Formula $\rho_{\widetilde{u}}\left(k_{1},k_{2},s\right)\triangleq1+k_{1}+k_{1}^{2}+k_{2}+\rho_{f}\left(k_{1},s\right)$
 \end_inset
 
@@ -4851,10 +4890,6 @@ By Bounding Lemma 1.2,
 
 \end_layout
 
-\begin_layout Section
-Control Design
-\end_layout
-
 \begin_layout Standard
 To facilitate subsequent control design, the first and second auxiliary
  tracking errors are defined as
@@ -4941,7 +4976,10 @@ status open
 
 \begin_inset Formula 
 \begin{equation}
-\dot{r}_{1}\left(t\right)=h\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)-u\left(t\right)-d\left(t\right)+k_{1}r_{1}\left(t\right)-k_{1}^{2}e\left(t\right),\label{eq:r1-step-1}
+\begin{alignedat}{1}\dot{r}_{1}\left(t\right) & =h\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)-f\left(q\left(t\right),\dot{q}\left(t\right)\right)\\
+ & -u\left(t\right)-d\left(t\right)+k_{1}r_{1}\left(t\right)-k_{1}^{2}e\left(t\right),
+\end{alignedat}
+\label{eq:r1-step-1}
 \end{equation}
 
 \end_inset
@@ -5020,7 +5058,10 @@ status collapsed
 
 \begin_inset Formula 
 \begin{equation}
-\dot{r}_{2}\left(t\right)=F\left(\kappa\left(t\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q\left(t\right),\dot{q}\left(t\right)\right)}d\left(t\right)-\dot{u}-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}k_{2}+k_{2}^{2}+k_{1}^{2}\right)r_{1}\left(t\right)+k_{1}^{3}e\left(t\right),\label{eq:r2-step-1}
+\begin{alignedat}{1}\dot{r}_{2}\left(t\right) & =F\left(\kappa\left(t\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q\left(t\right),\dot{q}\left(t\right)\right)}d\left(t\right)-\dot{u}\left(t\right)-\dot{d}\left(t\right)\\
+ & +\left(k_{1}+k_{2}\right)r_{2}\left(t\right)-\left(k_{1}k_{2}+k_{2}^{2}+k_{1}^{2}\right)r_{1}\left(t\right)+k_{1}^{3}e\left(t\right),
+\end{alignedat}
+\label{eq:r2-step-1}
 \end{equation}
 
 \end_inset
@@ -5030,8 +5071,12 @@ for all
 \end_inset
 
 , where 
+\begin_inset Formula $\kappa:\mathcal{I}\to\mathbb{R}^{5n}$
+\end_inset
+
+ is defined as 
 \begin_inset Formula $\kappa\triangleq\left[\begin{array}{ccccc}
-q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{5n}$
+q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{array}\right]^{\top}$
 \end_inset
 
  and 
@@ -5043,7 +5088,14 @@ q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{arr
 \end_inset
 
 .
- Since 
+\end_layout
+
+\begin_layout Subsection
+Function Approximation
+\end_layout
+
+\begin_layout Standard
+Since 
 \begin_inset Formula $f$
 \end_inset
 
@@ -5064,15 +5116,15 @@ q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{arr
 \begin_inset Formula $\Phi:\mathbb{R}^{L_{\text{in}}}\times\mathbb{R}^{{\tt p}}\to\mathbb{R}^{L_{\text{out}}}$
 \end_inset
 
- is a class 
-\begin_inset Formula $\mathcal{C}^{2}$
+ is a function approximator architecture mapping of class 
+\begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
- approximator architecture mapping, 
+, 
 \begin_inset Formula $\widehat{\theta}\in\mathbb{R}^{{\tt p}}$
 \end_inset
 
- is a parameter, where 
+ is a parameter, 
 \begin_inset Formula $L_{\text{out}}=n$
 \end_inset
 
@@ -5085,18 +5137,8 @@ q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u^{\top}\end{arr
 \end_inset
 
  is the number of parameters.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Remark
-In this work, any class 
-\begin_inset Formula $\mathcal{C}^{2}$
+ In this work, any class 
+\begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
  parametric approximator which satisfies a universal approximation theorem
@@ -5114,50 +5156,9 @@ noprefix "false"
 \begin_inset Formula $\Phi$
 \end_inset
 
-, in which there must exist a sufficiently sized architecture (e.g., network
- width for shallow neural networks, network depth for deep neural networks,
- or number of blocks for ResNets) and a corresponding ideal parameter 
-\begin_inset Formula $\theta^{\ast}\in\mathbb{R}^{{\tt p}}$
-\end_inset
-
- such that any continuous function can be approximated to arbitrarily small
- precision under the 
-\color red
-uniform norm
-\color inherit
- on a compact set 
-\begin_inset Formula $\Omega\subsetneq\mathbb{R}^{L_{\text{in}}}$
-\end_inset
-
-.
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Later, we need derivatives, too!
-\end_layout
-
-\end_inset
-
- For example, radial basis functions, Chebyshev polynomials, transformers,
- or Kolmogorov-Arnold networks can be used.
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Later on say that under this remark and a later one, we're modular.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
+, like radial basis functions, Chebyshev polynomials, transformers, or Kolmogoro
+v-Arnold networks.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -5170,7 +5171,11 @@ To construct the compact domain of inputs over which the approximation of
 \begin_inset Formula $\Phi\left(\kappa,\widehat{\theta}\right)$
 \end_inset
 
- is of interest, the idealized input if (
+ is of interest, the idealized input 
+\begin_inset Formula $\kappa_{d}:\mathbb{R}_{\ge0}\to\mathbb{R}^{5n}$
+\end_inset
+
+ seen when (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:agent-dynamics"
@@ -5180,7 +5185,7 @@ noprefix "false"
 
 \end_inset
 
-) were perfectly tracking (
+) perfectly tracks (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:reference-dynamics"
@@ -5190,7 +5195,7 @@ noprefix "false"
 
 \end_inset
 
-) is 
+) is defined as 
 \begin_inset Formula $\kappa_{d}\triangleq\left[\begin{array}{ccccc}
 q_{d}^{\top} & \dot{q}_{d}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u_{d}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{5n}$
 \end_inset
@@ -5199,7 +5204,7 @@ q_{d}^{\top} & \dot{q}_{d}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top} & u_{d}^{\
  By Assumptions 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "asm:h-C2-bounded"
+reference "asm:qd-bounds"
 plural "false"
 caps "false"
 noprefix "false"
@@ -5312,7 +5317,7 @@ noprefix "false"
 \begin_inset Formula $\rho_{\widetilde{u}}$
 \end_inset
 
-, there exists a known function that is 
+, there exists a known function that is of class 
 \begin_inset Formula $\mathcal{P}_{\infty}$
 \end_inset
 
@@ -5384,7 +5389,7 @@ By Bounding Lemma 2.4,
 \begin_inset Formula $\kappa$
 \end_inset
 
- is
+ is given as
 \begin_inset Formula 
 \begin{equation}
 \Omega\triangleq\left\{ \zeta\in\mathbb{R}^{5n}:\left\Vert \zeta\right\Vert \le\overline{\kappa}\right\} ,\quad\overline{\kappa}\triangleq\overline{\kappa}_{d}+\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta},\label{eq:Omega}
@@ -5410,19 +5415,25 @@ The parameter
 
  and evolve continuously but be constrained to a user-defined bounded search
  space 
-\begin_inset Formula $\mho\subseteq\overline{B}_{\overline{\theta}}\left(0_{{\tt p}}\right)$
-\end_inset
-
- with a known circumradius 
-\begin_inset Formula $\overline{\theta}\in\mathbb{R}_{>0}$
+\begin_inset Formula $\mho$
 \end_inset
 
 .
- The update law governing the trajectory of 
+ Without loss of generality, it is assumed herein that 
+\begin_inset Formula $\mho=\overline{B}_{\overline{\theta}}\left(0_{{\tt p}}\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\overline{\theta}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is a user-defined radius.
+ The rule governing the trajectory of 
 \begin_inset Formula $\widehat{\theta}$
 \end_inset
 
- over time can be user-designed and need only satisfy the following property.
+ over time is called the update law and is chosen by the user.
+ The update law must satisfy the following properties.
 \end_layout
 
 \begin_layout Property
@@ -5432,7 +5443,16 @@ name "prop:theta_bar"
 
 \end_inset
 
- The parameter estimate's trajectory 
+
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Assumption 1"
+key "Patil.Isaly.ea2022"
+literal "false"
+
+\end_inset
+
+ The parameter's trajectory 
 \begin_inset Formula $\widehat{\theta}:\mathbb{R}_{\ge0}\to\mathbb{R}^{{\tt p}}$
 \end_inset
 
@@ -5480,6 +5500,59 @@ Why did Omkar need higher-order bounds?
 
 \end_layout
 
+\begin_layout Property
+\begin_inset CommandInset label
+LatexCommand label
+name "prop:weight-initialization"
+
+\end_inset
+
+ There exists a known constant 
+\begin_inset Formula $\overline{\varepsilon}_{\text{d}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that parameter's trajectory satisfies 
+\begin_inset Formula $E_{\Omega}\left(\widehat{\theta}\left(t\right)\right)\le\overline{\varepsilon}_{\text{d}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
+\end_inset
+
+, where 
+\begin_inset Formula $\varepsilon\left(\kappa,\theta\right)\triangleq\Phi\left(\kappa,\theta\right)-F\left(\kappa\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{\Omega}\left(\theta\right)\triangleq\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa,\theta\right)\right\Vert +\sup_{\kappa\in\Omega}\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\left(\kappa,\theta\right)}\right\Vert $
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Remark
+Since the design of the update law and the choice of parametric approximator
+ for 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ are at the user's discretion, the approach in this work is said to be modular.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
 Property 
 \begin_inset CommandInset ref
@@ -5493,7 +5566,41 @@ noprefix "false"
 
  can be met, for instance, by using a projection algorithm and limiting
  the speed of parameter changes.
- Note that 
+ Satisfying Property 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "prop:weight-initialization"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ requires careful consideration of both parameter initialization and the
+ update law.
+ The initial parameter 
+\begin_inset Formula $\widehat{\theta}\left(t_{0}\right)$
+\end_inset
+
+ must either be obtained by pre-training the function approximator on input-outp
+ut pairs generated by a function representative of 
+\begin_inset Formula $F$
+\end_inset
+
+ or by using the following approach.
+ Notice that EVT ensures that 
+\begin_inset Formula $\left\Vert F\right\Vert +\left\Vert \frac{dF}{d\kappa}\right\Vert $
+\end_inset
+
+ achieves a finite maximum over 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ since 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ is compact and 
 \begin_inset Formula $F$
 \end_inset
 
@@ -5501,20 +5608,83 @@ noprefix "false"
 \begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
- by Assumptions 
+.
+ Assume a bound 
+\begin_inset Formula $\overline{F}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ on such a maximum is known.
+ Pick 
+\begin_inset Formula $\widehat{\theta}\left(t_{0}\right)$
+\end_inset
+
+ and a suitable 
+\begin_inset Formula $\mho$
+\end_inset
+
+ such that 
+\begin_inset Formula $\Phi\left(\kappa,\widehat{\theta}\left(t_{0}\right)\right)=0_{n}$
+\end_inset
+
+ for all 
+\begin_inset Formula $\kappa\in\Omega$
+\end_inset
+
+.
+ Finally, select 
+\begin_inset Formula $\overline{\varepsilon}_{\text{d}}=\overline{F}$
+\end_inset
+
+.
+ Satisfying Property 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "asm:f-C2"
+reference "prop:weight-initialization"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
- and 
+ beyond the initial time requires that any information gained online to
+ refine the parameter not result in a 
+\begin_inset Formula $E_{\Omega}\left(\widehat{\theta}\left(t\right)\right)$
+\end_inset
+
+ that exceeds 
+\begin_inset Formula $\overline{\varepsilon}_{\text{d}}$
+\end_inset
+
+.
+ Heuristically, this phenomena, called catastrophic forgetting, can be avoided
+ by using experience replay methods like concurrent learning (CL).
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+For example, a first-order CL-based update law for parameters in universal
+ approximators like 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ can be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hart.Patil.ea2025"
+literal "false"
+
+\end_inset
+
+.
+ Note that any discrete updates to a history stack made online may not satisfy
+ the 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ requirement of Property 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "asm:h-C2-bounded"
+reference "prop:theta_bar"
 plural "false"
 caps "false"
 noprefix "false"
@@ -5522,20 +5692,17 @@ noprefix "false"
 \end_inset
 
 .
- Pick a desired approximation accuracy 
-\begin_inset Formula $\overline{\varepsilon}_{\text{d}}\in\mathbb{R}_{>0}$
+ However, online history stack management is not required to prevent catastrophi
+c forgetting.
+\end_layout
+
 \end_inset
 
- and pick a sufficiently sized network (
-\begin_inset Formula $\Phi$
-\end_inset
 
- and 
-\begin_inset Formula ${\tt p}$
-\end_inset
+\end_layout
 
-).
- Since the expressive powers of ResNets and many similar approximators relies
+\begin_layout Standard
+Since the expressive powers of ResNets and many similar approximators rely
  on the ability to select 
 \begin_inset Formula $\theta^{\ast}$
 \end_inset
@@ -5555,7 +5722,11 @@ noprefix "false"
 
 \end_inset
 
-), 
+) rather than a prescribed 
+\begin_inset Formula $\mho$
+\end_inset
+
+, 
 \begin_inset Formula $F$
 \end_inset
 
@@ -5571,7 +5742,6 @@ noprefix "false"
 \end_inset
 
 .
- 
 \end_layout
 
 \begin_layout Assumption
@@ -5585,14 +5755,14 @@ name "asm:bounded-weights"
 \begin_inset Formula $F$
 \end_inset
 
- belongs the class of functions that can be uniformly approximated along
- with their first derivatives using bounded weights.
- Formally, 
-\begin_inset Formula $F\in\mathcal{F}\triangleq\left\{ \mathcal{C}^{1}\left(\Omega;\mathbb{R}^{n}\right):\exists\theta^{\ast}\in\mho:\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa,\theta^{\ast}\right)\right\Vert +\sup_{\kappa\in\Omega}\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\left(\kappa,\theta^{\ast}\right)}\right\Vert \le\overline{\varepsilon}_{\text{d}}\right\} $
+ and its first derivative 
+\begin_inset Formula $\frac{dF}{d\kappa}$
 \end_inset
 
-, where 
-\begin_inset Formula $\varepsilon\left(\kappa,\theta^{\ast}\right)\triangleq\Phi\left(\kappa,\theta^{\ast}\right)-F\left(\kappa\right)$
+ can be uniformly approximated to arbitrary precision using bounded weights
+ for a sufficiently large approximator architecture.
+ Formally, 
+\begin_inset Formula $F\in\{\mathcal{C}^{1}(\Omega;\mathbb{R}^{n}):\forall\overline{\varepsilon}\in\mathbb{R}_{>0},\exists{\tt p}\in\mathbb{Z}_{\ge1}:\exists\mho\subsetneq\mathbb{R}^{{\tt p}}:\exists\theta^{\ast}\in\mho:E_{\Omega}(\theta^{\ast})\le\overline{\varepsilon}\}$
 \end_inset
 
 .
@@ -5637,15 +5807,14 @@ noprefix "false"
 
 \end_inset
 
- is required because of the following tradeoff.
- In parametric nonlinear regression, the user is forced may only pick two
- of the following three desirable qualities for their approximator: (i)
- 
+ is required because in parametric nonlinear regression, the user can only
+ pick two of the following three desirable qualities for the approximator:
+ (i) 
 \begin_inset Formula $F$
 \end_inset
 
  can be any 
-\begin_inset Formula $\mathcal{C}^{0}$
+\begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
  function, (ii) 
@@ -5656,9 +5825,16 @@ noprefix "false"
 \begin_inset Formula $\overline{\varepsilon}_{\text{d}}\to0$
 \end_inset
 
-), (iii) a known bound exists on the weights needed to achieve the desired
- accuracy for the target function.
- Without (2), there will exists sufficiently small values of 
+ as 
+\begin_inset Formula ${\tt p}\to\infty$
+\end_inset
+
+), (iii) a known bound exists on the weights (
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+) needed to achieve the desired accuracy for the target function.
+ Without (ii), there will exist sufficiently small values of 
 \begin_inset Formula $\overline{\varepsilon}_{\text{d}}$
 \end_inset
 
@@ -5666,15 +5842,19 @@ noprefix "false"
 \begin_inset Formula $\mho$
 \end_inset
 
+ even as 
+\begin_inset Formula ${\tt p}\to\infty$
+\end_inset
+
 .
- That is, 
+ That is, the infimum of all values 
 \begin_inset Formula $\overline{\varepsilon}_{\text{d}}$
 \end_inset
 
- may be arbitrarily large and can no longer be user-defined.
+ may achieve is an unknown positive value (rather than zero) that might
+ be arbitrarily large.
  Thus, (ii) is required.
- Practical implementation of a neural network on a computer with finite
- memory requires (iii).
+ Since computers possess finite memory, (iii) is required.
  Thus, (i) must be sacrificed in place of Assumption 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -5689,7 +5869,7 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
-By Assumption 
+Under Assumption 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "asm:bounded-weights"
@@ -5700,28 +5880,47 @@ noprefix "false"
 \end_inset
 
 , the set 
-\begin_inset Formula $\Theta^{\ast}\triangleq\arg\min_{\vartheta\in\mho}\left(\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa,\theta^{\ast}\right)\right\Vert +\sup_{\kappa\in\Omega}\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\left(\kappa,\theta^{\ast}\right)}\right\Vert \right)$
+\begin_inset Formula $\Theta^{\ast}\triangleq\arg\min_{\vartheta\in\mho}E_{\Omega}\left(\theta\right)$
 \end_inset
 
- is nonempty and any 
+ is nonempty and all 
 \begin_inset Formula $\theta^{\ast}\in\Theta^{\ast}$
 \end_inset
 
- satisfies
+ satisfy 
 \begin_inset Formula $\left\Vert \theta^{\ast}\right\Vert \le\overline{\theta}$
 \end_inset
 
 .
- Since the design of the update law for 
-\begin_inset Formula $\widehat{\theta}$
-\end_inset
-
- and the choice of parametric approximator for 
+ Since the architecture mapping 
 \begin_inset Formula $\Phi$
 \end_inset
 
- are at the user's discretion, the approach in this work is said to be modular.
- Motivated by the form of (
+, domain of approximation 
+\begin_inset Formula $\Omega$
+\end_inset
+
+, target function 
+\begin_inset Formula $F$
+\end_inset
+
+, and parameter search space 
+\begin_inset Formula $\mho$
+\end_inset
+
+ are time invariant, 
+\begin_inset Formula $\Theta^{\ast}$
+\end_inset
+
+ is also time-invariant.
+\end_layout
+
+\begin_layout Subsection
+Control Law
+\end_layout
+
+\begin_layout Standard
+Motivated by the form of (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:r2-step-1"
@@ -5731,10 +5930,13 @@ noprefix "false"
 
 \end_inset
 
-), the controller is designed as a Fil
+), the controller is designed as
 \begin_inset Formula 
 \begin{equation}
-\dot{u}\left(t\right)=\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(t\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(t\right)+k_{1}^{3}e\left(t\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(t\right)\right)+\Phi\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right),\label{eq:u_dot}
+\begin{alignedat}{1}\dot{u}\left(t\right) & =\left(k_{1}+k_{2}+k_{3}\right)r_{2}\left(t\right)+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}\left(t\right)\\
+ & +k_{1}^{3}e\left(t\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(t\right)\right)+\Phi\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right),
+\end{alignedat}
+\label{eq:u_dot}
 \end{equation}
 
 \end_inset
@@ -5754,7 +5956,7 @@ noprefix "false"
 
 \end_inset
 
-) and picking the initial condition as 
+) and picking the initial condition 
 \begin_inset Formula $u\left(t_{0}\right)=K_{P}e\left(t_{0}\right)+K_{D}\dot{e}\left(t_{0}\right)$
 \end_inset
 
@@ -5887,7 +6089,10 @@ K_{D} & \triangleq k_{1}+k_{2}+k_{3}
 
 \begin_inset Formula 
 \begin{equation}
-u\left(t\right)=K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau,\label{eq:u_implementable}
+\begin{alignedat}{1}u\left(t\right) & =K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop_{t_{0}}^{t}\left(K_{I}e\left(\tau\right)\right)d\tau\\
+ & +\intop_{t_{0}}^{t}\left(K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)+\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau
+\end{alignedat}
+\label{eq:u_implementable}
 \end{equation}
 
 \end_inset
@@ -5928,7 +6133,17 @@ noprefix "false"
 \end_inset
 
 .
- However, note that the implementable form only requires 
+ However, note that the implementable form in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:u_implementable"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) only requires 
 \begin_inset Formula $q$
 \end_inset
 
@@ -5972,7 +6187,7 @@ noprefix "false"
 
  is a Filippov solution to
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Formula 
@@ -6019,21 +6234,1486 @@ Regularizing
 
 
 \begin_inset Formula 
+\begin{equation}
+\dot{r}_{2}\left(t\right)\in\left\{ \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)-K_{\text{RISE}}\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right):\nu_{1}\in K[\text{sgn}]\left(r_{1}\right)\right\} ,\label{eq:r2-step-2}
+\end{equation}
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align*}
+D_{t} & \triangleq-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right),\\
+N_{0}\left(s,\theta^{\ast},\hat{\theta}\right) & \triangleq\Phi\left(s,\theta^{\ast}\right)-\Phi\left(s,\hat{\theta}\right),\\
+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \triangleq\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)d\left(t\right),\\
+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right) & \triangleq\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{d}\right),\\
+\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right) & \triangleq N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right),\\
+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right) & \triangleq\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}
+\end{align*}
+
+\end_inset
+
+Since 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is of class 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\kappa_{d}$
+\end_inset
+
+ is bounded, using 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 4"
+key "arxivKamalapurkar.Klotz.ea2013"
+literal "false"
+
+\end_inset
+
+, the bound on 
+\begin_inset Formula $\left\Vert \widetilde{\kappa}\right\Vert $
+\end_inset
+
+ and Property 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:bounded-weights"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, there exists a known function 
+\begin_inset Formula $\rho_{\Phi}:\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ that is of class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ with respect to each argument such that 
+\begin_inset Formula $\left\Vert \widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert \le\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.2
+\end_layout
+
+\begin_layout Plain Layout
+Recall
+\begin_inset Formula 
 \[
-\dot{r}_{2}\left(t\right)\in\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}\left(t\right)-r_{1}\left(t\right)-K_{\text{RISE}}K[\text{sgn}]\left(r_{1}\left(t\right)\right)+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right),
+\left\Vert \theta\right\Vert \le\overline{\theta}
 \]
 
 \end_inset
 
-where 
+Consider
+\begin_inset Formula 
+\[
+\Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\kappa_{d}$
+\end_inset
+
+ is bounded, by Rushi's Lemma, there exists a 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ nondecreasing function 
+\begin_inset Formula $\sigma_{\Phi\kappa}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that 
 \begin_inset Formula 
 \begin{align*}
-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \triangleq-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right),\\
-N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right) & \triangleq\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right),\\
-\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \triangleq\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)d\left(t\right),\\
-\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right) & \triangleq\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{d}\right),\\
-\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right) & \triangleq N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right).
+\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert  & \le\sigma_{\Phi\kappa}\left(\left\Vert \widetilde{\kappa}\right\Vert \right)\left\Vert \widetilde{\kappa}\right\Vert \\
+\sigma_{\Phi\kappa}\left(s\right) & \triangleq\sup_{\left\Vert \theta\right\Vert \le\overline{\theta},\left\Vert \zeta\right\Vert \le\overline{\kappa}_{d}+s}\left(\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\zeta,\theta\right)}\right\Vert \right)
 \end{align*}
+
+\end_inset
+
+There exists a class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ function 
+\begin_inset Formula $\rho_{\Phi\kappa}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that (for some 
+\begin_inset Formula $c>0$
+\end_inset
+
+)
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert  & \le\rho_{\Phi1}\left(\left\Vert \widetilde{\kappa}\right\Vert \right)\left\Vert \widetilde{\kappa}\right\Vert \\
+\rho_{\Phi1}\left(s\right) & \triangleq\sigma_{\Phi\kappa}\left(s\right)+cs
+\end{align*}
+
+\end_inset
+
+By Bounding Lemma 2.5,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \Phi\left(\kappa_{d},\theta\right)-\Phi\left(\kappa,\theta\right)\right\Vert  & \le\underbrace{\rho_{\Phi1}\left(\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}_{\rho_{\Phi\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{\Phi\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.3
+\end_layout
+
+\begin_layout Plain Layout
+Recall
+\begin_inset Formula 
+\begin{align*}
+\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right) & \triangleq N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)\\
+N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right) & \triangleq\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)
+\end{align*}
+
+\end_inset
+
+So,
+\begin_inset Formula 
+\begin{align*}
+\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right) & =\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)-\Phi\left(\kappa_{d},\theta^{\ast}\right)+\Phi\left(\kappa_{d},\hat{\theta}\right)\\
+ & =\Phi\left(\kappa_{d},\hat{\theta}\right)-\Phi\left(\kappa,\hat{\theta}\right)+\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa_{d},\theta^{\ast}\right)
+\end{align*}
+
+\end_inset
+
+By triangle inequality and Bounding Lemma 3.2 (and since 
+\begin_inset Formula $\left\Vert \theta^{\ast}\right\Vert \le\overline{\theta}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \widehat{\theta}\right\Vert \le\overline{\theta}$
+\end_inset
+
+), there exists class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ functions 
+\begin_inset Formula $\rho_{\widehat{\Phi}\kappa},\rho_{\Phi^{\ast}\kappa}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert  & \le\left\Vert \Phi\left(\kappa_{d},\hat{\theta}\right)-\Phi\left(\kappa,\hat{\theta}\right)\right\Vert +\left\Vert \Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa_{d},\theta^{\ast}\right)\right\Vert \\
+ & \le\rho_{\widehat{\Phi}\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi^{\ast}\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(\underbrace{\rho_{\widehat{\Phi}\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{\Phi^{\ast}\kappa}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}_{\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
+ & \le\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Since 
+\begin_inset Formula $\overline{\kappa}_{d}\le\overline{\kappa}$
+\end_inset
+
+, Property 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "prop:weight-initialization"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ensures that 
+\begin_inset Formula $\left\Vert \varepsilon\left(\kappa_{d}\left(t\right)\right)\right\Vert \le\overline{\varepsilon}_{\text{d}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}\left(t\right)}\right\Vert \le\overline{\varepsilon}_{\text{d}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\left\Vert \kappa\right\Vert \le\overline{\kappa}_{d}+\left\Vert \widetilde{\kappa}\right\Vert $
+\end_inset
+
+, the bound on 
+\begin_inset Formula $\left\Vert \widetilde{\kappa}\right\Vert $
+\end_inset
+
+ gives that 
+\begin_inset Formula $\left\Vert \kappa\right\Vert \le\overline{\kappa}$
+\end_inset
+
+ for all 
+\begin_inset Formula $\left\Vert z\right\Vert \le C_{\Delta}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ is of class 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert \le\overline{\varepsilon}_{\text{d}}\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+ for all 
+\begin_inset Formula $\left\Vert z\right\Vert \le C_{\Delta}$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Lemma 4"
+key "arxivKamalapurkar.Klotz.ea2013"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.1
+\end_layout
+
+\begin_layout Plain Layout
+Recall
+\begin_inset Formula 
+\[
+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\triangleq\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{d}\right)
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $\kappa_{d}$
+\end_inset
+
+ is bounded (by Bounding Lemma 2.3) and 
+\begin_inset Formula $\varepsilon\in\mathcal{C}^{1}$
+\end_inset
+
+, by Rushi's Lemma, there exists an 
+\color red
+unknown
+\color inherit
+ nondecreasing 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ function 
+\begin_inset Formula $\sigma_{\varepsilon}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert  & \le\sigma_{\varepsilon1}\left(\left\Vert \widetilde{\kappa}\right\Vert \right)\left\Vert \widetilde{\kappa}\right\Vert \\
+\sigma_{\varepsilon1}\left(s\right) & \triangleq\sup_{\kappa\in\overline{B}_{\overline{\kappa}_{d}+s}\left(\boldsymbol{0}_{n}\right)}\left(\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa}\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert  & \le\underbrace{\sigma_{\varepsilon1}\left(\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \right)\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}_{\sigma_{\varepsilon}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\sigma_{\varepsilon}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+For all 
+\begin_inset Formula $\left\Vert z\right\Vert \le C_{\Delta}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \kappa\right\Vert \le\overline{\kappa}=\overline{\kappa}_{d}+\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},C_{\Delta}\right)$
+\end_inset
+
+.
+ Thus,
+\begin_inset Formula 
+\[
+\sigma_{\varepsilon1}\left(\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}\right)\le\overline{\varepsilon}_{\text{d}}
+\]
+
+\end_inset
+
+Thus for all 
+\begin_inset Formula $\left\Vert \kappa\right\Vert \le\overline{\kappa}$
+\end_inset
+
+,
+\begin_inset Formula 
+\[
+\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert \le\overline{\varepsilon}_{\text{d}}\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},C_{\Delta}\right)C_{\Delta}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Since 
+\begin_inset Formula $f$
+\end_inset
+
+ is of class 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+, Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:qd-bounds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and EVT guarantee that there exist constants 
+\begin_inset Formula $\overline{f^{\prime}},\overline{f^{\prime\prime}}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ such 
+\begin_inset Formula $\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d}\left(t\right),\dot{q}_{d}\left(t\right)\right)}\right\Vert \le\overline{f^{\prime}}$
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \le\overline{f^{\prime\prime}}$
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \le\overline{f^{\prime\prime}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Assumption
+\begin_inset CommandInset label
+LatexCommand label
+name "asm:f-prime"
+
+\end_inset
+
+ The constants 
+\begin_inset Formula $\overline{f^{\prime}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\overline{f^{\prime\prime}}$
+\end_inset
+
+ are known.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:rho_f"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert \le\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+ Using Assumption 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:d-bounds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, it follows that there exists a known function 
+\begin_inset Formula $\rho_{0}:\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\times\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ that is of class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ with respect to each argument such that 
+\begin_inset Formula $\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert \le\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+ for all 
+\begin_inset Formula $\left\Vert z\right\Vert \le C_{\Delta}$
+\end_inset
+
+, where 
+\begin_inset Formula $\rho_{0}\left(k_{1},k_{2},s\right)\triangleq\rho_{\Phi}\left(k_{1},k_{2},s\right)+\overline{\varepsilon}_{\text{d}}\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},s\right)+\overline{d}\rho_{f^{\prime}}\left(k_{1},s\right)$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.4
+\end_layout
+
+\begin_layout Plain Layout
+Recall
+\begin_inset Formula 
+\[
+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\triangleq\widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)d\left(t\right)
+\]
+
+\end_inset
+
+By Bounding Lemma 1.3, 3.1, and 3.3,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert  & \le\left\Vert \widetilde{N}_{1}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert +\left\Vert \widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{d}\right)\right\Vert +\left\Vert \widetilde{N}_{2}\left(q,\dot{q},q_{d},\dot{q}_{d}\right)\right\Vert \left\Vert d\left(t\right)\right\Vert \\
+ & \le\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{\varepsilon}_{\text{d}}\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{d}\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(\underbrace{\rho_{\Phi}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{\varepsilon}_{\text{d}}\rho_{\widetilde{\kappa}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{d}\rho_{f^{\prime}}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
+ & \le\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Stability Analysis
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+NOTE TO SELF:
+\begin_inset Formula 
+\[
+r_{2}\left(t\right)=\ddot{e}\left(t\right)+\left(k_{1}+k_{2}\right)\dot{e}\left(t\right)+k_{1}k_{2}e\left(t\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r1_def"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r2_def"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r2-step-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the evolution of 
+\begin_inset Formula $z$
+\end_inset
+
+ is expressed by the initial value problem
+\begin_inset Formula 
+\begin{equation}
+\dot{z}\in H\left(t,z\right),\quad z\left(t_{0}\right)=z_{0},\label{IVP}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $z_{0}\in\mathbb{R}^{3n}$
+\end_inset
+
+ is the initial ensemble error and 
+\begin_inset Formula $G:\mathbb{R}^{3n}\times\mathbb{R}_{\geq0}\rightrightarrows\mathbb{R}^{3n}$
+\end_inset
+
+ is the set-valued map
+\begin_inset Formula 
+\[
+G\left(z,t\right)\triangleq\left\{ \left[\begin{array}{c}
+r_{1}-k_{1}e\\
+r_{2}-k_{2}r_{1}\\
+\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\nu+D_{t}
+\end{array}\right]:\nu\in K[\text{sgn}]\left(r_{1}\right)\right\} .
+\]
+
+\end_inset
+
+To establish exponential convergence to the origin for the system given
+ by (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "IVP"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), an auxiliary function called a 
+\begin_inset Formula $P$
+\end_inset
+
+-function is introduced to later develop a strict Lyapunov function.
+ Sufficient conditions to ensure that the 
+\begin_inset Formula $P$
+\end_inset
+
+-function is nonnegative are presented next.
+\end_layout
+
+\begin_layout Standard
+Fix an arbitrary Filippov solution 
+\begin_inset Formula $t\mapsto z\left(t\right)$
+\end_inset
+
+ of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "IVP"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) on 
+\begin_inset Formula $\mathcal{I}$
+\end_inset
+
+.
+ Define 
+\begin_inset Formula $\zeta\left(t\right)\triangleq K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D_{t}$
+\end_inset
+
+ and 
+\begin_inset Formula $\phi\left(t\right)\triangleq r_{1}^{\top}\left(t\right)\dot{D}_{t}+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\lambda_{P}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $r_{1}$
+\end_inset
+
+ is absolutely continuous on 
+\begin_inset Formula $\mathcal{I}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \cdot\right\Vert _{1}$
+\end_inset
+
+ is globally Lipschitz, 
+\begin_inset Formula $t\mapsto\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ is absolutely continuous; since 
+\begin_inset Formula $t\mapsto D_{t}$
+\end_inset
+
+ is absolutely continuous, 
+\begin_inset Formula $\zeta$
+\end_inset
+
+ is absolutely continuous and 
+\begin_inset Formula $\phi$
+\end_inset
+
+ is measurable and locally integrable on 
+\begin_inset Formula $\mathcal{I}$
+\end_inset
+
+.
+ Let 
+\begin_inset Formula $\eta:\mathcal{I}\to\mathbb{R}$
+\end_inset
+
+ be the unique absolutely continuous solution of 
+\begin_inset Formula $\dot{\eta}\left(t\right)=-\lambda_{P}\eta\left(t\right)+\phi\left(t\right)$
+\end_inset
+
+ with 
+\begin_inset Formula $\eta\left(t_{0}\right)=0$
+\end_inset
+
+, and define the 
+\begin_inset Formula $P$
+\end_inset
+
+-function 
+\begin_inset Formula $P:\mathcal{I}\to\mathbb{R}$
+\end_inset
+
+ as
+\begin_inset Formula 
+\begin{equation}
+P\left(t\right)\triangleq\zeta\left(t\right)+\eta\left(t\right).\label{P-function}
+\end{equation}
+
+\end_inset
+
+By the nonsmooth chain rule in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Theorem 2.2"
+key "Shevitz.Paden1994"
+literal "false"
+
+\end_inset
+
+, 
+\begin_inset Formula $\frac{{\rm d}}{{\rm d}t}\left\Vert r_{1}\left(t\right)\right\Vert _{1}\in\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)$
+\end_inset
+
+ for almost all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+, and 
+\begin_inset Formula $r_{1}^{\top}\nu=\left\Vert r_{1}\right\Vert _{1}$
+\end_inset
+
+ for all 
+\begin_inset Formula $\nu\in K[\text{sgn}]\left(r_{1}\right)$
+\end_inset
+
+.
+ Therefore, differentiating (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "P-function"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:r2_def"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "P-function"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) yields
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\dot{P}\left(t\right) & \in\dot{\zeta}\left(t\right)+\dot{\eta}\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+\phi\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\cancel{r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}-\lambda_{P}\eta\left(t\right)+\cancel{r_{1}^{\top}\left(t\right)\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+\left(k_{2}-\lambda_{P}\right)\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\eta\left(t\right)+k_{2}\zeta\left(t\right)-\lambda_{P}\zeta\left(t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}\left(\eta\left(t\right)+\zeta\left(t\right)\right)+k_{2}\left(K_{\text{RISE}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\dot{r}_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}-k_{2}r_{1}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-\left(\dot{r}_{1}^{\top}\left(t\right)+k_{2}r_{1}^{\top}\left(t\right)\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}\left\Vert r_{1}\left(t\right)\right\Vert _{1}\\
+ & \in K_{\text{RISE}}\dot{r}_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)+K_{\text{RISE}}k_{2}r_{1}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)\\
+ & \in K_{\text{RISE}}\left(\dot{r}_{1}^{\top}\left(t\right)+k_{2}r_{1}^{\top}\left(t\right)\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)\\
+ & \in K_{\text{RISE}}r_{2}^{\top}\left(t\right)K[\text{sgn}]\left(r_{1}\left(t\right)\right)-r_{2}^{\top}\left(t\right)D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-\lambda_{P}P\left(t\right)\\
+ & \in-\lambda_{P}P\left(t\right)+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}K[\text{sgn}]\left(r_{1}\left(t\right)\right)-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{alignat}{1}
+\dot{P} & \in\left\{ -\lambda_{P}P+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}\nu-D_{t}\right):\nu\in K[\text{sgn}]\left(r_{1}\left(t\right)\right)\right\} .\label{eq:PDot}
+\end{alignat}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proposition
+\begin_inset CommandInset label
+LatexCommand label
+name "prop:P-positive"
+
+\end_inset
+
+ For the 
+\begin_inset Formula $P$
+\end_inset
+
+-function defined as in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "P-function"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), if 
+\begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+ with 
+\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
+\end_inset
+
+, then 
+\begin_inset Formula $P\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Proof
+Since 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is of class 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \kappa_{d}\left(t\right)\right\Vert $
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \dot{\kappa}_{d}\left(t\right)\right\Vert $
+\end_inset
+
+, 
+\begin_inset Formula $\left\Vert \varepsilon\left(\kappa_{d}\left(t\right)\right)\right\Vert $
+\end_inset
+
+, and 
+\begin_inset Formula $\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}\left(t\right)}\right\Vert $
+\end_inset
+
+ are bounded by known constants, EVT, Property 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:bounded-weights"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, and Assumptions 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:d-bounds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:f-prime"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ensure that there exist known constants 
+\begin_inset Formula $\overline{D},\overline{\dot{D}}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\left\Vert D_{t}\right\Vert \le\overline{D}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \dot{D}_{t}\right\Vert \le\overline{\dot{D}}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
+\end_inset
+
+.
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 4.1
+\end_layout
+
+\begin_layout Plain Layout
+Recall
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & \triangleq-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+N_{0}\left(\kappa_{d},\theta^{\ast},\hat{\theta}\right)\\
+ & =-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}d\left(t\right)+\varepsilon\left(\kappa_{d}\right)+\Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa_{d},\hat{\theta}\right)
+\end{align*}
+
+\end_inset
+
+By Bounding Lemma 2.3 and 
+\begin_inset Formula $f\in\mathcal{C}^{1}$
+\end_inset
+
+ and EVT, there exists a known constant
+\begin_inset Formula 
+\begin{align*}
+\overline{D} & \triangleq\overline{\dot{d}}+\overline{d}\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \\
+ & +\sup_{\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)\in\overline{B}_{\overline{\kappa}_{d}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)}\left\Vert \Phi\left(\kappa_{d},\theta^{\ast}\right)-\Phi\left(\kappa_{d},\hat{\theta}\right)\right\Vert +\sup_{\kappa_{d}\in\overline{B}_{\overline{\kappa}_{d}}\left(0_{5n}\right)}\left\Vert \varepsilon\left(\kappa_{d}\right)\right\Vert \\
+\\
+\left\Vert D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert  & \le\overline{D}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 4.2
+\end_layout
+
+\begin_layout Plain Layout
+Differentiate
+\begin_inset Formula 
+\begin{align*}
+\dot{D}\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right) & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\dot{\kappa}_{d}\\
+ & +\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\dot{\kappa}_{d}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}\cancelto{0_{p}}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\kappa}_{d}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}\\
+\\
+ & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{d}}\dot{\kappa}_{d}\\
+ & +\left(\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\right)\dot{\kappa}_{d}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}
+\end{align*}
+
+\end_inset
+
+By 
+\begin_inset Formula $\frac{d\varepsilon}{d\kappa}\in\mathcal{C}^{0}$
+\end_inset
+
+, 
+\begin_inset Formula $\frac{\partial\Phi}{\partial\theta}\in\mathcal{C}^{0}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ in fact), 
+\begin_inset Formula $\frac{\partial\Phi}{\partial\kappa}\in\mathcal{C}^{0}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ in fact), EVT and Bounding Lemma 2.6, there exists a known constant
+\begin_inset Formula 
+\begin{align*}
+\overline{\dot{D}} & \triangleq\overline{\ddot{d}}+\overline{d}\overline{\dot{q}}_{d}\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left\Vert \left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert +\overline{d}\overline{\ddot{q}}_{d}\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \\
+ & +\overline{\dot{d}}\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert +\overline{\dot{\kappa}}_{d}\overline{\varepsilon}_{d}\\
+ & +\overline{\dot{\kappa}}_{d}\sup_{\left(\kappa_{d},\theta^{\ast},\widehat{\theta}\right)\in\overline{B}_{\overline{\kappa}_{d}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)}\left\Vert \left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\theta^{\ast}\right)}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\right\Vert \\
+ & +\eta_{1}\sup_{\left(\kappa_{d},\widehat{\theta}\right)\in\overline{B}_{\overline{\kappa}_{d}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)}\left\Vert \left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{d},\widehat{\theta}\right)}\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Using the Cauchy-Schwarz inequality and 
+\begin_inset Formula $\left\Vert r_{1}\right\Vert \leq\left\Vert r_{1}\right\Vert _{1}$
+\end_inset
+
+ yields 
+\begin_inset Formula $-r_{1}^{\top}\left(t\right)D_{t}\geq-\left\Vert r_{1}\left(t\right)\right\Vert \left\Vert D_{t}\right\Vert \geq-\overline{D}\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{1}^{\top}\left(t\right)\dot{D}_{t}\geq-\left\Vert r_{1}\left(t\right)\right\Vert \left\Vert \dot{D}_{t}\right\Vert \geq-\overline{\dot{D}}\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ Hence, 
+\begin_inset Formula $\zeta\left(t\right)\geq\left(K_{\text{RISE}}-\overline{D}\right)\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+ and 
+\begin_inset Formula $\phi\left(t\right)\geq\left(\left(k_{2}-\lambda_{P}\right)\left(K_{\text{RISE}}-\overline{D}\right)-\overline{\dot{D}}\right)\left\Vert r_{1}\left(t\right)\right\Vert _{1}$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ If 
+\begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+ with 
+\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
+\end_inset
+
+, then 
+\begin_inset Formula $\left(k_{2}-\lambda_{P}\right)\left(K_{\text{RISE}}-\overline{D}\right)-\overline{\dot{D}}>0$
+\end_inset
+
+, so 
+\begin_inset Formula $\phi\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ The definition of 
+\begin_inset Formula $\dot{\eta}$
+\end_inset
+
+ yields 
+\begin_inset Formula $\eta\left(t\right)=\int_{t_{0}}^{t}{\rm e}^{-\lambda_{P}\left(t-\tau\right)}\phi\left(\tau\right){\rm d}\tau$
+\end_inset
+
+, for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ Because 
+\begin_inset Formula ${\rm e}^{-\lambda_{P}\left(t-\tau\right)}\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $\tau\in\left[t_{0},t\right]$
+\end_inset
+
+ and 
+\begin_inset Formula $\phi\left(\tau\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $\tau\in\left[t_{0},t\right]$
+\end_inset
+
+, it follows that 
+\begin_inset Formula $\eta\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ Moreover, 
+\begin_inset Formula $K_{\text{RISE}}>\overline{D}$
+\end_inset
+
+ implies 
+\begin_inset Formula $\zeta\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+ Therefore, 
+\begin_inset Formula $P\left(t\right)=\zeta\left(t\right)+\eta\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Define the augmented ensemble error state 
+\begin_inset Formula $z_{P}:\mathcal{I}\to\mathbb{R}^{3n+1}$
+\end_inset
+
+ as 
+\begin_inset Formula $z_{P}\triangleq\left[\begin{array}{cc}
+z^{\top} & P\end{array}\right]^{\top}$
+\end_inset
+
+.
+ Using (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "IVP"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:PDot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the evolution of 
+\begin_inset Formula $z$
+\end_inset
+
+ is expressed by the augmented initial value problem 
+\begin_inset Formula 
+\begin{equation}
+\dot{z}_{P}\in\psi\left(z_{P},t\right),\hspace{1em}z_{P}\left(t_{0}\right)=z_{P,0},\label{eq:closed-loop-error-system}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $z_{P,0}\triangleq\left[\begin{array}{cc}
+z_{0}^{\top} & P\left(t_{0}\right)\end{array}\right]^{\top}$
+\end_inset
+
+ and 
+\begin_inset Formula $\psi:\mathbb{R}^{4n+1}\times\mathbb{R}_{\geq0}\rightrightarrows\mathbb{R}^{4n+1}$
+\end_inset
+
+ is the set-valued map
+\begin_inset Formula 
+\[
+\psi\left(z_{P},t\right)\triangleq\left\{ \left[\begin{array}{c}
+\xi\\
+-\lambda_{P}P+r_{2}^{\top}\left(K_{\text{RISE}}\upsilon_{P}-D_{t}\right)
+\end{array}\right]:\left(\begin{array}{c}
+\xi\in G\left(z,t\right),\\
+\upsilon_{P}\in K[\text{sgn}]\left(r_{1}\right)
+\end{array}\right)\right\} .
+\]
+
+\end_inset
+
+Since 
+\begin_inset Formula $K[\text{sgn}]\left(r_{1}\right)$
+\end_inset
+
+ is nonempty, compact, convex for every 
+\begin_inset Formula $r_{1}\in\mathbb{R}^{n}$
+\end_inset
+
+, and since 
+\begin_inset Formula $G\left(z,t\right)$
+\end_inset
+
+ is formed from affine functions of 
+\begin_inset Formula $z$
+\end_inset
+
+, 
+\begin_inset Formula $D_{t}$
+\end_inset
+
+, and 
+\begin_inset Formula $K[\text{sgn}]\left(r_{1}\right)$
+\end_inset
+
+, 
+\begin_inset Formula $G\left(z,t\right)$
+\end_inset
+
+ is a nonempty, compact, convex subset of 
+\begin_inset Formula $\mathbb{R}^{3n}$
+\end_inset
+
+.
+ Thus, each value of 
+\begin_inset Formula $\psi\left(z_{P},t\right)$
+\end_inset
+
+ is a nonempty, compact, convex subset of 
+\begin_inset Formula $\mathbb{R}^{3n+1}$
+\end_inset
+
+.
+ The graph of 
+\begin_inset Formula $K[\text{sgn}]\left(r_{1}\right)$
+\end_inset
+
+ is closed, 
+\begin_inset Formula $t\mapsto D_{t}$
+\end_inset
+
+ is continuous, and all remaining dependencies in 
+\begin_inset Formula $G$
+\end_inset
+
+ and in 
+\begin_inset Formula $\left(z_{P},\upsilon_{P},t\right)\mapsto-\lambda_{P}P+r_{2}^{\top}\left(K_{\text{RISE}}\upsilon_{P}-D_{t}\right)$
+\end_inset
+
+ are continuous in their corresponding variables, so 
+\begin_inset Formula $\psi$
+\end_inset
+
+ is upper semicontinuous in 
+\begin_inset Formula $\left(z_{P},t\right)$
+\end_inset
+
+.
+ For every bounded cylinder 
+\begin_inset Formula $Z_{P}\subset\mathbb{R}_{\geq0}\times\mathbb{R}^{3n+1}$
+\end_inset
+
+, the quantities 
+\begin_inset Formula $e,r_{1},r_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $P$
+\end_inset
+
+ are bounded on 
+\begin_inset Formula $Z_{P}$
+\end_inset
+
+, and every 
+\begin_inset Formula $\upsilon\in\text{SGN}\left(s\right)$
+\end_inset
+
+ satisfies 
+\begin_inset Formula $\left\Vert \upsilon\right\Vert \leq\sqrt{n}$
+\end_inset
+
+.
+ Since 
+\begin_inset Formula $\left|-\lambda_{P}P+r_{2}^{\top}\left(K_{\text{RISE}}\upsilon_{P}-D_{t}\right)\right|\leq\lambda_{P}\left|P\right|+\left\Vert r_{2}\right\Vert \left(\overline{D}+K_{\text{RISE}}\sqrt{n}\right)$
+\end_inset
+
+, all the components of 
+\begin_inset Formula $G\left(z,t\right)$
+\end_inset
+
+ are bounded on 
+\begin_inset Formula $Z_{P}$
+\end_inset
+
+.
+ Thus, 
+\begin_inset Formula $\psi$
+\end_inset
+
+ has nonempty, bounded, closed convex values, is upper semicontinuous, and
+ is locally bounded on bounded cylinders.
+ By Filippov’s existence theorem for differential inclusions, e.g., 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Chapter 2, §7, Theorem 1"
+key "Filippov1988"
+literal "false"
+
+\end_inset
+
+, for each 
+\begin_inset Formula $z_{P,0}\in\mathbb{R}^{4n+1}$
+\end_inset
+
+, there exists a maximal existence time 
+\begin_inset Formula $T_{\max}\in\left(t_{0},\infty\right]$
+\end_inset
+
+ and at least one absolutely continuous Filippov solution 
+\begin_inset Formula $z_{P}:\mathcal{I}\to\mathbb{R}^{3n+1}$
+\end_inset
+
+ satisfying 
+\begin_inset Formula $\dot{z}_{P}\in\psi\left(z_{P},t\right)$
+\end_inset
+
+ for almost all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+ and 
+\begin_inset Formula $z_{P}\left(t_{0}\right)=z_{P,0}$
+\end_inset
+
+.
+ A solution similarly exists for (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "IVP"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Sufficient conditions for all Filippov solutions to yield complete, uniformly
+ semi-globally asymptotically stable (USAS) (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:closed-loop-error-system"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), and exponentially convergent trajectories of the ensemble error state
+ 
+\begin_inset Formula $z$
+\end_inset
+
+ are presented next.
+\end_layout
+
+\begin_layout Theorem
+Let 
+\begin_inset Formula $\lambda\in\mathbb{R}_{>0}$
+\end_inset
+
+ be a desired convergence rate and let 
+\begin_inset Formula $\Delta\in\mathbb{R}_{>0}$
+\end_inset
+
+ be a radius for a desired region of attraction for 
+\begin_inset Formula $z_{0}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathcal{S}\triangleq\left\{ \zeta\in\mathbb{R}^{3n}:\left\Vert \zeta\right\Vert \le\Delta\right\} $
+\end_inset
+
+, respectively.
+ Sequentially, select 
+\begin_inset Formula $\lambda_{V},\lambda_{P},k_{1},k_{2},k_{3},K_{\text{RISE}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ such that 
+\begin_inset Formula $\lambda_{V}\ge2\lambda$
+\end_inset
+
+, 
+\begin_inset Formula $\lambda_{P}\geq2\lambda$
+\end_inset
+
+, 
+\begin_inset Formula $k_{1}>1+\frac{\lambda_{V}}{2}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{2}>\max\left\{ 1+\frac{\lambda_{V}}{2},\lambda_{P}\right\} $
+\end_inset
+
+, 
+\begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
+\end_inset
+
+, 
+\begin_inset Formula $k_{3}>\rho\left(k_{1},k_{2},C_{\Delta}\right)+\frac{\lambda_{V}}{2}$
+\end_inset
+
+, where 
+\begin_inset Formula $C_{\Delta}\triangleq\sqrt{\Delta^{2}+2C_{P}\Delta}$
+\end_inset
+
+, 
+\begin_inset Formula $C_{P}\triangleq\overline{D}+K_{\text{RISE}}\sqrt{n}$
+\end_inset
+
+ , and 
+\begin_inset Formula $\rho\left(k_{1},k_{2},s\right)\triangleq\rho_{0}^{2}\left(k_{1},k_{2},s\right)+\rho_{0}\left(k_{1},k_{2},s\right)$
+\end_inset
+
+.
+ Then, the origin of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "IVP"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is USAS and converges to the origin with estimate
+\begin_inset Formula 
+\begin{equation}
+\left\Vert z\left(t\right)\right\Vert \leq W\left(\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-\lambda\left(t-t_{0}\right)},\quad\forall t\geq t_{0},\label{eq:envelope}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\alpha:\mathbb{R}_{\geq0}\to\mathbb{R}_{\geq0}$
+\end_inset
+
+ is a class 
+\begin_inset Formula $\mathcal{K}_{\infty}$
+\end_inset
+
+ function defined as
+\begin_inset Formula 
+\begin{equation}
+\alpha\left(s\right)\triangleq\sqrt{{\color{red}s^{2}+2s\left(k_{4}+\overline{f}\right)\sqrt{n}}}.\label{W function}
+\end{equation}
 
 \end_inset
 
