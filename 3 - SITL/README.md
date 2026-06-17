@@ -1,5 +1,5 @@
 cd /home/root
-git clone https://github.com/mgardenswartz/resnet.git@v1.2.0
+git clone https://github.com/mgardenswartz/resnet.git
 apt update && apt install -y python3.10-venv
 python3 -m venv venv --system-site-packages
 source venv/bin/activate

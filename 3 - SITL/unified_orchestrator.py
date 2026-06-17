@@ -181,7 +181,6 @@ def objective(trial: optuna.Trial, controller: str) -> float:
         param_dict['k_i'] = int(k_i)
         param_dict['hidden_width'] = hidden_width
         param_dict['num_blocks'] = num_blocks
-        param_dict['plot'] = False
         param_dict['h_act_func'] = 'swish'
         param_dict['o_act_func'] = 'tanh'
         param_dict['shortcut_act_func'] = 'swish'
@@ -196,7 +195,8 @@ def objective(trial: optuna.Trial, controller: str) -> float:
         print(f"[*] Evaluating Architecture: {total_params} parameters.")
         print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | k_0: {k_0} | k_i: {k_i}")
         print(f"[*] Theta Bar: {param_dict['theta_bar']:.4f} (Scale: {theta_bar_scale:.4f})")
-        
+
+    param_dict['plot'] = False 
     print(f"==============================================")
     
     return run_trial(param_dict)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     
     # Bind the chosen controller flag to the objective function
     bound_objective = partial(objective, controller=args.controller)
-    study.optimize(bound_objective, n_trials=100)
+    study.optimize(bound_objective, n_trials=500)
     
     print("\n==================================")
     print("TUNING COMPLETE")

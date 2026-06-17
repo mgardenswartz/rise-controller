@@ -350,7 +350,7 @@ class AviaryRiseNode(Node):
                 self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
                 sys.exit(0)
 
-            qd, qd_dot, _ = self.get_desired_state(t)
+            qd, qd_dot, qd_ddot = self.get_desired_state(t)
             
             e = qd - q
             e_dot = qd_dot - q_dot
@@ -365,7 +365,7 @@ class AviaryRiseNode(Node):
                 
                 self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
                 self.last_integrand = current_integrand
-                u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                 
             elif self.controller_type == "baseline":
                 x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
