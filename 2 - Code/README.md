@@ -21,3 +21,5 @@ To redo
 deactivate
 rm -rf venv
 ```
+
+THIS CODEBASE IS A GOOD TEMPLATE BUT ITS MATH IS NO LONGER RELIABLE.
