@@ -8,6 +8,14 @@ else
     for PID in $GZ_PIDS; do 
         echo "Terminating process $PID..."
         kill "$PID"
+
+        # Max Gardenswartz added:
+        sleep 1
+        if ps -p "$PID" > /dev/null; then
+            echo "Gazebo process $PID refused to die. Sending SIGKILL..."
+            kill -9 "$PID"
+        fi
+
     done
     echo "Gazebo has been terminated."
 fi 
@@ -21,5 +29,12 @@ else
     for PID in $RSP_PIDS; do
         echo "Terminating process $PID"
         kill "$PID"
+
+        # Max Gardenswartz added:
+        sleep 1
+        if ps -p "$PID" > /dev/null; then
+            echo "Robot state publisher process $PID refused to die. Sending SIGKILL..."
+            kill -9 "$PID"
+        fi
     done
 fi

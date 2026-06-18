@@ -7,6 +7,13 @@ else
     for PID in $ROS_PIDS; do 
         echo "Terminating process $PID..."
         kill "$PID"
+        
+        # Max Gardenswartz added
+        sleep 1
+        if ps -p "$PID" > /dev/null; then
+            echo "ROS process $PID refused to die. Sending SIGKILL..."
+            kill -9 "$PID"
+        fi
     done
     echo "All ros processes have been terminated."
 fi 
