@@ -186,8 +186,8 @@ def objective(trial: optuna.Trial, controller: str) -> float:
     if controller == "noresnet":
         # Phase 1 Search Space
         param_dict['k1'] = trial.suggest_float("k1", 1.0, 8.0)
-        param_dict['k2'] = trial.suggest_float("k2", 0.1, 4.0)
-        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 4.0) # BREAK SYMMETRY: Force k3's lower bound to be k2
+        param_dict['k2'] = trial.suggest_float("k2", 0.1, 5.0)
+        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) # BREAK SYMMETRY: Force k3's lower bound to be k2
         param_dict['k_rise'] = trial.suggest_float("k_rise", 0.0001, 0.05, log=True)
         
         print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
@@ -253,10 +253,9 @@ if __name__ == "__main__":
     
     bound_objective = partial(objective, controller=args.controller)
     
-    # Give it a massive ceiling, pass the callback, and let it run
     study.optimize(
         bound_objective, 
-        n_trials=1000,
+        n_trials=500,
         callbacks=[early_stopper]
     )
     
