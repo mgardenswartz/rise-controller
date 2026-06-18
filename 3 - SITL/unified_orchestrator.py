@@ -32,6 +32,36 @@ FIXED_K2 = 0.3767
 FIXED_K3 = 1.0884
 FIXED_K_RISE = 0.006566
 
+class PatienceCallback:
+    def __init__(self, patience: int):
+        self.patience = patience
+        self.best_value = float('inf')
+        self.wait_count = 0
+
+    def __call__(self, study: optuna.Study, trial: optuna.Trial) -> None:
+        current_value = trial.value
+        
+        # Ignore failed runs (e.g., your 1e6 penalty or boundary failures) 
+        # so they don't incorrectly reset our tracking
+        if current_value is None or current_value >= 1e5:
+            return
+
+        # Check for improvement
+        if current_value < self.best_value:
+            self.best_value = current_value
+            self.wait_count = 0  # Reset the clock!
+        else:
+            self.wait_count += 1
+
+        # Trigger the early stop
+        if self.wait_count >= self.patience:
+            print(f"\n==================================")
+            print(f"[*] CONVERGENCE REACHED")
+            print(f"[*] No improvement in {self.patience} consecutive valid trials.")
+            print(f"[*] Terminating optimization early to save compute.")
+            print(f"==================================\n")
+            study.stop()
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Unified Optuna Orchestrator for Baseline and ResNet Controllers")
     parser.add_argument(
@@ -155,10 +185,10 @@ def objective(trial: optuna.Trial, controller: str) -> float:
     
     if controller == "noresnet":
         # Phase 1 Search Space
-        param_dict['k1'] = trial.suggest_float("k1", 0.1, 2.0)
-        param_dict['k2'] = trial.suggest_float("k2", 0.1, 2.0)
-        param_dict['k3'] = trial.suggest_float("k3", 0.1, 2.0)
-        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.0001, 0.01, log=True)
+        param_dict['k1'] = trial.suggest_float("k1", 1.0, 8.0)
+        param_dict['k2'] = trial.suggest_float("k2", 0.1, 4.0)
+        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 4.0) # BREAK SYMMETRY: Force k3's lower bound to be k2
+        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.0001, 0.05, log=True)
         
         print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
         
@@ -168,25 +198,29 @@ def objective(trial: optuna.Trial, controller: str) -> float:
         param_dict['k2'] = FIXED_K2
         param_dict['k3'] = FIXED_K3
         param_dict['k_rise'] = FIXED_K_RISE
-        
-        d_in = 15 
-        d_out = 3
-        hidden_width = 16
-        num_blocks = 1
-        param_dict['gamma'] = float(trial.suggest_float("gamma", 0.5, 50.0))
-        param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.001, 1.0, log=True))
-        k_0 = trial.suggest_categorical("k_0", [1, 2, 4, 8])
-        k_i = trial.suggest_categorical("k_i", [1, 2, 4, 8])
-        param_dict['k_0'] = int(k_0)
-        param_dict['k_i'] = int(k_i)
-        param_dict['hidden_width'] = hidden_width
-        param_dict['num_blocks'] = num_blocks
+
         param_dict['h_act_func'] = 'swish'
         param_dict['o_act_func'] = 'tanh'
         param_dict['shortcut_act_func'] = 'swish'
+        param_dict['theta_bar'] = 1e6 # Should never come into play
+        
+        d_in = 15
+        d_out = 3
+        hidden_width = 16
+        num_blocks = 1
+        k_0 = 1
+        k_i = 1
+
+        param_dict['hidden_width'] = hidden_width
+        param_dict['num_blocks'] = num_blocks
+        param_dict['k_0'] = k_0
+        param_dict['k_i'] = k_i
+
+        hidden_width = trial.suggest_categorical("hidden_width", [16, 32])
+        param_dict['gamma'] = float(trial.suggest_float("gamma", 0.5, 50.0, log=True))
+        param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.001, 5.0, log=True))
+
         total_params = get_total_parameters(d_in, hidden_width, d_out, num_blocks, k_0, k_i)
-        theta_bar_scale = trial.suggest_float("theta_bar_scale", 0.001, 1.0, log=True)
-        param_dict['theta_bar'] = float(theta_bar_scale * total_params)
         
         key = jax.random.PRNGKey(42)
         initial_weights_jax = init_resnet_weights(key, d_in, hidden_width, d_out, num_blocks, k_0, k_i, 'xavier', 'he')
@@ -214,13 +248,17 @@ if __name__ == "__main__":
     
     print(f"[*] Starting Tuning for {args.controller}. Saving to {db_name}")
     
-    # Bind the chosen controller flag to the objective function
+    # Initialize the early stopping callback with 50 trials of patience
+    early_stopper = PatienceCallback(patience=100)
+    
     bound_objective = partial(objective, controller=args.controller)
-    study.optimize(bound_objective, n_trials=500)
+    
+    # Give it a massive ceiling, pass the callback, and let it run
+    study.optimize(
+        bound_objective, 
+        n_trials=1000,
+        callbacks=[early_stopper]
+    )
     
     print("\n==================================")
     print("TUNING COMPLETE")
-    print(f"Controller: {args.controller}")
-    print(f"Best ITAE Cost: {study.best_value}")
-    print(f"Best Params: {study.best_params}")
-    print("==================================")

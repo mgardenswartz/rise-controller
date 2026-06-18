@@ -130,10 +130,15 @@ class AviaryRiseNode(Node):
         self.offboard_setpoint_counter = 0
         self.settle_counter = 0
         
-        self.t_0 = 0.0
-        self.last_t = 0.0
         self.t_f = 60.0
         self.T_period = 20.0
+        self.t_0 = 0.0
+        self.last_t = 0.0
+        
+        # Virtual Target State Tracking
+        self.tau = 0.0 # Determines qd(t_0) and qd_dot(t_0)
+        self.last_traj_time = 0.0
+        self.alpha_warp = 0.8 # Speed variation factor (0.0 = constant speed, < 1.0)
         
         self.integral_term = np.zeros(3, dtype=np.float64)
         self.last_integrand = np.zeros(3, dtype=np.float64)
@@ -159,6 +164,7 @@ class AviaryRiseNode(Node):
             weights_list = self.get_parameter('initial_weights').value
             self.theta_hat = jnp.array(weights_list)
             
+            # Utilizing the correct p-dimensional weight sizing for the projection matrix
             self.gamma_diag = jnp.ones(self.theta_hat.shape[0]) * self.get_parameter('gamma').value
 
             self.bound_resnet = jax.jit(partial(
@@ -275,28 +281,48 @@ class AviaryRiseNode(Node):
         self.trajectory_setpoint_publisher.publish(msg)
 
     def check_safety_boundary(self, q: np.ndarray) -> bool:
-        if not (-5.0 <= q[0] <= 5.0): return True
-        if not (-11.5 <= q[1] <= 11.5): return True
-        if not (-7.0 <= q[2] <= -1.0): return True
+        if not (-5.0 <= q[0] <= 5.0): return True # 1m from sides
+        if not (-11.5 <= q[1] <= 11.5): return True # 1m from sides
+        if not (-5.0 <= q[2] <= -0.5): return True # Vertical limits
         return False
 
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        wx = (4.0 * math.pi) / self.T_period  
-        wy = (2.0 * math.pi) / self.T_period
-        wz = (2.0 * math.pi) / self.T_period
-        zc = -4.0
+        # 1. Calculate delta time for the virtual clock integration
+        dt = t - self.last_traj_time
+        self.last_traj_time = t
+        if dt < 0: dt = 0.0
         
-        xd = 3.0 * math.sin(wx * t)
-        yd = 8.0 * math.sin(wy * t)
-        zd = 0.5 * math.sin(wz * t) + zc
+        # Base angular frequency
+        w = (2.0 * math.pi) / self.T_period
         
-        vxd = 3.0 * wx * math.cos(wx * t)
-        vyd = 8.0 * wy * math.cos(wy * t)
-        vzd = 0.5 * wz * math.cos(wz * t)
+        # 2. Virtual time phase derivatives (state-dependent speed modulation)
+        # Using wy = 1.0 * w, we modulate based on the Y-axis phase
+        tau_dot = 1.0 - self.alpha_warp * (math.sin(w * self.tau)**2)
+        tau_ddot = -self.alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
         
-        axd = -(wx**2) * xd
-        ayd = -(wy**2) * yd
-        azd = -(wz**2) * (zd - zc)
+        # 3. Euler integration step for the virtual target phase
+        self.tau += tau_dot * dt
+        
+        # Axis Frequencies (Y is 1x, X is 2x, Z is 4x)
+        wx = 2.0 * w
+        wy = 1.0 * w
+        wz = 4.0 * w
+        zc = -3.0
+        
+        # 4. Position (Locked to geometry evaluated at tau)
+        xd = 3.0 * math.sin(wx * self.tau)
+        yd = 8.0 * math.sin(wy * self.tau)
+        zd = 0.5 * math.sin(wz * self.tau) + zc
+        
+        # 5. Velocity (Chain Rule applied)
+        vxd = (3.0 * wx * math.cos(wx * self.tau)) * tau_dot
+        vyd = (8.0 * wy * math.cos(wy * self.tau)) * tau_dot
+        vzd = (0.5 * wz * math.cos(wz * self.tau)) * tau_dot
+        
+        # 6. Acceleration (Product + Chain Rule applied)
+        axd = -(3.0 * wx**2 * math.sin(wx * self.tau)) * (tau_dot**2) + (3.0 * wx * math.cos(wx * self.tau)) * tau_ddot
+        ayd = -(8.0 * wy**2 * math.sin(wy * self.tau)) * (tau_dot**2) + (8.0 * wy * math.cos(wy * self.tau)) * tau_ddot
+        azd = -(0.5 * wz**2 * math.sin(wz * self.tau)) * (tau_dot**2) + (0.5 * wz * math.cos(wz * self.tau)) * tau_ddot
         
         return (
             np.array([xd, yd, zd], dtype=np.float64),
@@ -335,6 +361,11 @@ class AviaryRiseNode(Node):
             if self.settle_counter >= 50:
                 self.t_0 = current_timestamp_s
                 self.last_t = 0.0
+                
+                # Reset Virtual Target trackers for clean initialization
+                self.tau = 0.0
+                self.last_traj_time = 0.0
+                
                 self.experiment_state = 3
 
         elif self.experiment_state == 3:
@@ -365,9 +396,12 @@ class AviaryRiseNode(Node):
                 
                 self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
                 self.last_integrand = current_integrand
+                
+                # noresnet actively uses the time-invariant feedforward term
                 u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                 
             elif self.controller_type == "baseline":
+                # Baseline strictly ignores qd_ddot in the input vector and feedforward
                 x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
                 self.theta_hat, phi_out = self.compiled_update_step(
                     self.theta_hat, x_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
@@ -382,6 +416,7 @@ class AviaryRiseNode(Node):
                 u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                 
             elif self.controller_type == "developed":
+                # Developed strictly ignores qd_ddot in the input vector and feedforward
                 u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                 kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
                 

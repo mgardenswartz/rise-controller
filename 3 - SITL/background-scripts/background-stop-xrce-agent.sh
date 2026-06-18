@@ -8,6 +8,13 @@ else
     for PID in $XRCE_PID; do 
         echo "Terminating process $PID..."
         kill "$PID"
+
+        # Max Gardenswartz added:
+        sleep 1
+        if ps -p "$PID" > /dev/null; then
+            echo "Process $PID refused to die. Sending SIGKILL..."
+            kill -9 "$PID"
+        fi
     done
     echo "MicroXRCEAgent has been terminated."
 fi 
