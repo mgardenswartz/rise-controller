@@ -171,52 +171,143 @@ Notation
 
 \begin_layout Standard
 Let 
-\begin_inset Formula $n\in\mathbb{Z}_{\ge1}$
+\begin_inset Formula $\mathbb{R}$
+\end_inset
+
+ denote the real numbers and 
+\begin_inset Formula $\mathbb{Z}$
+\end_inset
+
+ the integers.
+ For 
+\begin_inset Formula $x\in\mathbb{R}$
+\end_inset
+
+, let 
+\begin_inset Formula $\mathbb{R}_{\geq x}\triangleq\left[x,\infty\right)$
+\end_inset
+
+, 
+\begin_inset Formula $\mathbb{Z}_{\geq x}\triangleq\mathbb{R}_{\geq x}\cap\mathbb{Z}$
+\end_inset
+
+, and 
+\begin_inset Formula $\mathbb{R}_{>x}\triangleq\left(x,\infty\right)$
+\end_inset
+
+.
+ Throughout, let 
+\begin_inset Formula $m,n\in\mathbb{Z}_{\ge1}$
+\end_inset
+
+ and let 
+\begin_inset Formula $A\in\mathbb{R}^{m\times n}$
+\end_inset
+
+ be a matrix with columns 
+\begin_inset Formula $\left\{ a_{i}\right\} _{i\in\left[n\right]}\subsetneq\mathbb{R}^{m}$
+\end_inset
+
+.
+ The vectorization of 
+\begin_inset Formula $A$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $\text{vec}\left\{ A\right\} \triangleq\left[\begin{array}{ccc}
+a_{1}^{\top} & \cdots & a_{n}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{mn}$
 \end_inset
 
 .
  The 
-\begin_inset Formula $\left\Vert \right\Vert $
+\begin_inset Formula $m\times n$
 \end_inset
 
- means 2-norm.
- The 
-\begin_inset Formula $\left\Vert \right\Vert _{1}$
+ matrix of zeros is denoted by 
+\begin_inset Formula $0_{m\times n}$
 \end_inset
 
- means 1-norm A continuous function 
-\begin_inset Formula $\mathcal{C}^{2}$
+.
+ The induced 1- and 2-norms of 
+\begin_inset Formula $A$
 \end_inset
 
-...Zero vector.
- 
+ are denoted by 
+\begin_inset Formula $\left\Vert A\right\Vert _{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert A\right\Vert $
+\end_inset
+
+, respectively.
+ The element-wise matrix of signs of 
+\begin_inset Formula $A$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $\text{sgn}\left(A\right)$
+\end_inset
+
+ where 
+\begin_inset Formula $\text{sgn}\left(0_{m\times n}\right)=0_{m\times n}$
+\end_inset
+
+.
+ A continuous function is said to be of class 
+\begin_inset Formula $\mathcal{C}^{k}$
+\end_inset
+
+ if it has 
+\begin_inset Formula $k\in\left[0,\infty\right]\cap\mathbb{Z}$
+\end_inset
+
+ continuous derivatives.
+ The symbols 
 \begin_inset Formula $\subsetneq$
 \end_inset
 
-.
- Ball or radius 
-\begin_inset Formula $r$
+ and 
+\begin_inset Formula $\supsetneq$
+\end_inset
+
+ denote strict subsets and supersets, respectively.
+ For 
+\begin_inset Formula $d\in\mathbb{R}_{>0}$
+\end_inset
+
+, the open ball centered at 
+\begin_inset Formula $x\in\mathbb{R}^{n}$
+\end_inset
+
+ is denoted by 
+\begin_inset Formula $B_{d}\left(x\right)\triangleq\left\{ \zeta\in\mathbb{R}^{n}:\left\Vert x-\zeta\right\Vert <d\right\} $
 \end_inset
 
 .
- Closure.
- Filippov regularization.
- Signum.
- 
-\begin_inset Formula $C^{1}$
+ The corresponding closed ball obtained by taking the closure of 
+\begin_inset Formula $B_{d}\left(x\right)$
 \end_inset
 
- norm.
- 
-\end_layout
+ is denoted by 
+\begin_inset Formula $\text{\overline{B}_{d}\left(x\right)}$
+\end_inset
 
-\begin_layout Subsection
-Nonsmooth Analysis 
-\end_layout
+.
+ Let 
+\begin_inset Formula $K[\cdot]$
+\end_inset
 
-\begin_layout Standard
-See latest Cristian paper.
- Filippov regularization.
+ denote the Filippov set-valued map defined in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Equation 2b"
+key "Paden1987"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -6943,6 +7034,9 @@ noprefix "false"
 \end_inset
 
  as
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
 P\left(t\right)\triangleq\zeta\left(t\right)+\eta\left(t\right).\label{P-function}
@@ -7074,8 +7168,8 @@ noprefix "false"
 \begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
 \end_inset
 
- with 
-\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
+ where 
+\begin_inset Formula $k_{2}>\lambda_{P}$
 \end_inset
 
 , then 
@@ -7294,8 +7388,8 @@ By
 \begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
 \end_inset
 
- with 
-\begin_inset Formula $\lambda_{P}\in\left(0,k_{2}\right)$
+ where 
+\begin_inset Formula $k_{2}>\lambda_{P}$
 \end_inset
 
 , then 
@@ -7605,19 +7699,12 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
-Sufficient conditions for all Filippov solutions to yield complete, uniformly
- semi-globally asymptotically stable (USAS) (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:closed-loop-error-system"
-plural "false"
-caps "false"
-noprefix "false"
-
+Sufficient conditions for all Filippov solutions to 
+\begin_inset Formula $(\ref{eq:closed-loop-error-system})$
 \end_inset
 
-), and exponentially convergent trajectories of the ensemble error state
- 
+ to yield complete and exponentially convergent trajectories of the ensemble
+ error state 
 \begin_inset Formula $z$
 \end_inset
 
@@ -7629,11 +7716,13 @@ Let
 \begin_inset Formula $\lambda\in\mathbb{R}_{>0}$
 \end_inset
 
- be a desired convergence rate and let 
+ be a desired convergence rate.
+ Let 
 \begin_inset Formula $\Delta\in\mathbb{R}_{>0}$
 \end_inset
 
- be a radius for a desired region of attraction for 
+ be a radius for a desired region of attraction for an initial ensemble
+ error 
 \begin_inset Formula $z_{0}$
 \end_inset
 
@@ -7641,33 +7730,25 @@ Let
 \begin_inset Formula $\mathcal{S}\triangleq\left\{ \zeta\in\mathbb{R}^{3n}:\left\Vert \zeta\right\Vert \le\Delta\right\} $
 \end_inset
 
-, respectively.
+.
  Sequentially, select 
-\begin_inset Formula $\lambda_{V},\lambda_{P},k_{1},k_{2},k_{3},K_{\text{RISE}}\in\mathbb{R}_{>0}$
+\begin_inset Formula $k_{1},k_{2},k_{3},K_{\text{RISE}}\in\mathbb{R}_{>0}$
 \end_inset
 
  such that 
-\begin_inset Formula $\lambda_{V}\ge2\lambda$
+\begin_inset Formula $k_{1}>1+\lambda$
 \end_inset
 
 , 
-\begin_inset Formula $\lambda_{P}\geq2\lambda$
+\begin_inset Formula $k_{2}>\max\left\{ 1+\lambda,2\lambda\right\} $
 \end_inset
 
 , 
-\begin_inset Formula $k_{1}>1+\frac{\lambda_{V}}{2}$
+\begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-2\lambda}$
 \end_inset
 
 , 
-\begin_inset Formula $k_{2}>\max\left\{ 1+\frac{\lambda_{V}}{2},\lambda_{P}\right\} $
-\end_inset
-
-, 
-\begin_inset Formula $K_{\text{RISE}}\ge\overline{D}+\frac{\overline{\dot{D}}}{k_{2}-\lambda_{P}}$
-\end_inset
-
-, 
-\begin_inset Formula $k_{3}>\rho\left(k_{1},k_{2},C_{\Delta}\right)+\frac{\lambda_{V}}{2}$
+\begin_inset Formula $k_{3}>\rho\left(k_{1},k_{2},C_{\Delta}\right)+\lambda$
 \end_inset
 
 , where 
@@ -7678,12 +7759,67 @@ Let
 \begin_inset Formula $C_{P}\triangleq\overline{D}+K_{\text{RISE}}\sqrt{n}$
 \end_inset
 
- , and 
+, and 
 \begin_inset Formula $\rho\left(k_{1},k_{2},s\right)\triangleq\rho_{0}^{2}\left(k_{1},k_{2},s\right)+\rho_{0}\left(k_{1},k_{2},s\right)$
 \end_inset
 
 .
- Then, the origin of (
+ Suppose that Assumptions 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:qd-bounds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+-
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "asm:f-prime"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ hold and that the chosen update law and initialization method for 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+ satisfy Properties 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "prop:theta_bar"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+-
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "prop:weight-initialization"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Then, the controller in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:u_implementable"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ guarantees that the origin of (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "IVP"
@@ -7693,10 +7829,10 @@ noprefix "false"
 
 \end_inset
 
-) is USAS and converges to the origin with estimate
+) is USAS and converges according to
 \begin_inset Formula 
 \begin{equation}
-\left\Vert z\left(t\right)\right\Vert \leq W\left(\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-\lambda\left(t-t_{0}\right)},\quad\forall t\geq t_{0},\label{eq:envelope}
+\left\Vert z\left(t\right)\right\Vert \leq\alpha\left(\left\Vert z\left(t_{0}\right)\right\Vert \right){\rm e}^{-\lambda\left(t-t_{0}\right)},\quad\forall t\geq t_{0},\label{eq:envelope}
 \end{equation}
 
 \end_inset
@@ -7721,10 +7857,53 @@ where
 \end_layout
 
 \begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Proof
+Since 
+\begin_inset Formula $k_{2}>2\lambda$
+\end_inset
+
+, the interval 
+\begin_inset Formula $\left(0,k_{2}\right)$
+\end_inset
+
+ is nonempty.
+ Thus, the condition on 
+\begin_inset Formula $K_{\text{RISE}}$
+\end_inset
+
+ ensures that 
+\begin_inset Formula $P\left(t\right)\geq0$
+\end_inset
+
+ for all 
+\begin_inset Formula $t\in\mathcal{I}$
+\end_inset
+
+ by Proposition 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "prop:P-positive"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Consider the 
+\end_layout
+
+\begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
 btprint "btPrintCited"
-bibfiles "bib/sources,/Users/max/Library/CloudStorage/SynologyDrive-1/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/master,/Users/max/Library/CloudStorage/SynologyDrive-1/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/ncr,/Users/max/Library/CloudStorage/SynologyDrive-1/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/encr"
+bibfiles "bib/sources,/Users/max/Library/CloudStorage/SynologyDrive-home/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/ncr,/Users/max/Library/CloudStorage/SynologyDrive-home/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/encr,/Users/max/Library/CloudStorage/SynologyDrive-home/1 - Academics/1 - University of Florida/1 - Research/ncrbibs/master"
 options "ieeetr"
 
 \end_inset
