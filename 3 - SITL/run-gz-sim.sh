@@ -7,5 +7,5 @@ export GZ_SIM_RESOURCE_PATH=export GZ_SIM_RESOURCE_PATH="/home/root/voxl-px4/px4
 export GZ_VERSION=harmonic
 
 # start up the gazebo sim environment
-# gz sim -r -s -v 4 $WORLD_FILE
-gz sim -r -v 4 $WORLD_FILE
+gz sim -r -s -v 4 $WORLD_FILE
+# gz sim -r -v 4 $WORLD_FILE
