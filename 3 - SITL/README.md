@@ -1,3 +1,5 @@
+INSIDE DOCKER:
+
 cd /home/root
 git clone https://github.com/mgardenswartz/resnet.git
 apt update && apt install -y python3.10-venv
@@ -14,4 +16,9 @@ source install/setup.bash
 
 
 ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/ros2_ws/src/aviary_rise_controller/param/params.yaml
+
+OUTSIDE DOCKER
+pyenv local 3.12.13
+pip install jax
+pip install git+https://github.com/mgardenswartz/resnet.git@v1.2.0
 

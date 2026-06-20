@@ -27,10 +27,10 @@ FIXED_Y = -2.37
 TARGET_Z = -3.0
 
 # Fixed Phase 2 Baseline Gains (Optimized from Phase 1)
-FIXED_K1 = 1.537
-FIXED_K2 = 0.3767
-FIXED_K3 = 1.0884
-FIXED_K_RISE = 0.006566
+FIXED_K1 = 3.32
+FIXED_K2 = 0.292
+FIXED_K3 = 0.432
+FIXED_K_RISE = 0.05
 
 class PatienceCallback:
     def __init__(self, patience: int):
@@ -185,10 +185,10 @@ def objective(trial: optuna.Trial, controller: str) -> float:
     
     if controller == "noresnet":
         # Phase 1 Search Space
-        param_dict['k1'] = trial.suggest_float("k1", 1.0, 8.0)
-        param_dict['k2'] = trial.suggest_float("k2", 0.1, 5.0)
-        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) # BREAK SYMMETRY: Force k3's lower bound to be k2
-        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.0001, 0.05, log=True)
+        param_dict['k1'] = trial.suggest_float("k1", 0.001, 2.0, log=True)
+        param_dict['k2'] = trial.suggest_float("k2", 0.001, 5.0, log=True)
+        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) 
+        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 2.0, log=True)
         
         print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
         
@@ -248,14 +248,13 @@ if __name__ == "__main__":
     
     print(f"[*] Starting Tuning for {args.controller}. Saving to {db_name}")
     
-    # Initialize the early stopping callback with 50 trials of patience
-    early_stopper = PatienceCallback(patience=100)
+    early_stopper = PatienceCallback(patience=50)
     
     bound_objective = partial(objective, controller=args.controller)
     
     study.optimize(
         bound_objective, 
-        n_trials=500,
+        n_trials=1,
         callbacks=[early_stopper]
     )
     
