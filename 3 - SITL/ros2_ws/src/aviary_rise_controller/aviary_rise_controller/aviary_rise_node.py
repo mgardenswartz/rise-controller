@@ -22,6 +22,26 @@ jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network, init_resnet_weights
 
+# --- GLOBAL CONSTANTS ---
+MPC_ACC_HOR_MAX = 6.0
+MPC_ACC_VERT_MAX = 3.0
+
+# Safety Boundaries (Mapped to your 25x12x8m Lab)
+MAX_SAFE_X = 5.0
+MAX_SAFE_Y = 11.5
+MAX_SAFE_Z_CEIL = -0.5
+MAX_SAFE_Z_FLOOR = -7.5
+
+# Timeouts and Tolerances
+ODOM_TIMEOUT_SEC = 5
+SETTLE_TICKS = 50
+HOVER_TOLERANCE = 0.2
+
+# Trajectory Settings
+TRAJ_PERIOD = 20.0
+TRAJ_ALPHA_WARP = 0.8
+# ------------------------
+
 @jax.jit
 def discrete_projection(
     theta_hat: jax.Array,
@@ -62,13 +82,13 @@ class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
 
-        self.declare_parameter('vehicle', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k_rise', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('controller', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('gamma', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('sigma_mod', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k_0', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
@@ -78,10 +98,22 @@ class AviaryRiseNode(Node):
         self.declare_parameter('num_blocks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         self.declare_parameter('theta_bar', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('initial_weights', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY))
+        self.declare_parameter('d_in', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter('d_out', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter('q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('w_fail', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('sim_time', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('control_frequency', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('h_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('o_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('shortcut_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('T_period', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
-        self.vehicle_name = self.get_parameter('vehicle').value
+        self.vehicle_name = self.get_parameter('vehicle_name').value
         self.target_z = self.get_parameter('z').value
-        self.controller_type = self.get_parameter('controller').value
+        self.controller_type = self.get_parameter('controller_type').value
         self.enable_plotting = self.get_parameter('plot').value
         
         self.k1 = self.get_parameter('k1').value
@@ -93,9 +125,9 @@ class AviaryRiseNode(Node):
         self.K_D = self.k1 + k2 + k3
         self.K_RISE = self.get_parameter('k_rise').value
 
-        self.q_e = 1.0
-        self.r_u = 0.2
-        self.w_fail = 1000.0
+        self.q_e = self.get_parameter('q_e').value
+        self.r_u = self.get_parameter('r_u').value
+        self.w_fail = self.get_parameter('w_fail').value
 
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -130,18 +162,20 @@ class AviaryRiseNode(Node):
         self.offboard_setpoint_counter = 0
         self.settle_counter = 0
         
-        self.t_f = 60.0
-        self.T_period = 20.0
+        self.t_f = self.get_parameter('sim_time').value
+        self.T_period = self.get_parameter('T_period').value
         self.t_0 = 0.0
         self.last_t = 0.0
         
         # Virtual Target State Tracking
         self.tau = 0.0 # Determines qd(t_0) and qd_dot(t_0)
         self.last_traj_time = 0.0
-        self.alpha_warp = 0.8 # Speed variation factor (0.0 = constant speed, < 1.0)
+        self.alpha_warp = self.get_parameter('alpha_warp').value
+        self.warp_c = 1.0 / math.sqrt(1.0 - self.alpha_warp)
         
-        self.integral_term = np.zeros(3, dtype=np.float64)
-        self.last_integrand = np.zeros(3, dtype=np.float64)
+        self.d_out = 3
+        self.integral_term = np.zeros(self.d_out, dtype=np.float64)
+        self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
         
@@ -152,11 +186,17 @@ class AviaryRiseNode(Node):
         self.time_history = []
         self.error_norm_history = []
         self.weight_history = []
-        
+        self.q_history = []
+        self.qd_history = []
+
+        control_frequency = self.get_parameter('control_frequency').value
+        self.control_period = 1 / control_frequency
+        self.control_timer = self.create_timer(self.control_period, self.control_timer_callback)
+        self.offboard_spam_ticks = int(control_frequency) / 2.0
+
         # JAX NN Initializations (Bypassed if noresnet)
         if self.controller_type in ["baseline", "developed"]:
-            self.d_in = 12 if self.controller_type == "baseline" else 15
-            self.d_out = 3
+            self.d_in = self.get_parameter('d_in').value
         
             self.sigma_mod = self.get_parameter('sigma_mod').value
             self.theta_bar = self.get_parameter('theta_bar').value
@@ -175,9 +215,9 @@ class AviaryRiseNode(Node):
                 b=self.get_parameter('num_blocks').value,
                 k_0=self.get_parameter('k_0').value,
                 k_i=self.get_parameter('k_i').value,
-                h_act_func=self.get_parameter('h_act_func'),
-                o_act_func=self.get_parameter('o_act_func'),
-                shortcut_act_func=self.get_parameter('shortcut_act_func'),
+                h_act_func=self.get_parameter('h_act_func').value,
+                o_act_func=self.get_parameter('o_act_func').value,
+                shortcut_act_func=self.get_parameter('shortcut_act_func').value,
             ))
             
             @jax.jit
@@ -200,7 +240,6 @@ class AviaryRiseNode(Node):
             self.enforce_realtime_constraint()
 
         self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()}")
-        self.control_timer = self.create_timer(0.02, self.control_timer_callback)
         self.watchdog_timer = self.create_timer(1.0, self.watchdog_callback)
         self.seconds_without_odom = 0
 
@@ -209,17 +248,17 @@ class AviaryRiseNode(Node):
         dummy_r1 = jnp.zeros(self.d_out)
         
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
-        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, 0.02, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
         
         start_time = time.perf_counter()
-        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, 0.02, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
         hot_time = time.perf_counter() - start_time
         
         self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
-        if hot_time > 0.02:
-            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds 0.02s limit!")
+        if hot_time > self.control_period:
+            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
             sys.exit(1)
 
     def status_callback(self, msg: VehicleStatus) -> None:
@@ -238,7 +277,7 @@ class AviaryRiseNode(Node):
     def watchdog_callback(self) -> None:
         if not self.initial_position_locked:
             self.seconds_without_odom += 1
-            if self.seconds_without_odom >= 5:
+            if self.seconds_without_odom >= ODOM_TIMEOUT_SEC:
                 sys.exit(1)
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
@@ -281,45 +320,37 @@ class AviaryRiseNode(Node):
         self.trajectory_setpoint_publisher.publish(msg)
 
     def check_safety_boundary(self, q: np.ndarray) -> bool:
-        if not (-5.0 <= q[0] <= 5.0): return True # 1m from sides
-        if not (-11.5 <= q[1] <= 11.5): return True # 1m from sides
-        if not (-5.0 <= q[2] <= -0.5): return True # Vertical limits
+        if not (-MAX_SAFE_X <= q[0] <= MAX_SAFE_X): return True 
+        if not (-MAX_SAFE_Y <= q[1] <= MAX_SAFE_Y): return True 
+        if not (MAX_SAFE_Z_FLOOR <= q[2] <= MAX_SAFE_Z_CEIL): return True 
         return False
 
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        # 1. Calculate delta time for the virtual clock integration
         dt = t - self.last_traj_time
         self.last_traj_time = t
         if dt < 0: dt = 0.0
         
-        # Base angular frequency
         w = (2.0 * math.pi) / self.T_period
         
-        # 2. Virtual time phase derivatives (state-dependent speed modulation)
-        # Using wy = 1.0 * w, we modulate based on the Y-axis phase
-        tau_dot = 1.0 - self.alpha_warp * (math.sin(w * self.tau)**2)
-        tau_ddot = -self.alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
+        # Applying the scalar to correct the phase integration speed
+        tau_dot = self.warp_c * (1.0 - self.alpha_warp * (math.sin(w * self.tau)**2))
+        tau_ddot = -self.warp_c * self.alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
         
-        # 3. Euler integration step for the virtual target phase
         self.tau += tau_dot * dt
         
-        # Axis Frequencies (Y is 1x, X is 2x, Z is 4x)
         wx = 2.0 * w
         wy = 1.0 * w
         wz = 4.0 * w
-        zc = -3.0
+        zc = self.target_z 
         
-        # 4. Position (Locked to geometry evaluated at tau)
         xd = 3.0 * math.sin(wx * self.tau)
         yd = 8.0 * math.sin(wy * self.tau)
         zd = 0.5 * math.sin(wz * self.tau) + zc
         
-        # 5. Velocity (Chain Rule applied)
         vxd = (3.0 * wx * math.cos(wx * self.tau)) * tau_dot
         vyd = (8.0 * wy * math.cos(wy * self.tau)) * tau_dot
         vzd = (0.5 * wz * math.cos(wz * self.tau)) * tau_dot
         
-        # 6. Acceleration (Product + Chain Rule applied)
         axd = -(3.0 * wx**2 * math.sin(wx * self.tau)) * (tau_dot**2) + (3.0 * wx * math.cos(wx * self.tau)) * tau_ddot
         ayd = -(8.0 * wy**2 * math.sin(wy * self.tau)) * (tau_dot**2) + (8.0 * wy * math.cos(wy * self.tau)) * tau_ddot
         azd = -(0.5 * wz**2 * math.sin(wz * self.tau)) * (tau_dot**2) + (0.5 * wz * math.cos(wz * self.tau)) * tau_ddot
@@ -339,8 +370,9 @@ class AviaryRiseNode(Node):
         if self.experiment_state == 0:
             self.publish_offboard_control_mode(position=True, acceleration=False)
             self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
-            if self.offboard_setpoint_counter >= 50:
-                if self.offboard_setpoint_counter % 25 == 0:
+            if self.offboard_setpoint_counter >= SETTLE_TICKS:
+                # FIX: Now dynamically pulses at 2Hz regardless of control frequency
+                if self.offboard_setpoint_counter % self.offboard_spam_ticks == 0:
                     self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
                     self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 0.0)
             self.offboard_setpoint_counter += 1
@@ -351,14 +383,14 @@ class AviaryRiseNode(Node):
             self.publish_offboard_control_mode(position=True, acceleration=False)
             self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
             q_current = np.array(self.latest_odom.position, dtype=np.float64)
-            if abs(q_current[2] - self.target_z) < 0.2:
+            if abs(q_current[2] - self.target_z) < HOVER_TOLERANCE:
                 self.experiment_state = 2
 
         elif self.experiment_state == 2:
             self.publish_offboard_control_mode(position=True, acceleration=False)
             self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
             self.settle_counter += 1
-            if self.settle_counter >= 50:
+            if self.settle_counter >= SETTLE_TICKS:
                 self.t_0 = current_timestamp_s
                 self.last_t = 0.0
                 
@@ -440,6 +472,8 @@ class AviaryRiseNode(Node):
             self.last_error_sq = current_error_sq
             self.time_history.append(t)
             self.error_norm_history.append(norm_e)
+            self.q_history.append(q.tolist())
+            self.qd_history.append(qd.tolist())
 
             if self.controller_type in ["baseline", "developed"]:
                 self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
@@ -452,12 +486,12 @@ class AviaryRiseNode(Node):
             self.is_saturated = False
             u_xy = u[0:2]
             norm_uxy = np.linalg.norm(u_xy)
-            if norm_uxy > 6.0:
-                u[0:2] = u_xy * (6.0 / norm_uxy)
+            if norm_uxy > MPC_ACC_HOR_MAX:
+                u[0:2] = u_xy * (MPC_ACC_HOR_MAX / norm_uxy)
                 self.is_saturated = True
                 
-            if abs(u[2]) > 3.0:
-                u[2] = 3.0 * np.sign(u[2])
+            if abs(u[2]) > MPC_ACC_VERT_MAX:
+                u[2] = MPC_ACC_VERT_MAX * np.sign(u[2])
                 self.is_saturated = True
 
             self.publish_offboard_control_mode(position=False, acceleration=True)
@@ -477,17 +511,25 @@ class AviaryRiseNode(Node):
                         with open(csv_filename, mode='w', newline='') as file:
                             writer = csv.writer(file)
 
+                            # NEW: Expanded Headers
+                            headers = ["Time_s", "Error_Norm_m", "x", "y", "z", "xd", "yd", "zd"]
+                            
                             if self.controller_type in ["baseline", "developed"] and self.weight_history:
                                 num_weights = len(self.weight_history[0])
-                                headers = ["Time_s", "Error_Norm_m"] + [f"W{i}" for i in range(num_weights)]
-                                writer.writerow(headers)
-                                for i in range(len(self.time_history)):
-                                    row = [self.time_history[i], self.error_norm_history[i]] + self.weight_history[i]
-                                    writer.writerow(row)
-                            else:
-                                writer.writerow(["Time_s", "Error_Norm_m"])
-                                for time_val, err_val in zip(self.time_history, self.error_norm_history):
-                                    writer.writerow([time_val, err_val])
+                                headers += [f"W{i}" for i in range(num_weights)]
+                            
+                            writer.writerow(headers)
+                            
+                            for i in range(len(self.time_history)):
+                                row = [
+                                    self.time_history[i], 
+                                    self.error_norm_history[i],
+                                    self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
+                                    self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
+                                ]
+                                if self.controller_type in ["baseline", "developed"] and self.weight_history:
+                                    row += self.weight_history[i]
+                                writer.writerow(row)
                                     
                         self.get_logger().info(f"Telemetry saved to {csv_filename}")
                     except Exception as e:

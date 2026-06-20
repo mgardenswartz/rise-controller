@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-WORLD_FILE="default.sdf"
+WORLD_FILE="max-custom-aviary.sdf"
 
 # export path to gazebo world/model files
 export GZ_SIM_RESOURCE_PATH=export GZ_SIM_RESOURCE_PATH="/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/models":"/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/worlds"

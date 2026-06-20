@@ -7,30 +7,26 @@ import argparse
 import optuna
 import sys
 import yaml
-import random
 from functools import partial
 
-# Ensure JAX stays on CPU 
+# Ensure JAX stays on CPU
 import jax
 jax.config.update("jax_platform_name", "cpu")
 
-# Add custom path for ResNet imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "ros2_ws", "src", "aviary_rise_controller", "aviary_rise_controller")))
 from jax_resnet import get_total_parameters, init_resnet_weights
 
-# --- Fixed Global Configuration ---
 SEED = 42
-random.seed(SEED)
 
 FIXED_X = 0.70
 FIXED_Y = -2.37
 TARGET_Z = -3.0
 
 # Fixed Phase 2 Baseline Gains (Optimized from Phase 1)
-FIXED_K1 = 3.32
-FIXED_K2 = 0.292
-FIXED_K3 = 0.432
-FIXED_K_RISE = 0.05
+FIXED_K1 = 0.09
+FIXED_K2 = 0.15
+FIXED_K3 = 1.4
+FIXED_K_RISE = 0.14
 
 class PatienceCallback:
     def __init__(self, patience: int):
@@ -65,18 +61,23 @@ class PatienceCallback:
 def parse_args():
     parser = argparse.ArgumentParser(description="Unified Optuna Orchestrator for Baseline and ResNet Controllers")
     parser.add_argument(
-        "--controller", 
+        "--controller_type", 
         type=str, 
-        required=True, 
+        default=os.environ.get("CONTROLLER_TYPE"), # Fallback to bash export
         choices=["baseline", "developed", "noresnet"],
         help="Specify which controller profile to optimize."
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    
+    if args.controller_type is None:
+        parser.error("--controller_type is required if CONTROLLER_TYPE env var is not set.")
+        
+    return args
 
-def get_storage_config(controller: str):
-    if controller == "noresnet":
+def get_storage_config(controller_type: str):
+    if controller_type == "noresnet":
         return "sqlite:///phase1_tuning.db", "phase1_noresnet_baseline_tuning"
-    return f"sqlite:///phase2_{controller}.db", f"phase2_{controller}_optimization"
+    return f"sqlite:///phase2_{controller_type}.db", f"phase2_{controller_type}_optimization"
 
 def write_spawn_location(x: float, y: float) -> None:
     env_path = "spawn-locations.env"
@@ -172,18 +173,25 @@ def run_trial(param_dict: dict) -> float:
     print("[!] All 3 attempts failed. Assigning ultimate penalty.")
     return 1e6
 
-def objective(trial: optuna.Trial, controller: str) -> float:
+def objective(trial: optuna.Trial, controller_type: str) -> float:
     # Base parameters required for all controllers
     param_dict = {
-        'vehicle': 'px4_1',
+        'vehicle_name': 'px4_1',
         'z': TARGET_Z,
-        'controller': controller
+        'controller_type': controller_type,
+        'q_e': 1.0,
+        'r_u': 0.2,
+        'sim_time': 60.0,
+        'w_fail': 1000.0,
+        'control_frequency': 50.0,
+        'T_period': 45.0,
+        'alpha_warp': 0.8,  # Speed variation factor (0.0 = constant speed, < 1.0)
     }
     
     print(f"\n==============================================")
-    print(f"[*] Starting trial for controller: {controller}")
+    print(f"[*] Starting trial for controller: {controller_type}")
     
-    if controller == "noresnet":
+    if controller_type == "noresnet":
         # Phase 1 Search Space
         param_dict['k1'] = trial.suggest_float("k1", 0.001, 2.0, log=True)
         param_dict['k2'] = trial.suggest_float("k2", 0.001, 5.0, log=True)
@@ -204,31 +212,27 @@ def objective(trial: optuna.Trial, controller: str) -> float:
         param_dict['shortcut_act_func'] = 'swish'
         param_dict['theta_bar'] = 1e6 # Should never come into play
         
-        d_in = 15
-        d_out = 3
-        hidden_width = 16
-        num_blocks = 1
-        k_0 = 1
-        k_i = 1
+        param_dict['d_in'] = 12 if controller_type == "baseline" else 15
+        param_dict['d_out'] = 3
+        initial_weight_scale_factor = 0.2
 
-        param_dict['hidden_width'] = hidden_width
-        param_dict['num_blocks'] = num_blocks
-        param_dict['k_0'] = k_0
-        param_dict['k_i'] = k_i
+        param_dict['num_blocks'] = 1
+        param_dict['k_0'] = 1
+        param_dict['k_i'] = 1
 
-        hidden_width = trial.suggest_categorical("hidden_width", [16, 32])
+        param_dict['hidden_width'] = trial.suggest_categorical("hidden_width", [16, 32])
         param_dict['gamma'] = float(trial.suggest_float("gamma", 0.5, 50.0, log=True))
         param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.001, 5.0, log=True))
 
-        total_params = get_total_parameters(d_in, hidden_width, d_out, num_blocks, k_0, k_i)
+        total_params = get_total_parameters(param_dict['d_in'], param_dict['hidden_width'],  param_dict['d_out'], param_dict['num_blocks'], param_dict['k_0'], param_dict['k_i'])
         
-        key = jax.random.PRNGKey(42)
-        initial_weights_jax = init_resnet_weights(key, d_in, hidden_width, d_out, num_blocks, k_0, k_i, 'xavier', 'he')
+        key = jax.random.PRNGKey(SEED)
+        initial_weights_jax = initial_weight_scale_factor * init_resnet_weights(key,  param_dict['d_in'], param_dict['hidden_width'],  param_dict['d_out'], param_dict['num_blocks'], param_dict['k_0'], param_dict['k_i'], 'xavier', 'he')
         param_dict['initial_weights'] = [float(w) for w in initial_weights_jax]
         
         print(f"[*] Evaluating Architecture: {total_params} parameters.")
-        print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | k_0: {k_0} | k_i: {k_i}")
-        print(f"[*] Theta Bar: {param_dict['theta_bar']:.4f} (Scale: {theta_bar_scale:.4f})")
+        print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | hidden_width: {param_dict['hidden_width']}")
+        # print(f"[*] Theta Bar: {param_dict['theta_bar']:.4f}")
 
     param_dict['plot'] = False 
     print(f"==============================================")
@@ -237,7 +241,7 @@ def objective(trial: optuna.Trial, controller: str) -> float:
 
 if __name__ == "__main__":
     args = parse_args()
-    db_name, study_name = get_storage_config(args.controller)
+    db_name, study_name = get_storage_config(args.controller_type)
     
     study = optuna.create_study(
         study_name=study_name,
@@ -246,15 +250,15 @@ if __name__ == "__main__":
         direction="minimize"
     )
     
-    print(f"[*] Starting Tuning for {args.controller}. Saving to {db_name}")
+    print(f"[*] Starting Tuning for {args.controller_type}. Saving to {db_name}")
     
     early_stopper = PatienceCallback(patience=50)
     
-    bound_objective = partial(objective, controller=args.controller)
+    bound_objective = partial(objective, controller_type=args.controller_type)
     
     study.optimize(
         bound_objective, 
-        n_trials=1,
+        n_trials=250,
         callbacks=[early_stopper]
     )
     

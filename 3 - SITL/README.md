@@ -10,7 +10,7 @@ python3 -m pip install ./resnet
 source ros-sources.sh
 cd /home/root/ros2_ws
 rm -rf build/ install/ log/
-colcon build --cmake-args -DPython3_EXECUTABLE=/home/root/venv/bin/python3
+colcon build --symlink-install --cmake-args -DPython3_EXECUTABLE=/home/root/venv/bin/python3
 sed -i '1s|^.*$|#!/home/root/venv/bin/python3|' install/aviary_rise_controller/lib/aviary_rise_controller/aviary_rise_controller
 source install/setup.bash
 
