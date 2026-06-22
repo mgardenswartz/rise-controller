@@ -2199,14 +2199,6 @@ P\left(t_{0}\right) & =\zeta\left(t_{0}\right)\\
 
 \end_inset
 
-Define
-\begin_inset Formula 
-\[
-P_{0}\triangleq K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)D\left(\kappa_{d}\left(t_{0}\right),\theta^{\ast},\hat{\theta}\left(t_{0}\right),t_{0}\right)
-\]
-
-\end_inset
-
 NOTE:
 \begin_inset Formula 
 \begin{align*}
@@ -2411,7 +2403,7 @@ V\left(z_{P}\right) & =\frac{1}{2}z^{\top}z+P
 Trajectory derivative
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z_{p},t\right) & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
+\dot{V}\left(t\right) & =e^{\top}\left(r_{1}-k_{1}e\right)+r_{1}^{\top}\left(r_{2}-k_{2}r_{1}\right)+r_{2}^{\top}\left(\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\nu_{1}+D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
  & -\lambda_{P}P+r_{2}^{\top}\left(t\right)\left(K_{\text{RISE}}\nu_{2}-D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)\right)\\
 \\
  & ={\color{blue}e^{\top}r_{1}}-k_{1}e^{\top}e+\cancel{r_{1}^{\top}r_{2}}-k_{2}r_{1}^{\top}r_{1}+r_{2}^{\top}\widetilde{N}\left(\kappa,\kappa_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}^{\top}r_{2}-\cancel{r_{2}^{\top}r_{1}}-K_{\text{RISE}}r_{2}^{\top}\nu_{1}+\cancel{r_{2}^{\top}D\left(\kappa_{d},\theta^{\ast},\hat{\theta},t\right)}\\
@@ -2427,7 +2419,7 @@ Trajectory derivative
 Using Bounding Lemma 3.4 and triangle inequality,
 \begin_inset Formula 
 \begin{align*}
-\dot{V}\left(z_{P}\right) & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
+\dot{V}\left(t\right) & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert -k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
  & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}+\left\Vert r_{2}\right\Vert \rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +\left\Vert r_{2}\right\Vert \right)-k_{3}\left\Vert r_{2}\right\Vert ^{2}-\lambda_{P}P\\
 \\
  & \underset{\text{a.e.}}{\le}-\left(k_{1}-\frac{1}{2}\right)\left\Vert e\right\Vert ^{2}-\left(k_{2}-\frac{1}{2}\right)\left\Vert r_{1}\right\Vert ^{2}\\
@@ -2463,8 +2455,23 @@ Pick
 \end_inset
 
 .
- The gain conditions should be selected to ensure that for all 
-\begin_inset Formula $z\in\mathcal{S}$
+ 
+\color red
+The gain conditions should be selected to ensure that for all 
+\begin_inset Formula $z\in\mathcal{D}\triangleq\left\{ \zeta\in\mathbb{R}^{3n}:\left\Vert \zeta\right\Vert \le C_{\Delta}\right\} $
+\end_inset
+
+, where 
+\begin_inset Formula $C_{\Delta}\triangleq\sqrt{\Delta^{2}+2C_{P}\Delta}$
+\end_inset
+
+ and 
+\begin_inset Formula $C_{P}\triangleq\overline{D}+K_{\text{RISE}}\sqrt{n}$
+\end_inset
+
+.
+ Thus, for all 
+\begin_inset Formula $z\in\mathcal{D}$
 \end_inset
 
 ,
@@ -2475,6 +2482,8 @@ Pick
 
 \end_inset
 
+
+\color inherit
 So,
 \begin_inset Formula 
 \begin{align*}
@@ -2614,7 +2623,7 @@ V\left(z_{P}\left(t_{0}\right)\right) & \le\frac{1}{2}\left\Vert z\left(t_{0}\ri
 Define the sublevel set
 \begin_inset Formula 
 \[
-\Omega_{\mathcal{S}}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:V\left(z_{P}\left(t\right)\right)\le\frac{1}{2}\Delta^{2}+C_{P}\Delta\right\} 
+\Omega_{\mathcal{S}}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:V\left(z_{P}\right)\le\frac{1}{2}\Delta^{2}+C_{P}\Delta\right\} 
 \]
 
 \end_inset
@@ -2633,25 +2642,7 @@ Thus
 \end_inset
 
 .
- Since 
-\begin_inset Formula $\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2}\le V\left(z_{P}\left(t\right)\right)$
-\end_inset
-
-, it follows that for this 
-\begin_inset Formula $z_{P}\left(t\right)$
-\end_inset
-
- that
-\begin_inset Formula 
-\begin{align*}
-\frac{1}{2}\left\Vert z\left(t\right)\right\Vert ^{2} & \le\frac{1}{2}\Delta^{2}+C_{P}\Delta\\
-\left\Vert z\left(t\right)\right\Vert ^{2} & \le\Delta^{2}+2C_{P}\Delta\\
-\left\Vert z\left(t\right)\right\Vert  & \le\underbrace{\sqrt{\Delta^{2}+2C_{P}\Delta}}_{C_{\Delta}}
-\end{align*}
-
-\end_inset
-
-Consider the set of initial states
+ tConsider the set of initial states
 \begin_inset Formula 
 \[
 \mathcal{S}_{P}\triangleq\left\{ z_{P}\in\mathbb{R}^{3n+1}:\left\Vert z\right\Vert \le C_{\Delta}\right\} 
@@ -2677,6 +2668,8 @@ Recall that
 \end_inset
 
  and it follows that
+\color red
+
 \begin_inset Formula 
 \[
 \Omega_{\mathcal{S}}\subseteq\mathcal{S}_{P}
@@ -2684,6 +2677,8 @@ Recall that
 
 \end_inset
 
+
+\color inherit
 Since 
 \begin_inset Formula $z_{P}\left(t_{0}\right)\in\Omega_{\mathcal{S}}$
 \end_inset
@@ -2783,20 +2778,20 @@ BOUNDEDNESS
 
 \begin_layout Enumerate
 Stability analysis showed that 
-\begin_inset Formula $V\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n+1}\right)$
+\begin_inset Formula $V\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}\right)$
 \end_inset
 
 .
  Thus, 
-\begin_inset Formula $e,r_{1},r_{2},\dot{e},\ddot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $e,r_{1},r_{2},\dot{e},\ddot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 , 
-\begin_inset Formula $P\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}\right)$
+\begin_inset Formula $P\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}\right)$
 \end_inset
 
 , and 
-\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n}\right)$
+\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{3n}\right)$
 \end_inset
 
 .
@@ -2804,7 +2799,7 @@ Stability analysis showed that
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $q_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $q_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  by formulation and 
@@ -2812,11 +2807,11 @@ Since
 \end_inset
 
  and 
-\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 , it follows that 
-\begin_inset Formula $q\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $q\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 .
@@ -2824,7 +2819,7 @@ Since
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $\dot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\dot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  by formulation and 
@@ -2832,11 +2827,11 @@ Since
 \end_inset
 
  and 
-\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $e\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 , it follows that 
-\begin_inset Formula $\dot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\dot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 .
@@ -2844,7 +2839,7 @@ Since
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $\ddot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\ddot{q}_{d}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  by formulation and 
@@ -2852,11 +2847,11 @@ Since
 \end_inset
 
  and 
-\begin_inset Formula $r_{1},\dot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $r_{1},\dot{e}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 , it follows that 
-\begin_inset Formula $\ddot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\ddot{q}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 .
@@ -2864,7 +2859,7 @@ Since
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{3n}\right)$
+\begin_inset Formula $z\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{3n}\right)$
 \end_inset
 
 , 
@@ -2876,7 +2871,7 @@ Since
 \end_inset
 
  (Bounding Lemma 2.4), then triangle inequality implies that 
-\begin_inset Formula $u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  because 
@@ -2892,11 +2887,11 @@ Since
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $q,\dot{q},q_{d},\dot{q}_{d},u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $q,\dot{q},q_{d},\dot{q}_{d},u\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 , it follows that 
-\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{5n}\right)$
 \end_inset
 
 .
@@ -2904,11 +2899,11 @@ Since
 
 \begin_layout Enumerate
 Since 
-\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{p}\right)$
+\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{p}\right)$
 \end_inset
 
  by formulation and 
-\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{5n}\right)$
 \end_inset
 
  and 
@@ -2920,7 +2915,7 @@ Since
 \end_inset
 
  in fact), then by EVT, 
-\begin_inset Formula $\Phi\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\Phi\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 .
@@ -2933,23 +2928,23 @@ Recall
 
 .
  Since 
-\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{p}\right)$
+\begin_inset Formula $\hat{\theta}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{p}\right)$
 \end_inset
 
  by formulation and 
-\begin_inset Formula $e,r_{1},r_{2}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $e,r_{1},r_{2}\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  and 
-\begin_inset Formula $\text{sgn}\left(r_{1}\left(t\right)\right)\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\text{sgn}\left(r_{1}\left(t\right)\right)\in\mathcal{\mathcal{L}}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
  trivially and 
-\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{5n}\right)$
+\begin_inset Formula $\kappa\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{5n}\right)$
 \end_inset
 
 , it follows that 
-\begin_inset Formula $\dot{u}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge t_{0}};\mathbb{R}^{n}\right)$
+\begin_inset Formula $\dot{u}\in\mathcal{L}_{\infty}\left(\mathbb{R}_{\ge0};\mathbb{R}^{n}\right)$
 \end_inset
 
 .
