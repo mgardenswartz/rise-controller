@@ -169,6 +169,7 @@ literal "false"
  
 \color red
 CHANGE ALL C2 to LIPSCHITZ.
+ YOUR EPSILON ARGUMENT ARE WRONG; NEEDS THETA, TOO;
 \end_layout
 
 \begin_layout Section
@@ -264,6 +265,15 @@ a_{1}^{\top} & \cdots & a_{n}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{mn}$
 \end_inset
 
 .
+ A continuous function is said to be of class 
+\begin_inset Formula $\mathcal{C}^{k}$
+\end_inset
+
+ if it has 
+\begin_inset Formula $k\in\left[0,\infty\right]\cap\mathbb{Z}$
+\end_inset
+
+ continuous derivatives.
  The symbols 
 \begin_inset Formula $\subsetneq$
 \end_inset
@@ -309,58 +319,6 @@ literal "false"
 \end_inset
 
 .
- Let 
-\begin_inset Formula $\mathcal{A}\subseteq\mathbb{R}^{n}$
-\end_inset
-
- be equipped with Lebesgue measure 
-\begin_inset Formula $\mu$
-\end_inset
-
-, and let 
-\begin_inset Formula $\mathcal{B}\cong\mathbb{R}^{m}$
-\end_inset
-
- be a finite-dimensional normed space.
- Define 
-\begin_inset Formula $\left\Vert f\right\Vert _{\infty}\triangleq\inf\left\{ M\right.>0:\exists N\subseteq\mathcal{A}\text{ with }\mu\left(N\right)=0\text{ and }\left\Vert f\left(x\right)\right\Vert \leq M\text{ for all }x\in\left.\mathcal{A}\backslash N\right\} $
-\end_inset
-
-.
- Let 
-\begin_inset Formula $\mathcal{L}_{\infty}\left(\mathcal{A},\mathcal{B}\right)$
-\end_inset
-
- be the collection of all measurable 
-\begin_inset Formula $f:\mathcal{A}\to\mathcal{B}$
-\end_inset
-
- for which 
-\begin_inset Formula $\left\Vert f\right\Vert _{\infty}<\infty$
-\end_inset
-
-.
- A continuous function 
-\begin_inset Formula $f:\mathcal{D}\to\mathcal{R}$
-\end_inset
-
- is said to be of class 
-\begin_inset Formula $\mathcal{C}^{k}\left(\mathcal{D};\mathcal{R}\right)$
-\end_inset
-
- if it has 
-\begin_inset Formula $k\in\left[0,\infty\right]\cap\mathbb{Z}$
-\end_inset
-
- continuous derivatives, where the domain 
-\begin_inset Formula $\mathcal{D}\subseteq\mathbb{R}^{n}$
-\end_inset
-
- and codomain 
-\begin_inset Formula $\mathcal{R}\subseteq\mathbb{R}^{m}$
-\end_inset
-
- are occasionally dropped for brevity.
  A function 
 \begin_inset Formula $\rho:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
 \end_inset
@@ -378,6 +336,17 @@ literal "false"
 \end_inset
 
 .
+ 
+\color red
+Class 
+\begin_inset Formula $\mathcal{K}_{\infty}$
+\end_inset
+
+ function and 
+\begin_inset Formula $\mathcal{L_{\infty}}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -387,7 +356,7 @@ name "subsec:Deep-Residual-Neural"
 
 \end_inset
 
-Deep Residual Neural Network Model 
+Deep Residual Neural Network Model
 \end_layout
 
 \begin_layout Standard
@@ -4250,12 +4219,12 @@ ces and unknown dynamics.
 \begin_inset Formula $\ddot{q}_{\text{d}}$
 \end_inset
 
- is unknown and 
+ and 
 \begin_inset Formula $h$
 \end_inset
 
- is time-invariant, the objective is said to be target tracking rather than
- trajectory tracking.
+ are unknown, the objective is said to be target tracking rather than trajectory
+ tracking.
  The subsequent assumptions ensure feasibility of this objective.
 \end_layout
 
@@ -4774,7 +4743,7 @@ name "prop:weight-initialization"
 \end_inset
 
 the approximation accuracy is 
-\begin_inset Formula $E_{\Omega}\left(\theta\right)\triangleq\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa,\theta\right)\right\Vert +\sup_{\kappa\in\Omega}\left\Vert \left.\frac{\partial\varepsilon}{\partial\kappa}\right|_{\left(\kappa,\theta\right)}\right\Vert $
+\begin_inset Formula $E_{\Omega}\left(\theta\right)\triangleq\sup_{\kappa\in\Omega}\left\Vert \varepsilon\left(\kappa,\theta\right)\right\Vert +\sup_{\kappa\in\Omega}\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\left(\kappa,\theta\right)}\right\Vert $
 \end_inset
 
 , and the desired domain where the approximation of 
@@ -5176,7 +5145,10 @@ noprefix "false"
 \end_inset
 
 .
- Under Assumption 
+\end_layout
+
+\begin_layout Standard
+Under Assumption 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "asm:bounded-weights"
@@ -5199,7 +5171,36 @@ noprefix "false"
 \end_inset
 
 .
- 
+ Since the architecture mapping 
+\begin_inset Formula $\Phi$
+\end_inset
+
+, domain of approximation 
+\begin_inset Formula $\Omega$
+\end_inset
+
+, target function 
+\begin_inset Formula $F$
+\end_inset
+
+, and parameter search space 
+\begin_inset Formula $\mho$
+\end_inset
+
+ are time invariant, 
+\begin_inset Formula $\Theta^{\ast}$
+\end_inset
+
+ is also time-invariant.
+ Thus, 
+\begin_inset Formula $\frac{d}{dt}\left(\theta^{\ast}\right)=0_{p}$
+\end_inset
+
+ for all 
+\begin_inset Formula $\theta^{\ast}\in\mho$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -5529,23 +5530,23 @@ status open
 \begin_layout Plain Layout
 \begin_inset Formula 
 \begin{align*}
-\dot{r}_{2} & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa,\theta^{\ast}\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+\dot{r}_{2} & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}\right)r_{1}+k_{1}^{3}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
  & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\left(k_{1}+k_{2}\right)r_{2}+\left(-k_{1}k_{2}-k_{2}^{2}-k_{1}^{2}\right)r_{1}+k_{1}^{3}e\\
 \\
- & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa,\theta^{\ast}\right)-\left(\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\left(1\cancel{-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}}\right)r_{1}+\cancel{k_{1}^{3}e}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}+\left(1\cancel{-k_{1}^{2}-k_{2}^{2}-k_{1}k_{2}}\right)r_{1}+\cancel{k_{1}^{3}e}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)\\
  & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)+\cancel{\left(k_{1}+k_{2}\right)r_{2}}+\cancel{\left(-k_{1}k_{2}-k_{2}^{2}-k_{1}^{2}\right)r_{1}}+\cancel{k_{1}^{3}e}\\
 \\
- & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa,\theta^{\ast}\right)-\left(k_{3}r_{2}+r_{1}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
- & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa,\theta^{\ast}\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\Phi\left(\kappa,\hat{\theta}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-\left(k_{3}r_{2}+r_{1}+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\Phi\left(\kappa,\hat{\theta}\right)\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
+ & =\Phi\left(\kappa,\theta^{\ast}\right)+\varepsilon\left(\kappa\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\Phi\left(\kappa,\hat{\theta}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
 \\
- & =\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa,\theta^{\ast}\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
- & -\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)+\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)\\
+ & =\underbrace{\Phi\left(\kappa,\theta^{\ast}\right)-\Phi\left(\kappa,\hat{\theta}\right)}_{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)}+\varepsilon\left(\kappa\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}d\left(t\right)-\dot{d}\left(t\right)\\
+ & -\varepsilon\left(\kappa_{\text{d}}\right)+\varepsilon\left(\kappa_{\text{d}}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)+\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)\\
 \\
- & =\underbrace{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}_{1}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}+\underbrace{\varepsilon\left(\kappa,\theta^{\ast}\right)-\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)}_{\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}},\theta^{\ast}\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\\
- & +\left(\underbrace{\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}}_{\widetilde{N}_{2}\left(q,\dot{q},q_{\text{d}},\dot{q}_{\text{d}}\right)}\right)d\left(t\right)-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)\\
+ & =\underbrace{N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}_{1}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}+\underbrace{\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{\text{d}}\right)}_{\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}}\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\\
+ & +\left(\underbrace{\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)}}_{\widetilde{N}_{2}\left(q,\dot{q},q_{\text{d}},\dot{q}_{\text{d}}\right)}\right)d\left(t\right)-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)\\
 \\
- & =\underbrace{\widetilde{N}_{1}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}},\theta^{\ast}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{\text{d}},\dot{q}_{\text{d}}\right)d\left(t\right)}_{\widetilde{N}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\\
- & \underbrace{-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}_{D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)}\\
+ & =\underbrace{\widetilde{N}_{1}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}}\right)+\widetilde{N}_{2}\left(q,\dot{q},q_{\text{d}},\dot{q}_{\text{d}}\right)d\left(t\right)}_{\widetilde{N}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)}-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\\
+ & \underbrace{-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)}_{D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)}\\
 \\
  & =\widetilde{N}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)
 \end{align*}
@@ -5583,14 +5584,12 @@ Regularizing
 where
 \begin_inset Formula 
 \begin{align*}
-D_{t} & \triangleq-\dot{d}\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast}\right)\\
- & +N_{0}\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast},\hat{\theta}\left(t\right)\right)\\
+D_{t} & \triangleq-\dot{d}\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\left(t\right)\right)+N_{0}\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast},\hat{\theta}\left(t\right)\right)\\
  & -\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right)}d\left(t\right),\\
 N_{0}\left(s,\theta^{\ast},\hat{\theta}\right) & \triangleq\Phi\left(s,\theta^{\ast}\right)-\Phi\left(s,\hat{\theta}\right),\\
-\widetilde{N}_{t} & \triangleq\widetilde{N}_{1}\left(\kappa\left(t\right),\kappa_{\text{d}}\left(t\right),\theta^{\ast},\hat{\theta}\left(t\right)\right)\\
- & +\widetilde{N}_{\varepsilon}\left(\kappa\left(t\right),\kappa_{\text{d}}\left(t\right)\right)\\
+\widetilde{N}_{t} & \triangleq\widetilde{N}_{1}\left(\kappa\left(t\right),\kappa_{\text{d}}\left(t\right),\theta^{\ast},\hat{\theta}\left(t\right)\right)+\widetilde{N}_{\varepsilon}\left(\kappa\left(t\right),\kappa_{\text{d}}\left(t\right)\right)\\
  & +\widetilde{N}_{2}\left(q\left(t\right),\dot{q}\left(t\right),q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right)d\left(t\right),\\
-\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}},\theta^{\ast}\right) & \triangleq\varepsilon\left(\kappa,\theta^{\ast}\right)-\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right),\\
+\widetilde{N}_{\varepsilon}\left(\kappa,\kappa_{\text{d}}\right) & \triangleq\varepsilon\left(\kappa\right)-\varepsilon\left(\kappa_{\text{d}}\right),\\
 \widetilde{N}_{1}\left(\kappa,\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right) & \triangleq N_{0}\left(\kappa,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right),\\
 \widetilde{N}_{2}\left(q,\dot{q},q_{\text{d}},\dot{q}_{\text{d}}\right) & \triangleq\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q,\dot{q}\right)},
 \end{align*}
@@ -5692,7 +5691,7 @@ noprefix "false"
 
 .
 \begin_inset Note Note
-status collapsed
+status open
 
 \begin_layout Subsubsection*
 BOUNDING LEMMA 2.1
@@ -5797,11 +5796,11 @@ noprefix "false"
 \end_inset
 
  such that 
-\begin_inset Formula $\left\Vert \kappa_{\text{d}}\left(t\right)\right\Vert \le\overline{\kappa}_{\text{d}}$
+\begin_inset Formula $\left\Vert \kappa_{\text{d}}\right\Vert \le\overline{\kappa}_{\text{d}}$
 \end_inset
 
  and 
-\begin_inset Formula $\left\Vert \dot{\kappa}_{\text{d}}\left(t\right)\right\Vert \le\overline{\dot{\kappa}}_{\text{d}}$
+\begin_inset Formula $\left\Vert \dot{\kappa}_{\text{d}}\right\Vert \le\overline{\dot{\kappa}}_{\text{d}}$
 \end_inset
 
  for all 
@@ -6235,7 +6234,7 @@ noprefix "false"
 \end_inset
 
  with respect to each argument such that 
-\begin_inset Formula $\left\Vert \widetilde{u}\right\Vert \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\begin_inset Formula $\left\Vert \widetilde{u}\left(t\right)\right\Vert \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\left(t\right)\right\Vert \right)\left\Vert z\left(t\right)\right\Vert $
 \end_inset
 
  where 
@@ -6359,7 +6358,7 @@ noprefix "false"
 \end_inset
 
 , and the fact that 
-\begin_inset Formula $\left\Vert \kappa_{\text{d}}\right\Vert $
+\begin_inset Formula $\kappa_{\text{d}}$
 \end_inset
 
  is bounded, there exists a known function that is of class 
@@ -6371,7 +6370,7 @@ noprefix "false"
 \end_inset
 
 , where 
-\begin_inset Formula $\widetilde{\kappa}\left(t\right)\triangleq\kappa_{\text{d}}\left(t\right)-\kappa\left(t\right)$
+\begin_inset Formula $\widetilde{\kappa}\triangleq\kappa_{\text{d}}-\kappa$
 \end_inset
 
  and 
@@ -6439,7 +6438,7 @@ By Bounding Lemma 2.4,
 \end_inset
 
  and 
-\begin_inset Formula $\left\Vert \kappa_{\text{d}}\right\Vert $
+\begin_inset Formula $\kappa_{\text{d}}$
 \end_inset
 
  is bounded, using 
@@ -6486,11 +6485,7 @@ BOUNDING LEMMA 3.2
 \end_layout
 
 \begin_layout Plain Layout
-Let 
-\begin_inset Formula $\theta$
-\end_inset
-
- be arbitrary but satisfy
+Recall
 \begin_inset Formula 
 \[
 \left\Vert \theta\right\Vert \le\overline{\theta}
@@ -6636,16 +6631,11 @@ By triangle inequality and Bounding Lemma 3.2 (and since
 \end_inset
 
  is subsequently defined.
- Thus, 
-\begin_inset Formula $\overline{B}_{\overline{\kappa}_{\text{d}}}\left(0_{5n}\right)\subseteq\Omega$
-\end_inset
-
- and 
+ Since 
 \begin_inset Formula $\overline{\kappa}_{\text{d}}\le\overline{\kappa}$
 \end_inset
 
-.
- Using this fact, Property 
+, Property 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "prop:weight-initialization"
@@ -6672,7 +6662,7 @@ noprefix "false"
 \begin_inset Formula $\left\Vert \kappa\right\Vert \le\overline{\kappa}_{\text{d}}+\left\Vert \widetilde{\kappa}\right\Vert $
 \end_inset
 
- by triangle inequality, the bound on 
+, the bound on 
 \begin_inset Formula $\left\Vert \widetilde{\kappa}\right\Vert $
 \end_inset
 
@@ -6826,11 +6816,11 @@ noprefix "false"
 \end_inset
 
 , 
-\begin_inset Formula $\left\Vert \left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right)}\right\Vert \le\overline{f^{\prime\prime}}$
+\begin_inset Formula $\left\Vert \left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\right\Vert \le\overline{f^{\prime\prime}}$
 \end_inset
 
 , and 
-\begin_inset Formula $\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right)}\right\Vert \le\overline{f^{\prime\prime}}$
+\begin_inset Formula $\left\Vert \left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\right\Vert \le\overline{f^{\prime\prime}}$
 \end_inset
 
  for all 
@@ -7004,7 +6994,7 @@ noprefix "false"
 \begin_inset Formula $z$
 \end_inset
 
- is a Filippov solution to the initial value problem,
+ is governed by the initial value problem,
 \begin_inset Formula 
 \begin{equation}
 \dot{z}\in G\left(t,z\right),\quad z\left(t_{0}\right)=z_{0},\label{IVP}
@@ -7057,7 +7047,7 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
-Consider an arbitrary Filippov solution 
+Fix an arbitrary Filippov solution 
 \begin_inset Formula $t\mapsto z\left(t\right)$
 \end_inset
 
@@ -7211,7 +7201,7 @@ noprefix "false"
 
 ) yields
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Formula 
@@ -7293,41 +7283,15 @@ noprefix "false"
 \end_layout
 
 \begin_layout Proof
-Since the architecture mapping 
+Since 
 \begin_inset Formula $\Phi$
 \end_inset
 
-, domain of approximation 
-\begin_inset Formula $\Omega$
+ is of class 
+\begin_inset Formula $\mathcal{C}^{0}$
 \end_inset
 
-, function 
-\begin_inset Formula $F$
-\end_inset
-
-, and parameter search space 
-\begin_inset Formula $\mho$
-\end_inset
-
- are all time-invariant, 
-\begin_inset Formula $\Theta^{\ast}$
-\end_inset
-
- is also time-invariant.
- Thus, 
-\begin_inset Formula $\dot{\theta}^{\ast}=0_{{\tt p}}$
-\end_inset
-
- for any 
-\begin_inset Formula $\theta^{\ast}\in\mho$
-\end_inset
-
-.
- Using this fact, the continuity of 
-\begin_inset Formula $\Phi$
-\end_inset
-
-, and the fact that
+ and 
 \begin_inset Formula $\left\Vert \kappa_{\text{d}}\left(t\right)\right\Vert $
 \end_inset
 
@@ -7336,18 +7300,14 @@ Since the architecture mapping
 \end_inset
 
 , 
-\begin_inset Formula $\left\Vert \varepsilon\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast}\right)\right\Vert $
+\begin_inset Formula $\left\Vert \varepsilon\left(\kappa_{\text{d}}\left(t\right)\right)\right\Vert $
 \end_inset
 
 , and 
-\begin_inset Formula $\left\Vert \left.\frac{\partial\varepsilon}{\partial\kappa}\right|_{\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast}\right)}\right\Vert $
+\begin_inset Formula $\left\Vert \left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{\text{d}}\left(t\right)}\right\Vert $
 \end_inset
 
- are bounded by known constants for all 
-\begin_inset Formula $t\in\mathbb{R}_{\ge0}$
-\end_inset
-
-, EVT, Property 
+ are bounded by known constants, EVT, Property 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "asm:bounded-weights"
@@ -7360,16 +7320,6 @@ noprefix "false"
 , and Assumptions 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "asm:qd-bounds"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-, 
-\begin_inset CommandInset ref
-LatexCommand ref
 reference "asm:d-bounds"
 plural "false"
 caps "false"
@@ -7377,7 +7327,7 @@ noprefix "false"
 
 \end_inset
 
-, and 
+ and 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "asm:f-prime"
@@ -7418,8 +7368,8 @@ Recall
 \begin_layout Plain Layout
 \begin_inset Formula 
 \begin{align*}
-D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right) & \triangleq-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)\\
- & =-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)+\Phi\left(\kappa_{\text{d}},\theta^{\ast}\right)-\Phi\left(\kappa_{\text{d}},\hat{\theta}\right)
+D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right) & \triangleq-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\right)+N_{0}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta}\right)\\
+ & =-\dot{d}\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}d\left(t\right)+\varepsilon\left(\kappa_{\text{d}}\right)+\Phi\left(\kappa_{\text{d}},\theta^{\ast}\right)-\Phi\left(\kappa_{\text{d}},\hat{\theta}\right)
 \end{align*}
 
 \end_inset
@@ -7432,7 +7382,7 @@ By Bounding Lemma 2.3 and
 \begin_inset Formula 
 \begin{align*}
 \overline{D} & \triangleq\overline{\dot{d}}+\overline{d}\sup_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)\in\overline{B}_{\overline{q}_{\text{d}}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{\text{d}}}\left(0_{n}\right)}\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\right\Vert \\
- & +\sup_{\left(\kappa_{\text{d}},\theta^{\ast},\widehat{\theta}\right)\in\overline{B}_{\overline{\kappa}_{\text{d}}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)}\left\Vert \Phi\left(\kappa_{\text{d}},\theta^{\ast}\right)-\Phi\left(\kappa_{\text{d}},\hat{\theta}\right)\right\Vert +\sup_{\left(\kappa_{\text{d}},\theta^{\ast}\right)\in\overline{B}_{\overline{\kappa}_{\text{d}}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{{\tt p}}\right)}\left\Vert \varepsilon\left(\kappa_{\text{d}},\theta^{\ast}\right)\right\Vert \\
+ & +\sup_{\left(\kappa_{\text{d}},\theta^{\ast},\widehat{\theta}\right)\in\overline{B}_{\overline{\kappa}_{\text{d}}}\left(0_{5n}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)\times\overline{B}_{\overline{\theta}}\left(0_{p}\right)}\left\Vert \Phi\left(\kappa_{\text{d}},\theta^{\ast}\right)-\Phi\left(\kappa_{\text{d}},\hat{\theta}\right)\right\Vert +\sup_{\kappa_{\text{d}}\in\overline{B}_{\overline{\kappa}_{\text{d}}}\left(0_{5n}\right)}\left\Vert \varepsilon\left(\kappa_{\text{d}}\right)\right\Vert \\
 \\
 \left\Vert D\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right)\right\Vert  & \le\overline{D}
 \end{align*}
@@ -7450,10 +7400,10 @@ BOUNDING LEMMA 4.2
 Differentiate
 \begin_inset Formula 
 \begin{align*}
-\dot{D}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right) & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{q}_{\text{d}}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\ddot{q}_{\text{d}}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{d}\left(t\right)+\left.\frac{\partial\varepsilon}{\partial\kappa}\right|_{\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast}\right)}\dot{\kappa}_{\text{d}}\\
+\dot{D}\left(\kappa_{\text{d}},\theta^{\ast},\hat{\theta},t\right) & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{q}_{\text{d}}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\ddot{q}_{\text{d}}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{\text{d}}}\dot{\kappa}_{\text{d}}\\
  & +\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{\text{d}},\theta^{\ast}\right)}\dot{\kappa}_{\text{d}}+\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{\text{d}},\theta^{\ast}\right)}\cancelto{0_{p}}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{\text{d}},\widehat{\theta}\right)}\dot{\kappa}_{\text{d}}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{\text{d}},\widehat{\theta}\right)}\dot{\widehat{\theta}}\\
 \\
- & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{q}_{\text{d}}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\ddot{q}_{\text{d}}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{d}\left(t\right)+\left.\frac{\partial\varepsilon}{\partial\kappa}\right|_{\left(\kappa_{\text{d}}\left(t\right),\theta^{\ast}\right)}\dot{\kappa}_{\text{d}}\\
+ & =-\ddot{d}\left(t\right)-\left(\left.\frac{\partial f}{\partial\dot{q}\partial q}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{q}_{\text{d}}+\left.\frac{\partial^{2}f}{\partial\dot{q}^{2}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\ddot{q}_{\text{d}}\right)d\left(t\right)-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}\dot{d}\left(t\right)+\left.\frac{d\varepsilon}{d\kappa}\right|_{\kappa_{\text{d}}}\dot{\kappa}_{\text{d}}\\
  & +\left(\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{\text{d}},\theta^{\ast}\right)}-\left.\frac{\partial\Phi}{\partial\kappa}\right|_{\left(\kappa_{\text{d}},\widehat{\theta}\right)}\right)\dot{\kappa}_{\text{d}}-\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa_{\text{d}},\widehat{\theta}\right)}\dot{\widehat{\theta}}
 \end{align*}
 
@@ -7655,10 +7605,10 @@ noprefix "false"
 \end_inset
 
 ), the evolution of 
-\begin_inset Formula $z_{P}$
+\begin_inset Formula $z$
 \end_inset
 
- is a Filippov solution to the augmented initial value problem 
+ is expressed by the augmented initial value problem 
 \begin_inset Formula 
 \begin{equation}
 \dot{z}_{P}\in\psi\left(z_{P},t\right),\hspace{1em}z_{P}\left(t_{0}\right)=z_{P,0},\label{eq:closed-loop-error-system}
@@ -7974,19 +7924,7 @@ noprefix "false"
 \begin_inset Formula $R_{\Omega}=\overline{\kappa}$
 \end_inset
 
-, where 
-\begin_inset Formula $\overline{\kappa}$
-\end_inset
-
- is defined according to the 
-\begin_inset Formula $C_{\Delta}$
-\end_inset
-
- that follows from the given 
-\begin_inset Formula $\Delta$
-\end_inset
-
- and selected gains.
+.
  Then, the controller in 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -8014,16 +7952,12 @@ noprefix "false"
 yield complete solutions that converge according to
 \begin_inset Formula 
 \begin{equation}
-\left\Vert z\left(t\right)\right\Vert \le\alpha\left(\left\Vert z_{0}\right\Vert \right){\rm e}^{-\lambda\left(t-t_{0}\right)},\label{eq:envelope}
+\left\Vert z\left(t\right)\right\Vert \leq\alpha\left(\left\Vert z_{0}\right\Vert \right){\rm e}^{-\lambda\left(t-t_{0}\right)},\quad\forall t\geq t_{0},\label{eq:envelope}
 \end{equation}
 
 \end_inset
 
-for almost all 
-\begin_inset Formula $t\in\mathbb{R}_{\ge t_{0}}$
-\end_inset
-
- and for all 
+for all 
 \begin_inset Formula $\left(z_{0},t_{0}\right)\in\mathcal{S}\times\mathbb{R}_{\ge0}$
 \end_inset
 
@@ -8070,7 +8004,7 @@ noprefix "false"
 \end_layout
 
 \begin_layout Proof
-Consider any 
+Fix any 
 \begin_inset Formula $t_{0}\in\mathbb{R}_{\ge0}$
 \end_inset
 
@@ -8112,7 +8046,7 @@ noprefix "false"
 \end_inset
 
 .
- Consider the candidate Lyapunov function
+ Consider the candidate Lyapunov function 
 \begin_inset Formula 
 \begin{equation}
 V\left(z_{P}\right)\triangleq\frac{1}{2}z^{\top}z+P.\label{eq:lyapunov}
@@ -8149,11 +8083,7 @@ Since
 \begin_inset Formula $V$
 \end_inset
 
- of class 
-\begin_inset Formula $\mathcal{C}^{1}$
-\end_inset
-
-, 
+ is continuously differentiable, 
 \begin_inset Formula $t\mapsto V\left(z_{P}\left(t\right)\right)$
 \end_inset
 
@@ -8257,14 +8187,10 @@ for all
 
 .
  Since 
-\begin_inset Formula $C_{\Delta}\ge\Delta$
-\end_inset
-
-, 
 \begin_inset Formula $\mathcal{D}\supseteq\mathcal{S}$
 \end_inset
 
- and 
+, 
 \begin_inset Formula $\mathcal{T}$
 \end_inset
 
@@ -8287,9 +8213,9 @@ literal "false"
 \begin_inset Formula $\left\Vert \widetilde{N}_{t}\right\Vert $
 \end_inset
 
-, it follows that
+ , it follows that
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Formula 
@@ -8443,12 +8369,12 @@ for almost all
 \end_inset
 
 , it follows that 
-\begin_inset Formula $P\left(t_{0}\right)=\phi\left(t_{0}\right)=K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)D_{t_{0}}$
+\begin_inset Formula $P\left(t_{0}\right)=\phi\left(t\right)=K_{\text{RISE}}\left\Vert r_{1}\left(t_{0}\right)\right\Vert _{1}-r_{1}^{\top}\left(t_{0}\right)D_{t_{0}}$
 \end_inset
 
 .
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 NOTE: 
@@ -8540,7 +8466,7 @@ V\left(z_{P}\left(t\right)\right) & \underset{\text{a.e.}}{\le}V\left(z_{P,0}\ri
 
 \begin_inset Formula 
 \begin{equation}
-\left\Vert z\left(t\right)\right\Vert \le\beta\left(\left\Vert z_{0}\right\Vert ,t-t_{0}\right),\label{eq:exponential-convergence}
+\left\Vert z\left(t\right)\right\Vert \underset{\text{a.e.}}{\le}\beta\left(\left\Vert z_{0}\right\Vert ,t-t_{0}\right),\label{eq:exponential-convergence}
 \end{equation}
 
 \end_inset
