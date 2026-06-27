@@ -50,15 +50,15 @@ fi
 
 
 # make sure the container is running before we attempt to connect
-if [ ! "$(sudo docker ps -a | grep "$CONTAINER_NAME")" ]; then
+if [ ! "$(docker ps -a | grep "$CONTAINER_NAME")" ]; then
 	echo "Warning: container "$CONTAINER_NAME" is not running. Gazebo set up failed"
 else
 	echo "Found container "$CONTAINER_NAME"."
     echo "Preparing to run gazebo"
     echo 
     # only log the first 200 lines of output so we don't end up with massive log files
-	sudo docker exec -d $CONTAINER_NAME bash -c "source /home/root/ros-sources.sh; ros2 launch nav2_minimal_tb4_sim simulation.launch.py namespace:=$vehicle_name robot_name:=$vehicle_name use_rviz:=False use_simulator:=$use_simulator x_pose:=$y_pos y_pose:=$x_pos z_pose:=$z_pos yaw:=$yaw_offset 2>&1 | tee >(head -n 200 > /tmp/tb-gz-sim-output.log) > /dev/null"
+	docker exec -d $CONTAINER_NAME bash -c "source /home/root/ros-sources.sh; ros2 launch nav2_minimal_tb4_sim simulation.launch.py namespace:=$vehicle_name robot_name:=$vehicle_name use_rviz:=False use_simulator:=$use_simulator x_pose:=$y_pos y_pose:=$x_pos z_pose:=$z_pos yaw:=$yaw_offset 2>&1 | tee >(head -n 200 > /tmp/tb-gz-sim-output.log) > /dev/null"
 	sleep 5
-	sudo docker exec -it $CONTAINER_NAME bash -c "cat /tmp/tb-gz-sim-output.log"
+	docker exec -i $CONTAINER_NAME bash -c "cat /tmp/tb-gz-sim-output.log"
 fi
 

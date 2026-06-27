@@ -1,6 +1,7 @@
 import sys
 import math
 import time
+import csv
 from functools import partial
 import numpy as np
 
@@ -17,30 +18,10 @@ from px4_msgs.msg import VehicleOdometry
 
 import jax
 import jax.numpy as jnp
-jax.config.update("jax_platform_name", "cpu") # Force CPU to avoid Docker GPU passthrough issues
+jax.config.update("jax_platform_name", "cpu")
 jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network, init_resnet_weights
-
-# --- GLOBAL CONSTANTS ---
-MPC_ACC_HOR_MAX = 6.0
-MPC_ACC_VERT_MAX = 3.0
-
-# Safety Boundaries (Mapped to your 25x12x8m Lab)
-MAX_SAFE_X = 5.0
-MAX_SAFE_Y = 11.5
-MAX_SAFE_Z_CEIL = -0.5
-MAX_SAFE_Z_FLOOR = -7.5
-
-# Timeouts and Tolerances
-ODOM_TIMEOUT_SEC = 5
-SETTLE_TICKS = 50
-HOVER_TOLERANCE = 0.2
-
-# Trajectory Settings
-TRAJ_PERIOD = 20.0
-TRAJ_ALPHA_WARP = 0.8
-# ------------------------
 
 @jax.jit
 def discrete_projection(
@@ -82,56 +63,111 @@ class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
 
+        # --- STRICT PARAMETER DECLARATIONS ---
+        # Experiment Config
+        self.declare_parameter('is_gazebo', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
+        self.declare_parameter('active_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        
+        # Global Limits
+        self.declare_parameter('mpc_acc_hor_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('mpc_acc_vert_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_x_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_y_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_z_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_z_min', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('odom_timeout_sec', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('settle_ticks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter('hover_tolerance', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('windup_time_sec', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('watchdog_freq', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+
+        # Trajectory 1
+        self.declare_parameter('traj1_period', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_x_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_y_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_center_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_z_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+
+        # Trajectory 2
+        self.declare_parameter('traj2_target_speed', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj2_petal_radius', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj2_center_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+
+        # Node / Controller Base
         self.declare_parameter('vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter('z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('control_frequency', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('plot', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
+        self.declare_parameter('sim_time', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        
+        # RISE Gains & Cost weights
         self.declare_parameter('k1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k_rise', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        self.declare_parameter('q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('w_fail', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+
+        # Neural Network
+        self.declare_parameter('d_in', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter('d_out', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         self.declare_parameter('gamma', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('sigma_mod', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k_0', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         self.declare_parameter('k_i', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('plot', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
         self.declare_parameter('hidden_width', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         self.declare_parameter('num_blocks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         self.declare_parameter('theta_bar', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('initial_weights', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY))
-        self.declare_parameter('d_in', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('d_out', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('w_fail', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('sim_time', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('control_frequency', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('h_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('o_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('shortcut_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter('T_period', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
+        # --- RETRIEVE PARAMETERS ---
+        self.is_gazebo = self.get_parameter('is_gazebo').value
+        self.active_trajectory = self.get_parameter('active_trajectory').value
         self.vehicle_name = self.get_parameter('vehicle_name').value
-        self.target_z = self.get_parameter('z').value
         self.controller_type = self.get_parameter('controller_type').value
         self.enable_plotting = self.get_parameter('plot').value
+        self.t_f = self.get_parameter('sim_time').value
         
+        self.acc_hor_max = self.get_parameter('mpc_acc_hor_max').value
+        self.acc_vert_max = self.get_parameter('mpc_acc_vert_max').value
+        self.safe_x_max = self.get_parameter('safe_x_max').value
+        self.safe_y_max = self.get_parameter('safe_y_max').value
+        self.safe_z_max = self.get_parameter('safe_z_max').value
+        self.safe_z_min = self.get_parameter('safe_z_min').value
+        self.odom_timeout = self.get_parameter('odom_timeout_sec').value
+        self.windup_time = self.get_parameter('windup_time_sec').value
+        self.watchdog_freq = self.get_parameter('watchdog_freq').value
+
+        self.target_z = self.get_parameter('traj1_center_z').value if self.active_trajectory == 1 else self.get_parameter('traj2_center_z').value
+        self.traj1_period = self.get_parameter('traj1_period').value
+        self.traj1_alpha_warp = self.get_parameter('traj1_alpha_warp').value
+        self.traj1_x_amp = self.get_parameter('traj1_x_amp').value
+        self.traj1_y_amp = self.get_parameter('traj1_y_amp').value
+        self.traj1_z_amp = self.get_parameter('traj1_z_amp').value
+        self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.traj1_alpha_warp) if self.traj1_alpha_warp < 1.0 else 1.0
+        
+        self.traj2_v0 = self.get_parameter('traj2_target_speed').value
+        self.traj2_A = self.get_parameter('traj2_petal_radius').value
+
         self.k1 = self.get_parameter('k1').value
         k2 = self.get_parameter('k2').value
         k3 = self.get_parameter('k3').value
-        
         self.K_P = (self.k1 * k2) + (self.k1 * k3) + (k2 * k3) + 1.0
         self.K_I = (self.k1 * k2 * k3) + self.k1
         self.K_D = self.k1 + k2 + k3
         self.K_RISE = self.get_parameter('k_rise').value
-
         self.q_e = self.get_parameter('q_e').value
         self.r_u = self.get_parameter('r_u').value
         self.w_fail = self.get_parameter('w_fail').value
 
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             history=HistoryPolicy.KEEP_LAST,
             depth=1
         )
@@ -150,35 +186,30 @@ class AviaryRiseNode(Node):
 
         self.nav_state = 0
         self.is_armed = False
+        self.in_offboard_mode = False
         self.vehicle_system_id = 1
         self.vehicle_component_id = 1
+        self.landing_command_sent = False
         
         self.latest_odom = None
+        self.last_odom_ros_time = 0.0
         self.initial_position_locked = False
         self.start_x = 0.0
         self.start_y = 0.0
 
         self.experiment_state = 0
-        self.offboard_setpoint_counter = 0
-        self.settle_counter = 0
-        
-        self.t_f = self.get_parameter('sim_time').value
-        self.T_period = self.get_parameter('T_period').value
         self.t_0 = 0.0
         self.last_t = 0.0
         
-        # Virtual Target State Tracking
-        self.tau = 0.0 # Determines qd(t_0) and qd_dot(t_0)
+        self.tau = 0.0
+        self.theta = 0.0
         self.last_traj_time = 0.0
-        self.alpha_warp = self.get_parameter('alpha_warp').value
-        self.warp_c = 1.0 / math.sqrt(1.0 - self.alpha_warp)
         
-        self.d_out = 3
+        self.d_out = self.get_parameter('d_out').value
         self.integral_term = np.zeros(self.d_out, dtype=np.float64)
         self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
-        
         self.is_saturated = False
         
         self.error_sq_integral = 0.0
@@ -192,19 +223,13 @@ class AviaryRiseNode(Node):
         control_frequency = self.get_parameter('control_frequency').value
         self.control_period = 1 / control_frequency
         self.control_timer = self.create_timer(self.control_period, self.control_timer_callback)
-        self.offboard_spam_ticks = int(control_frequency) / 2.0
 
-        # JAX NN Initializations (Bypassed if noresnet)
         if self.controller_type in ["baseline", "developed"]:
             self.d_in = self.get_parameter('d_in').value
-        
             self.sigma_mod = self.get_parameter('sigma_mod').value
             self.theta_bar = self.get_parameter('theta_bar').value
             
-            weights_list = self.get_parameter('initial_weights').value
-            self.theta_hat = jnp.array(weights_list)
-            
-            # Utilizing the correct p-dimensional weight sizing for the projection matrix
+            self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
             self.gamma_diag = jnp.ones(self.theta_hat.shape[0]) * self.get_parameter('gamma').value
 
             self.bound_resnet = jax.jit(partial(
@@ -224,61 +249,78 @@ class AviaryRiseNode(Node):
             def compiled_update_step(theta_hat, x_vec, r1_vec, dt, theta_bar, gamma_diag, s_mod, saturated):
                 phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), theta_hat)
                 grad_term = vjp_fn(r1_vec)[0]
-                
                 theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
-                theta_next = discrete_projection(
-                    theta_hat=theta_hat,
-                    theta_dot_unprojected=theta_dot_unprojected,
-                    dt=dt,
-                    theta_bar=theta_bar,
-                    gamma_diag=gamma_diag,
-                )
+                theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma_diag)
                 final_theta = jax.lax.select(saturated, theta_hat, theta_next)
                 return final_theta, phi_val
                 
             self.compiled_update_step = compiled_update_step
             self.enforce_realtime_constraint()
 
-        self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()}")
-        self.watchdog_timer = self.create_timer(1.0, self.watchdog_callback)
-        self.seconds_without_odom = 0
+        self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.active_trajectory} | Gazebo Mode: {self.is_gazebo}")
+        self.watchdog_timer = self.create_timer(1.0/self.watchdog_freq, self.watchdog_callback)
+        self.ticks_without_odom = 0
 
     def enforce_realtime_constraint(self) -> None:
         dummy_x = jnp.zeros(self.d_in)
         dummy_r1 = jnp.zeros(self.d_out)
-        
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
         _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
-        
         start_time = time.perf_counter()
         _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
         hot_time = time.perf_counter() - start_time
-        
         self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
         if hot_time > self.control_period:
             self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
-            sys.exit(1)
+            if self.is_gazebo:
+                sys.exit(1)
+            else:
+                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
 
     def status_callback(self, msg: VehicleStatus) -> None:
         self.nav_state = msg.nav_state
         self.is_armed = (msg.arming_state == VehicleStatus.ARMING_STATE_ARMED)
+        self.in_offboard_mode = (msg.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD)
         self.vehicle_system_id = msg.system_id
         self.vehicle_component_id = msg.component_id
 
     def odom_callback(self, msg: VehicleOdometry) -> None:
         self.latest_odom = msg
+        self.ticks_without_odom = 0
+        if not self.is_gazebo:
+            self.last_odom_ros_time = self.get_clock().now().nanoseconds / 1e9
+            
         if not self.initial_position_locked:
             self.start_x = float(msg.position[0])
             self.start_y = float(msg.position[1])
             self.initial_position_locked = True
 
     def watchdog_callback(self) -> None:
+        self.ticks_without_odom += 1
+        
+        # At boot, we always use the tick counter
         if not self.initial_position_locked:
-            self.seconds_without_odom += 1
-            if self.seconds_without_odom >= ODOM_TIMEOUT_SEC:
-                sys.exit(1)
+            if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
+                self.get_logger().fatal("NO ODOMETRY AT BOOT! KILLING NODE.")
+                if self.is_gazebo:
+                    sys.exit(1)
+                else:
+                    sys.exit(1) # Original logic exited for both
+        else:
+            # Mid-flight timeout
+            if self.is_gazebo:
+                # Use tick counter to survive Docker suspension / macOS sleep
+                if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
+                    self.get_logger().fatal("MOCAP LOST! TRIGGERING FAILSAFE (GAZEBO).")
+                    self.trigger_failsafe_land()
+            else:
+                # Use original wall clock logic for real vehicle (sim-to-real)
+                current_time = self.get_clock().now().nanoseconds / 1e9
+                if (current_time - self.last_odom_ros_time) > self.odom_timeout:
+                    self.get_logger().fatal("MOCAP LOST! TRIGGERING FAILSAFE.")
+                    self.trigger_failsafe_land()
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
         msg = VehicleCommand()
@@ -293,22 +335,15 @@ class AviaryRiseNode(Node):
         msg.from_external = True
         self.vehicle_command_publisher.publish(msg)
 
-    def publish_offboard_control_mode(self, position: bool, acceleration: bool) -> None:
+    def publish_offboard_control_mode(self) -> None:
         msg = OffboardControlMode()
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
-        msg.position = position
+        msg.position = False
         msg.velocity = False
-        msg.acceleration = acceleration
+        msg.acceleration = True
         msg.attitude = False
         msg.body_rate = False
         self.offboard_control_mode_publisher.publish(msg)
-
-    def publish_trajectory_setpoint_position(self, x: float, y: float, z: float) -> None:
-        msg = TrajectorySetpoint()
-        msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
-        msg.position = [float(x), float(y), float(z)]
-        msg.yaw = 0.0 
-        self.trajectory_setpoint_publisher.publish(msg)
 
     def publish_trajectory_setpoint_acceleration(self, ax: float, ay: float, az: float) -> None:
         msg = TrajectorySetpoint()
@@ -319,42 +354,108 @@ class AviaryRiseNode(Node):
         msg.yaw = 0.0
         self.trajectory_setpoint_publisher.publish(msg)
 
+    def log_csv(self):
+        if not self.enable_plotting: return
+        csv_filename = f"/home/root/trial_data_cost_{int(self.cost_J)}.csv"
+        try:
+            with open(csv_filename, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                headers = ["Time_s", "Error_Norm_m", "x", "y", "z", "xd", "yd", "zd"]
+                if self.controller_type in ["baseline", "developed"] and self.weight_history:
+                    num_weights = len(self.weight_history[0])
+                    headers += [f"W{i}" for i in range(num_weights)]
+                writer.writerow(headers)
+                for i in range(len(self.time_history)):
+                    row = [
+                        self.time_history[i], self.error_norm_history[i],
+                        self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
+                        self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
+                    ]
+                    if self.controller_type in ["baseline", "developed"] and self.weight_history:
+                        row += self.weight_history[i]
+                    writer.writerow(row)
+            self.get_logger().info(f"Telemetry saved to {csv_filename}")
+        except Exception as e:
+            self.get_logger().error(f"Failed to write CSV: {e}")
+
+    def trigger_failsafe_land(self) -> None:
+        self.log_csv()
+        if self.is_gazebo:
+            self.get_logger().error("GAZEBO SIM: BOUNDARY/SAFETY FAILURE. EXITING SIM.")
+            sys.exit(0)
+        else:
+            self.get_logger().error("SAFETY BOUNDARY BREACHED. EMERGENCY LANDING.")
+            self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
+            self.experiment_state = 99
+
     def check_safety_boundary(self, q: np.ndarray) -> bool:
-        if not (-MAX_SAFE_X <= q[0] <= MAX_SAFE_X): return True 
-        if not (-MAX_SAFE_Y <= q[1] <= MAX_SAFE_Y): return True 
-        if not (MAX_SAFE_Z_FLOOR <= q[2] <= MAX_SAFE_Z_CEIL): return True 
+        if not (-self.safe_x_max <= q[0] <= self.safe_x_max):
+            self.get_logger().error(f"X BOUNDARY BREACH: {q[0]} not in [{-self.safe_x_max}, {self.safe_x_max}]")
+            return True 
+        if not (-self.safe_y_max <= q[1] <= self.safe_y_max):
+            self.get_logger().error(f"Y BOUNDARY BREACH: {q[1]} not in [{-self.safe_y_max}, {self.safe_y_max}]")
+            return True 
+        if not (self.safe_z_min <= q[2] <= self.safe_z_max):
+            self.get_logger().error(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min}, {self.safe_z_max}]")
+            return True 
+        return False
         return False
 
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        dt = t - self.last_traj_time
-        self.last_traj_time = t
+        if self.experiment_state == 3:
+            return (np.array([self.start_x, self.start_y, self.target_z], dtype=np.float64), 
+                    np.zeros(3, dtype=np.float64), np.zeros(3, dtype=np.float64))
+            
+        traj_t = t - self.windup_time
+        if traj_t < 0: traj_t = 0.0
+        
+        dt = traj_t - self.last_traj_time
+        self.last_traj_time = traj_t
         if dt < 0: dt = 0.0
-        
-        w = (2.0 * math.pi) / self.T_period
-        
-        # Applying the scalar to correct the phase integration speed
-        tau_dot = self.warp_c * (1.0 - self.alpha_warp * (math.sin(w * self.tau)**2))
-        tau_ddot = -self.warp_c * self.alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
-        
-        self.tau += tau_dot * dt
-        
-        wx = 2.0 * w
-        wy = 1.0 * w
-        wz = 4.0 * w
-        zc = self.target_z 
-        
-        xd = 3.0 * math.sin(wx * self.tau)
-        yd = 8.0 * math.sin(wy * self.tau)
-        zd = 0.5 * math.sin(wz * self.tau) + zc
-        
-        vxd = (3.0 * wx * math.cos(wx * self.tau)) * tau_dot
-        vyd = (8.0 * wy * math.cos(wy * self.tau)) * tau_dot
-        vzd = (0.5 * wz * math.cos(wz * self.tau)) * tau_dot
-        
-        axd = -(3.0 * wx**2 * math.sin(wx * self.tau)) * (tau_dot**2) + (3.0 * wx * math.cos(wx * self.tau)) * tau_ddot
-        ayd = -(8.0 * wy**2 * math.sin(wy * self.tau)) * (tau_dot**2) + (8.0 * wy * math.cos(wy * self.tau)) * tau_ddot
-        azd = -(0.5 * wz**2 * math.sin(wz * self.tau)) * (tau_dot**2) + (0.5 * wz * math.cos(wz * self.tau)) * tau_ddot
-        
+
+        if self.active_trajectory == 1:
+            w = (2.0 * math.pi) / self.traj1_period
+            tau_dot = self.traj1_warp_c * (1.0 - self.traj1_alpha_warp * (math.sin(w * self.tau)**2))
+            tau_ddot = -self.traj1_warp_c * self.traj1_alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
+            
+            self.tau += tau_dot * dt
+            wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
+            
+            xd = self.traj1_x_amp * math.sin(wx * self.tau)
+            yd = self.traj1_y_amp * math.sin(wy * self.tau)
+            zd = self.traj1_z_amp * math.sin(wz * self.tau) + self.target_z
+            
+            vxd = (self.traj1_x_amp * wx * math.cos(wx * self.tau)) * tau_dot
+            vyd = (self.traj1_y_amp * wy * math.cos(wy * self.tau)) * tau_dot
+            vzd = (self.traj1_z_amp * wz * math.cos(wz * self.tau)) * tau_dot
+            
+            axd = -(self.traj1_x_amp * wx**2 * math.sin(wx * self.tau)) * (tau_dot**2) + (self.traj1_x_amp * wx * math.cos(wx * self.tau)) * tau_ddot
+            ayd = -(self.traj1_y_amp * wy**2 * math.sin(wy * self.tau)) * (tau_dot**2) + (self.traj1_y_amp * wy * math.cos(wy * self.tau)) * tau_ddot
+            azd = -(self.traj1_z_amp * wz**2 * math.sin(wz * self.tau)) * (tau_dot**2) + (self.traj1_z_amp * wz * math.cos(wz * self.tau)) * tau_ddot
+            
+        else:
+            f_theta = 1.0 + 3.0 * (math.sin(2.0 * self.theta)**2)
+            theta_dot = self.traj2_v0 / (self.traj2_A * math.sqrt(f_theta))
+            self.theta += theta_dot * dt
+            
+            sin_4theta = math.sin(4.0 * self.theta)
+            theta_ddot = - (3.0 * (self.traj2_v0**2) * sin_4theta) / ((self.traj2_A**2) * (f_theta**2))
+            
+            r = self.traj2_A * math.cos(2.0 * self.theta)
+            r_dot = -2.0 * self.traj2_A * math.sin(2.0 * self.theta) * theta_dot
+            r_ddot = -4.0 * self.traj2_A * math.cos(2.0 * self.theta) * (theta_dot**2) - 2.0 * self.traj2_A * math.sin(2.0 * self.theta) * theta_ddot
+            
+            ct, st = math.cos(self.theta), math.sin(self.theta)
+            
+            xd, yd, zd = r * ct, r * st, self.target_z
+            vxd = r_dot * ct - r * st * theta_dot
+            vyd = r_dot * st + r * ct * theta_dot
+            vzd = 0.0
+            
+            axd = (r_ddot - r * (theta_dot**2)) * ct - (r * theta_ddot + 2.0 * r_dot * theta_dot) * st
+            ayd = (r_ddot - r * (theta_dot**2)) * st + (r * theta_ddot + 2.0 * r_dot * theta_dot) * ct
+            azd = 0.0
+
         return (
             np.array([xd, yd, zd], dtype=np.float64),
             np.array([vxd, vyd, vzd], dtype=np.float64),
@@ -362,191 +463,167 @@ class AviaryRiseNode(Node):
         )
 
     def control_timer_callback(self) -> None:
-        if not self.initial_position_locked or self.latest_odom is None:
-            return
+        if self.latest_odom is None: return
+        current_timestamp_s = self.latest_odom.timestamp / 1e6
 
-        current_timestamp_s: float = self.latest_odom.timestamp / 1e6
+        if not self.in_offboard_mode:
+            if self.experiment_state in [3, 4]:
+                if self.is_gazebo:
+                    self.get_logger().error("PX4 LEFT OFFBOARD MODE IN SITL! FAILING TRIAL.")
+                    self.trigger_failsafe_land()
+                    return
+                else:
+                    self.get_logger().warn("RC Override Detected! Resetting state.", throttle_duration_sec=1.0)
+                    self.experiment_state = 0
+                    self.integral_term = np.zeros(self.d_out, dtype=np.float64)
+                    self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
+            if self.experiment_state != 0:
+                return
 
-        if self.experiment_state == 0:
-            self.publish_offboard_control_mode(position=True, acceleration=False)
-            self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
-            if self.offboard_setpoint_counter >= SETTLE_TICKS:
-                # FIX: Now dynamically pulses at 2Hz regardless of control frequency
-                if self.offboard_setpoint_counter % self.offboard_spam_ticks == 0:
-                    self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
-                    self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 0.0)
-            self.offboard_setpoint_counter += 1
-            if self.nav_state == 14 and self.is_armed:
-                self.experiment_state = 1
+        match self.experiment_state:
+            case 99:
+                if not self.landing_command_sent:
+                    self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
+                    self.landing_command_sent = True
+                return
 
-        elif self.experiment_state == 1:
-            self.publish_offboard_control_mode(position=True, acceleration=False)
-            self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
-            q_current = np.array(self.latest_odom.position, dtype=np.float64)
-            if abs(q_current[2] - self.target_z) < HOVER_TOLERANCE:
-                self.experiment_state = 2
+            case 0:
+                self.get_logger().info("IN CASE 0, PUBLISHING OFFBOARD CONTROL MODE AND ARM COMMANDS!", throttle_duration_sec=1.0)
+                self.publish_offboard_control_mode()
+                self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
 
-        elif self.experiment_state == 2:
-            self.publish_offboard_control_mode(position=True, acceleration=False)
-            self.publish_trajectory_setpoint_position(self.start_x, self.start_y, self.target_z)
-            self.settle_counter += 1
-            if self.settle_counter >= SETTLE_TICKS:
-                self.t_0 = current_timestamp_s
-                self.last_t = 0.0
-                
-                # Reset Virtual Target trackers for clean initialization
-                self.tau = 0.0
-                self.last_traj_time = 0.0
-                
-                self.experiment_state = 3
+                if self.is_gazebo:
+                    if not self.is_armed:
+                        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 21196.0)
+                    if not self.in_offboard_mode:
+                        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
 
-        elif self.experiment_state == 3:
-            t = current_timestamp_s - self.t_0
-            dt = t - self.last_t
-            if dt <= 0.0: return
-                
-            q = np.array(self.latest_odom.position, dtype=np.float64)
-            q_dot = np.array(self.latest_odom.velocity, dtype=np.float64)
-            
-            if self.check_safety_boundary(q):
-                self.cost_J += self.w_fail * ((self.t_f - t) ** 2)
-                self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
-                sys.exit(0)
+                if self.in_offboard_mode and self.is_armed:
+                    self.get_logger().info("ARMED & OFFBOARD: Starting RISE Windup Phase.")
+                    self.t_0 = current_timestamp_s
+                    self.last_t = 0.0
+                    self.experiment_state = 3 
 
-            qd, qd_dot, qd_ddot = self.get_desired_state(t)
-            
-            e = qd - q
-            e_dot = qd_dot - q_dot
-            r1 = e_dot + (self.k1 * e)
+            case 3 | 4:
+                self.publish_offboard_control_mode() 
+                t = current_timestamp_s - self.t_0
+                dt = t - self.last_t
+                if dt <= 0.0:
+                    self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
+                    return
+                
+                if self.experiment_state == 3 and t >= self.windup_time:
+                    self.experiment_state = 4
+                    self.get_logger().info(f"WINDUP COMPLETE: Starting Trajectory {self.active_trajectory}.")
 
-            u = np.zeros(3, dtype=np.float64)
-            phi_val = np.zeros(3, dtype=np.float64)
-            
-            if self.controller_type == "noresnet":
-                current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                if self.is_saturated: current_integrand = np.zeros(3, dtype=np.float64)
+                q = np.array(self.latest_odom.position, dtype=np.float64)
+                q_dot = np.array(self.latest_odom.velocity, dtype=np.float64)
                 
-                self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
-                self.last_integrand = current_integrand
-                
-                # noresnet actively uses the time-invariant feedforward term
-                u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                
-            elif self.controller_type == "baseline":
-                # Baseline strictly ignores qd_ddot in the input vector and feedforward
-                x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
-                self.theta_hat, phi_out = self.compiled_update_step(
-                    self.theta_hat, x_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
-                )
-                phi_val = np.array(phi_out, dtype=np.float64)
-                
-                current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                if self.is_saturated: current_integrand = np.zeros(3, dtype=np.float64)
-                
-                self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
-                self.last_integrand = current_integrand
-                u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                
-            elif self.controller_type == "developed":
-                # Developed strictly ignores qd_ddot in the input vector and feedforward
-                u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
-                
-                self.theta_hat, phi_out = self.compiled_update_step(
-                    self.theta_hat, kappa_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
-                )
-                phi_val = np.array(phi_out, dtype=np.float64)
-                
-                current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
-                if self.is_saturated: current_integrand = np.zeros(3, dtype=np.float64)
-                
-                self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
-                self.last_integrand = current_integrand
-                u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                if self.check_safety_boundary(q):
+                    self.cost_J += self.w_fail * ((self.t_f - t) ** 2)
+                    self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
+                    self.trigger_failsafe_land()
+                    return
 
-            norm_e = float(np.linalg.norm(e))
-            norm_u = float(np.linalg.norm(u))
-            
-            current_error_sq = float(norm_e ** 2)
-            self.error_sq_integral += (dt / 2.0) * (current_error_sq + self.last_error_sq)
-            self.last_error_sq = current_error_sq
-            self.time_history.append(t)
-            self.error_norm_history.append(norm_e)
-            self.q_history.append(q.tolist())
-            self.qd_history.append(qd.tolist())
+                qd, qd_dot, qd_ddot = self.get_desired_state(t)
+                e = qd - q
+                e_dot = qd_dot - q_dot
+                r1 = e_dot + (self.k1 * e)
 
-            if self.controller_type in ["baseline", "developed"]:
-                self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
-
-            current_cost_integrand = (t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
-            self.cost_J += (dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
-            self.last_cost_integrand = current_cost_integrand
-            
-            # Anti-Windup Clamping checks
-            self.is_saturated = False
-            u_xy = u[0:2]
-            norm_uxy = np.linalg.norm(u_xy)
-            if norm_uxy > MPC_ACC_HOR_MAX:
-                u[0:2] = u_xy * (MPC_ACC_HOR_MAX / norm_uxy)
-                self.is_saturated = True
+                u = np.zeros(3, dtype=np.float64)
+                phi_val = np.zeros(3, dtype=np.float64)
                 
-            if abs(u[2]) > MPC_ACC_VERT_MAX:
-                u[2] = MPC_ACC_VERT_MAX * np.sign(u[2])
-                self.is_saturated = True
-
-            self.publish_offboard_control_mode(position=False, acceleration=True)
-            self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
-
-            self.last_t = t
-
-            if t >= self.t_f:
-                rms_error = math.sqrt(self.error_sq_integral / self.t_f)
-                self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.4f}")
-                self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
+                match self.controller_type:
+                    case "noresnet":
+                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                        if not self.is_saturated:
+                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        self.last_integrand = current_integrand
+                        u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                        
+                    case "baseline":
+                        if self.experiment_state == 4: 
+                            x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
+                            self.theta_hat, phi_out = self.compiled_update_step(
+                                self.theta_hat, x_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                            )
+                            phi_val = np.array(phi_out, dtype=np.float64)
+                        
+                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                        if not self.is_saturated:
+                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        self.last_integrand = current_integrand
+                        u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                        
+                    case "developed":
+                        if self.experiment_state == 4:
+                            u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                            kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
+                            self.theta_hat, phi_out = self.compiled_update_step(
+                                self.theta_hat, kappa_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                            )
+                            phi_val = np.array(phi_out, dtype=np.float64)
+                        
+                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
+                        if not self.is_saturated:
+                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        self.last_integrand = current_integrand
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+        
+                norm_e = float(np.linalg.norm(e))
+                norm_u = float(np.linalg.norm(u))
                 
-                if self.enable_plotting:
-                    import csv
-                    csv_filename = f"/home/root/trial_data_cost_{int(self.cost_J)}.csv"
-                    try:
-                        with open(csv_filename, mode='w', newline='') as file:
-                            writer = csv.writer(file)
+                self.time_history.append(t)
+                self.error_norm_history.append(norm_e)
+                self.q_history.append(q.tolist())
+                self.qd_history.append(qd.tolist())
 
-                            # NEW: Expanded Headers
-                            headers = ["Time_s", "Error_Norm_m", "x", "y", "z", "xd", "yd", "zd"]
-                            
-                            if self.controller_type in ["baseline", "developed"] and self.weight_history:
-                                num_weights = len(self.weight_history[0])
-                                headers += [f"W{i}" for i in range(num_weights)]
-                            
-                            writer.writerow(headers)
-                            
-                            for i in range(len(self.time_history)):
-                                row = [
-                                    self.time_history[i], 
-                                    self.error_norm_history[i],
-                                    self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
-                                    self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
-                                ]
-                                if self.controller_type in ["baseline", "developed"] and self.weight_history:
-                                    row += self.weight_history[i]
-                                writer.writerow(row)
-                                    
-                        self.get_logger().info(f"Telemetry saved to {csv_filename}")
-                    except Exception as e:
-                        self.get_logger().error(f"Failed to write CSV: {e}")
-                sys.exit(0)
+                if self.controller_type in ["baseline", "developed"]:
+                    self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
+
+                if self.experiment_state == 4:
+                    traj_t = max(0.0, t - self.windup_time)
+                    
+                    current_error_sq = float(norm_e ** 2)
+                    self.error_sq_integral += (dt / 2.0) * (current_error_sq + self.last_error_sq)
+                    self.last_error_sq = current_error_sq
+
+                    current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
+                    self.cost_J += (dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
+                    self.last_cost_integrand = current_cost_integrand
+                
+                self.is_saturated = False
+                u_xy = u[0:2]
+                norm_uxy = float(np.linalg.norm(u_xy))
+                if norm_uxy > self.acc_hor_max:
+                    u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
+                    self.is_saturated = True
+                    
+                if abs(u[2]) > self.acc_vert_max:
+                    u[2] = self.acc_vert_max * np.sign(u[2])
+                    self.is_saturated = True
+
+                self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
+                self.last_t = t
+
+                if t >= self.t_f:
+                    active_time = self.t_f - self.windup_time
+                    rms_error = math.sqrt(self.error_sq_integral / active_time) if active_time > 0 else 0.0
+                    self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.4f}")
+                    self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
+                    self.trigger_failsafe_land() 
 
 def main(args=None):
     rclpy.init(args=args)
     node = AviaryRiseNode()
-    
     try:
         rclpy.spin(node)
     except SystemExit:
         pass  
     finally:
         try:
-            if rclpy.ok(): node.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0, 0.0)
+            if rclpy.ok() and not node.is_gazebo: 
+                node.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
         except Exception: pass 
         node.destroy_node()
         if rclpy.ok(): rclpy.shutdown()

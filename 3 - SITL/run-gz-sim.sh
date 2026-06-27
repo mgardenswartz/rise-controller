@@ -1,11 +1,10 @@
 #!/bin/bash 
 
-WORLD_FILE="max-custom-aviary.sdf"
+WORLD_FILE="${PX4_GZ_WORLD:-default.sdf}"
 
-# export path to gazebo world/model files
-export GZ_SIM_RESOURCE_PATH=export GZ_SIM_RESOURCE_PATH="/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/models":"/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/worlds"
+# Export paths to gazebo worlds, models, AND our custom compiled plugins
+export GZ_SIM_RESOURCE_PATH="/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/models:/home/root/voxl-px4/px4-firmware/Tools/simulation/gz/worlds"
+export GZ_SIM_SYSTEM_PLUGIN_PATH="/home/root/ros2_ws/install/aviary_wind_plugin/lib:${GZ_SIM_SYSTEM_PLUGIN_PATH}"
 export GZ_VERSION=harmonic
 
-# start up the gazebo sim environment
-gz sim -r -s -v 4 $WORLD_FILE
-# gz sim -r -v 4 $WORLD_FILE
+gz sim -r -s -v 4 "$WORLD_FILE"

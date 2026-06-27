@@ -28,6 +28,8 @@ FIXED_K2 = 0.15
 FIXED_K3 = 1.4
 FIXED_K_RISE = 0.14
 
+RETRY_ATTEMPTS = 2
+
 class PatienceCallback:
     def __init__(self, patience: int):
         self.patience = patience
@@ -63,9 +65,21 @@ def parse_args():
     parser.add_argument(
         "--controller_type", 
         type=str, 
-        default=os.environ.get("CONTROLLER_TYPE"), # Fallback to bash export
+        required=True,
         choices=["baseline", "developed", "noresnet"],
         help="Specify which controller profile to optimize."
+    )
+    parser.add_argument(
+        "--active_trajectory",
+        type=int,
+        required=True,
+        choices=[1, 2],
+        help="Specify which trajectory to run (1: Warped Figure-Eight, 2: Rose Curve)."
+    )
+    parser.add_argument(
+        "--wind",
+        action='store_true',
+        help="Use the windy world (no fans; global only)"
     )
     args = parser.parse_args()
     
@@ -74,10 +88,13 @@ def parse_args():
         
     return args
 
-def get_storage_config(controller_type: str):
+def get_storage_config(controller_type: str, wind: bool):
     if controller_type == "noresnet":
         return "sqlite:///phase1_tuning.db", "phase1_noresnet_baseline_tuning"
-    return f"sqlite:///phase2_{controller_type}.db", f"phase2_{controller_type}_optimization"
+    else:
+        controller_type_augmented = controller_type
+        if wind: controller_type_augmented += "_wind"
+        return f"sqlite:///phase2_{controller_type_augmented}.db", f"phase2_{controller_type_augmented}_optimization"
 
 def write_spawn_location(x: float, y: float) -> None:
     env_path = "spawn-locations.env"
@@ -93,10 +110,10 @@ def cleanup_environment() -> None:
 def wait_for_sim_ready() -> bool:
     print("[*] Polling for PX4 EKF2 and DDS bridge to initialize...")
     for attempt in range(40): 
-        cmd = 'docker exec px4-sitl-gz bash -c "source /home/root/ros-sources.sh && timeout 2 ros2 topic echo --once /px4_1/fmu/out/vehicle_status"'
+        cmd = 'docker exec px4-sitl-gz bash -c "source /home/root/ros-sources.sh && timeout 2 ros2 topic echo --once /px4_1/fmu/out/vehicle_odometry"'
         result = subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if result.returncode == 0:
-            print("[*] DDS Bridge connected and publishing!")
+            print("[*] EKF2 converged! Odometry is publishing.")
             time.sleep(1) 
             return True
         time.sleep(1)
@@ -119,13 +136,24 @@ def write_ros_params(param_dict: dict) -> str:
 
     return "/home/root/ros2_ws/src/aviary_rise_controller/param/params.yaml"
 
-def execute_single_run(param_dict: dict):
+def execute_single_run(param_dict: dict, active_trajectory: int, wind: bool):
     cleanup_environment()
     
     container_param_path = write_ros_params(param_dict)
     write_spawn_location(FIXED_X, FIXED_Y)
     
-    subprocess.run(["./spawn-sim-env.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # 1. Define the target world file with the .sdf extension
+    if wind:
+        world_file = "mocap_fig8.sdf" if active_trajectory == 1 else "mocap_rose.sdf"
+    else:
+        world_file = "default.sdf"
+
+    # 2. Inject it into a copy of the current environment variables
+    run_env = os.environ.copy()
+    run_env["PX4_GZ_WORLD"] = world_file
+    
+    # 3. Pass the modified environment to the spawn script
+    subprocess.run(["./spawn-sim-env.sh"], env=run_env, stdout=subprocess.DEVNULL)
     
     if not wait_for_sim_ready():
         print("[!] Polling timeout. Simulator failed to boot properly.")
@@ -157,12 +185,12 @@ def execute_single_run(param_dict: dict):
     cleanup_environment()
     return final_cost
 
-def run_trial(param_dict: dict) -> float:
-    for attempt in range(1, 4):
+def run_trial(param_dict: dict, active_trajectory: int, wind: bool) -> float:
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
         if attempt != 1:
-            print(f"\n[*] Execution Attempt {attempt}/3")
+            print(f"\n[*] Execution Attempt {attempt}/{RETRY_ATTEMPTS}")
         
-        cost = execute_single_run(param_dict)
+        cost = execute_single_run(param_dict, active_trajectory, wind)
         
         if cost is not None:
             return cost
@@ -170,34 +198,77 @@ def run_trial(param_dict: dict) -> float:
         print("[!] Trial returned None (System/SITL failure). Retrying...")
         time.sleep(5)
         
-    print("[!] All 3 attempts failed. Assigning ultimate penalty.")
+    print(f"[!] All {RETRY_ATTEMPTS} attempts failed. Assigning ultimate penalty.")
     return 1e6
 
-def objective(trial: optuna.Trial, controller_type: str) -> float:
-    # Base parameters required for all controllers
+def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int, wind: bool) -> float:
+    # Base parameters required for all controllers mirroring param.yaml
     param_dict = {
+        'is_gazebo': True,
+        'active_trajectory': active_trajectory,
+        'd_out': 3,
+        
+        # Global Limits & Timers
+        'mpc_acc_hor_max': 6.0,
+        'mpc_acc_vert_max': 3.0,
+        'safe_x_max': 5.0,
+        'safe_y_max': 11.5,
+        'safe_z_max': 0.5,
+        'safe_z_min': -6.5,
+        'odom_timeout_sec': 15.0,
+        'settle_ticks': 50,
+        'hover_tolerance': 0.2,
+        'windup_time_sec': 5.0,
+        'watchdog_freq': 10.0,
+
+        # Trajectory 1
+        'traj1_period': 30.0,
+        'traj1_alpha_warp': 0.5,
+        'traj1_x_amp': 1.5,
+        'traj1_y_amp': 3.0,
+        'traj1_center_z': -0.75,
+        'traj1_z_amp': 0.25,
+
+        # 'traj1_period': 45.0,
+        # 'traj1_alpha_warp': 0.0,
+        # 'traj1_x_amp': 3.0,
+        # 'traj1_y_amp': 8.0,
+        # 'traj1_center_z': -4.0,
+        # 'traj1_z_amp': 0.5,
+
+        # Trajectory 2
+        'traj2_target_speed': 1.0,
+        'traj2_petal_radius': 2.5,
+        'traj2_center_z': -0.5,
+
         'vehicle_name': 'px4_1',
-        'z': TARGET_Z,
         'controller_type': controller_type,
+        'control_frequency': 50.0,
+        'plot': False,
+        'sim_time': 60.0,
+        
         'q_e': 1.0,
         'r_u': 0.2,
-        'sim_time': 60.0,
         'w_fail': 1000.0,
-        'control_frequency': 50.0,
-        'T_period': 45.0,
-        'alpha_warp': 0.8,  # Speed variation factor (0.0 = constant speed, < 1.0)
     }
     
     print(f"\n==============================================")
-    print(f"[*] Starting trial for controller: {controller_type}")
+    print(f"[*] Starting trial")
+    print(f"Controller: {controller_type} | Trajectory: {active_trajectory} | Wind: {wind}")
+
     
     if controller_type == "noresnet":
         # Phase 1 Search Space
-        param_dict['k1'] = trial.suggest_float("k1", 0.001, 2.0, log=True)
-        param_dict['k2'] = trial.suggest_float("k2", 0.001, 5.0, log=True)
+        param_dict['k1'] = trial.suggest_float("k1", 0.01, 2.0, log=True)
+        param_dict['k2'] = trial.suggest_float("k2", 0.01, 5.0, log=True)
         param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) 
         param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 2.0, log=True)
-        
+        # param_dict['k1'] = trial.suggest_float("k1", FIXED_K1, FIXED_K1)
+        # param_dict['k2'] = trial.suggest_float("k2", FIXED_K2, FIXED_K2)
+        # param_dict['k3'] = trial.suggest_float("k3", FIXED_K3, FIXED_K3) 
+        # param_dict['k_rise'] = trial.suggest_float("k_rise", FIXED_K_RISE, FIXED_K_RISE)
+        # print("WARNING: Hard-coding one set of gains!")
+
         print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
         
     else:
@@ -213,7 +284,6 @@ def objective(trial: optuna.Trial, controller_type: str) -> float:
         param_dict['theta_bar'] = 1e6 # Should never come into play
         
         param_dict['d_in'] = 12 if controller_type == "baseline" else 15
-        param_dict['d_out'] = 3
         initial_weight_scale_factor = 0.2
 
         param_dict['num_blocks'] = 1
@@ -232,16 +302,15 @@ def objective(trial: optuna.Trial, controller_type: str) -> float:
         
         print(f"[*] Evaluating Architecture: {total_params} parameters.")
         print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | hidden_width: {param_dict['hidden_width']}")
-        # print(f"[*] Theta Bar: {param_dict['theta_bar']:.4f}")
 
-    param_dict['plot'] = False 
     print(f"==============================================")
     
-    return run_trial(param_dict)
+    return run_trial(param_dict, active_trajectory, wind)
+
 
 if __name__ == "__main__":
     args = parse_args()
-    db_name, study_name = get_storage_config(args.controller_type)
+    db_name, study_name = get_storage_config(args.controller_type, args.wind)
     
     study = optuna.create_study(
         study_name=study_name,
@@ -250,11 +319,12 @@ if __name__ == "__main__":
         direction="minimize"
     )
     
-    print(f"[*] Starting Tuning for {args.controller_type}. Saving to {db_name}")
+    print(f"[*] Starting Tuning for {args.controller_type} (Trajectory {args.active_trajectory}, Wind {args.wind}). Saving to {db_name}")
     
     early_stopper = PatienceCallback(patience=50)
     
-    bound_objective = partial(objective, controller_type=args.controller_type)
+    # Inject the new arg parse choice into the objective function
+    bound_objective = partial(objective, controller_type=args.controller_type, active_trajectory=args.active_trajectory, wind=args.wind)
     
     study.optimize(
         bound_objective, 
