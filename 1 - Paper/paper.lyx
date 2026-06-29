@@ -9067,6 +9067,76 @@ Experiment
 \end_layout
 
 \begin_layout Standard
+Experimental evaluation of the developed controller is conducted on a ModalAI
+ Sentinel Development Drone with a Mircohard Modem Carrier Board for wireless/RF
+ communication.
+ The vehicle weighs 1.396 kg with its battery, has a payload capacity of
+ 1 kg and a thrust to weight ratio of 2.32.
+ The quadrotor is equipped with the ModalAI VOXL 2 onboard computer and
+ autopilot built on the Qualcomm QRB5165 CPU and running Ubuntu 18.04.
+ The VOXL 2 directly runs a custom branch of the PX4 version 1.14 firmware.
+\end_layout
+
+\begin_layout Standard
+The indoor test space is 25 
+\begin_inset Formula ${\tt m}$
+\end_inset
+
+ by 12 
+\begin_inset Formula ${\tt m}$
+\end_inset
+
+ by 8 
+\begin_inset Formula ${\tt m}$
+\end_inset
+
+ and consists of 59 Prime 41 ethernet cameras and a Windows 10 PC running
+ the Optitrack Motive application.
+ Pose estimates were streamed in real-time at 120 Hz over Nat Net, which
+ were then forward to the quadcopter over an Ubuntu laptop to the quadcopter
+ via the Microhard.
+\end_layout
+
+\begin_layout Standard
+A ROS 2 Humble node running locally on the quadcopter via an Ubuntu 22.04
+ Docker container encapsulates the controller logic.
+ Three controllers were compared.
+ In the baseline RISE controller,
+\begin_inset Formula 
+\[
+u\left(t\right)=u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right).
+\]
+
+\end_inset
+
+The baseline RISE/ResNet controller is
+\begin_inset Formula 
+\begin{align*}
+u\left(t\right) & =u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right)+\Phi\left(x\left(t\right),\widehat{\theta}\left(t\right)\right),\\
+\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x\left(t\right),\hat{\theta}\left(t\right)\right)}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right),
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $x\triangleq\left[\begin{array}{cccc}
+q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{4n}$
+\end_inset
+
+.
+ The developed RISE/ResNet controller is
+\begin_inset Formula 
+\begin{align*}
+u\left(t\right) & =u_{\text{PID}}\left(t\right)+u_{\text{RISE}}\left(t\right)+\intop_{t_{0}}^{t}\left(\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau,\\
+\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
 btprint "btPrintCited"

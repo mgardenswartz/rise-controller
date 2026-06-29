@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 import time
 import csv
@@ -19,9 +20,10 @@ from px4_msgs.msg import VehicleOdometry
 import jax
 import jax.numpy as jnp
 jax.config.update("jax_platform_name", "cpu")
+jax.config.update("jax_enable_x64", True) # Force 64-bit precision uniformly
 jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
-from jax_resnet import resnet_network, init_resnet_weights
+from jax_resnet import resnet_network
 
 @jax.jit
 def discrete_projection(
@@ -66,7 +68,7 @@ class AviaryRiseNode(Node):
         # --- STRICT PARAMETER DECLARATIONS ---
         # Experiment Config
         self.declare_parameter('is_gazebo', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter('active_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter('desired_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         
         # Global Limits
         self.declare_parameter('mpc_acc_hor_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
@@ -127,7 +129,7 @@ class AviaryRiseNode(Node):
 
         # --- RETRIEVE PARAMETERS ---
         self.is_gazebo = self.get_parameter('is_gazebo').value
-        self.active_trajectory = self.get_parameter('active_trajectory').value
+        self.desired_trajectory = self.get_parameter('desired_trajectory').value
         self.vehicle_name = self.get_parameter('vehicle_name').value
         self.controller_type = self.get_parameter('controller_type').value
         self.enable_plotting = self.get_parameter('plot').value
@@ -143,7 +145,7 @@ class AviaryRiseNode(Node):
         self.windup_time = self.get_parameter('windup_time_sec').value
         self.watchdog_freq = self.get_parameter('watchdog_freq').value
 
-        self.target_z = self.get_parameter('traj1_center_z').value if self.active_trajectory == 1 else self.get_parameter('traj2_center_z').value
+        self.target_z = self.get_parameter('traj1_center_z').value if self.desired_trajectory == 1 else self.get_parameter('traj2_center_z').value
         self.traj1_period = self.get_parameter('traj1_period').value
         self.traj1_alpha_warp = self.get_parameter('traj1_alpha_warp').value
         self.traj1_x_amp = self.get_parameter('traj1_x_amp').value
@@ -211,9 +213,13 @@ class AviaryRiseNode(Node):
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
         self.is_saturated = False
+        self.freeze_int_xy = False
+        self.freeze_int_z = False
         
         self.error_sq_integral = 0.0
         self.last_error_sq = 0.0
+        self.u_sq_integral = 0.0
+        self.last_u_sq = 0.0
         self.time_history = []
         self.error_norm_history = []
         self.weight_history = []
@@ -257,7 +263,7 @@ class AviaryRiseNode(Node):
             self.compiled_update_step = compiled_update_step
             self.enforce_realtime_constraint()
 
-        self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.active_trajectory} | Gazebo Mode: {self.is_gazebo}")
+        self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
         self.watchdog_timer = self.create_timer(1.0/self.watchdog_freq, self.watchdog_callback)
         self.ticks_without_odom = 0
 
@@ -265,12 +271,19 @@ class AviaryRiseNode(Node):
         dummy_x = jnp.zeros(self.d_in)
         dummy_r1 = jnp.zeros(self.d_out)
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
-        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        
+        # Warmup and lock-in JAX trace shapes/dtypes
+        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
+        
         start_time = time.perf_counter()
-        _, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
         hot_time = time.perf_counter() - start_time
+        
+        # Reset the weights back to true initial conditions (since the zero dummy inputs decayed them)
+        self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
+        self.theta_hat.block_until_ready()
         self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
         if hot_time > self.control_period:
             self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
@@ -307,7 +320,7 @@ class AviaryRiseNode(Node):
                 if self.is_gazebo:
                     sys.exit(1)
                 else:
-                    sys.exit(1) # Original logic exited for both
+                    sys.exit(1)
         else:
             # Mid-flight timeout
             if self.is_gazebo:
@@ -356,7 +369,12 @@ class AviaryRiseNode(Node):
 
     def log_csv(self):
         if not self.enable_plotting: return
-        csv_filename = f"/home/root/trial_data_cost_{int(self.cost_J)}.csv"
+        
+        traj_name = "figure_eight" if self.desired_trajectory == 1 else "rose"
+        base_dir = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
+        os.makedirs(base_dir, exist_ok=True)
+        
+        csv_filename = os.path.join(base_dir, f"trial_cost_{int(self.cost_J)}.csv")
         try:
             with open(csv_filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
@@ -399,7 +417,6 @@ class AviaryRiseNode(Node):
             self.get_logger().error(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min}, {self.safe_z_max}]")
             return True 
         return False
-        return False
 
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.experiment_state == 3:
@@ -413,7 +430,7 @@ class AviaryRiseNode(Node):
         self.last_traj_time = traj_t
         if dt < 0: dt = 0.0
 
-        if self.active_trajectory == 1:
+        if self.desired_trajectory == 1:
             w = (2.0 * math.pi) / self.traj1_period
             tau_dot = self.traj1_warp_c * (1.0 - self.traj1_alpha_warp * (math.sin(w * self.tau)**2))
             tau_ddot = -self.traj1_warp_c * self.traj1_alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
@@ -465,6 +482,8 @@ class AviaryRiseNode(Node):
     def control_timer_callback(self) -> None:
         if self.latest_odom is None: return
         current_timestamp_s = self.latest_odom.timestamp / 1e6
+        
+        if not self.is_gazebo: self.publish_offboard_control_mode() 
 
         if not self.in_offboard_mode:
             if self.experiment_state in [3, 4]:
@@ -489,7 +508,7 @@ class AviaryRiseNode(Node):
 
             case 0:
                 self.get_logger().info("IN CASE 0, PUBLISHING OFFBOARD CONTROL MODE AND ARM COMMANDS!", throttle_duration_sec=1.0)
-                self.publish_offboard_control_mode()
+                if self.is_gazebo: self.publish_offboard_control_mode()
                 self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
 
                 if self.is_gazebo:
@@ -502,10 +521,10 @@ class AviaryRiseNode(Node):
                     self.get_logger().info("ARMED & OFFBOARD: Starting RISE Windup Phase.")
                     self.t_0 = current_timestamp_s
                     self.last_t = 0.0
-                    self.experiment_state = 3 
+                    self.experiment_state = 3
 
             case 3 | 4:
-                self.publish_offboard_control_mode() 
+                if self.is_gazebo: self.publish_offboard_control_mode() 
                 t = current_timestamp_s - self.t_0
                 dt = t - self.last_t
                 if dt <= 0.0:
@@ -514,7 +533,7 @@ class AviaryRiseNode(Node):
                 
                 if self.experiment_state == 3 and t >= self.windup_time:
                     self.experiment_state = 4
-                    self.get_logger().info(f"WINDUP COMPLETE: Starting Trajectory {self.active_trajectory}.")
+                    self.get_logger().info(f"WINDUP COMPLETE: Starting Trajectory {self.desired_trajectory}.")
 
                 q = np.array(self.latest_odom.position, dtype=np.float64)
                 q_dot = np.array(self.latest_odom.velocity, dtype=np.float64)
@@ -536,22 +555,36 @@ class AviaryRiseNode(Node):
                 match self.controller_type:
                     case "noresnet":
                         current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                        if not self.is_saturated:
-                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                        if not self.freeze_int_xy:
+                            self.integral_term[0:2] += delta_int[0:2]
+                        if not self.freeze_int_z:
+                            self.integral_term[2] += delta_int[2]
                         self.last_integrand = current_integrand
                         u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
                     case "baseline":
                         if self.experiment_state == 4: 
                             x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
+                            
+                            t_start_jax = time.perf_counter()
                             self.theta_hat, phi_out = self.compiled_update_step(
                                 self.theta_hat, x_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
                             )
+                            self.theta_hat.block_until_ready()
+                            t_end_jax = time.perf_counter()
+                            jax_dt = t_end_jax - t_start_jax
+                            if jax_dt > 0.05:
+                                self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
+                                
                             phi_val = np.array(phi_out, dtype=np.float64)
                         
                         current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                        if not self.is_saturated:
-                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                        if not self.freeze_int_xy:
+                            self.integral_term[0:2] += delta_int[0:2]
+                        if not self.freeze_int_z:
+                            self.integral_term[2] += delta_int[2]
                         self.last_integrand = current_integrand
                         u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
@@ -559,14 +592,25 @@ class AviaryRiseNode(Node):
                         if self.experiment_state == 4:
                             u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                             kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
+                            
+                            t_start_jax = time.perf_counter()
                             self.theta_hat, phi_out = self.compiled_update_step(
                                 self.theta_hat, kappa_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
                             )
+                            self.theta_hat.block_until_ready()
+                            t_end_jax = time.perf_counter()
+                            jax_dt = t_end_jax - t_start_jax
+                            if jax_dt > 0.05:
+                                self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
+                                
                             phi_val = np.array(phi_out, dtype=np.float64)
                         
                         current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
-                        if not self.is_saturated:
-                            self.integral_term += (dt / 2.0) * (current_integrand + self.last_integrand)
+                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                        if not self.freeze_int_xy:
+                            self.integral_term[0:2] += delta_int[0:2]
+                        if not self.freeze_int_z:
+                            self.integral_term[2] += delta_int[2]
                         self.last_integrand = current_integrand
                         u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
         
@@ -587,30 +631,47 @@ class AviaryRiseNode(Node):
                     current_error_sq = float(norm_e ** 2)
                     self.error_sq_integral += (dt / 2.0) * (current_error_sq + self.last_error_sq)
                     self.last_error_sq = current_error_sq
+                    
+                    current_u_sq = float(norm_u ** 2)
+                    self.u_sq_integral += (dt / 2.0) * (current_u_sq + self.last_u_sq)
+                    self.last_u_sq = current_u_sq
 
                     current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
                     self.cost_J += (dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
                     self.last_cost_integrand = current_cost_integrand
                 
                 self.is_saturated = False
+                self.freeze_int_xy = False
+                self.freeze_int_z = False
+                
                 u_xy = u[0:2]
                 norm_uxy = float(np.linalg.norm(u_xy))
                 if norm_uxy > self.acc_hor_max:
                     u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
                     self.is_saturated = True
+                    # Anti-windup: freeze integral if e_xy is pushing in the same direction as u_xy
+                    if np.dot(e[0:2], u[0:2]) > 0.0:
+                        self.freeze_int_xy = True
+                    self.get_logger().warn(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
                     
                 if abs(u[2]) > self.acc_vert_max:
                     u[2] = self.acc_vert_max * np.sign(u[2])
                     self.is_saturated = True
+                    # Anti-windup: freeze integral if e_z is pushing in the same direction as u_z
+                    if np.sign(e[2]) == np.sign(u[2]):
+                        self.freeze_int_z = True
+                    self.get_logger().warn(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
                 self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
                 self.last_t = t
 
                 if t >= self.t_f:
-                    active_time = self.t_f - self.windup_time
-                    rms_error = math.sqrt(self.error_sq_integral / active_time) if active_time > 0 else 0.0
+                    desired_time = self.t_f - self.windup_time
+                    rms_error = math.sqrt(self.error_sq_integral / desired_time) if desired_time > 0 else 0.0
+                    rms_u = math.sqrt(self.u_sq_integral / desired_time) if desired_time > 0 else 0.0
                     self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.4f}")
                     self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
+                    self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.4f}")
                     self.trigger_failsafe_land() 
 
 def main(args=None):

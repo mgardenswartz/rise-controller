@@ -10,7 +10,7 @@ else
     echo "Preparing to run gazebo"
     echo 
     # only log the first 100 lines of output so we don't end up with massive log files
-	docker exec -e PX4_GZ_WORLD -d $CONTAINER_NAME bash -c "./run-gz-sim.sh 2>&1 | tee >(head -n 200 > /tmp/gz-sim-output.log) > /dev/null "
+	docker exec -e PX4_GZ_WORLD -e GZ_SEED -d $CONTAINER_NAME bash -c "./run-gz-sim.sh 2>&1 | tee >(head -n 200 > /tmp/gz-sim-output.log) > /dev/null "
 	#docker exec -d $CONTAINER_NAME bash -c "./run-gz-sim.sh 2>&1 | tee >(head -n 200 > /tmp/gz-sim-output.log) > /dev/null "
 	sleep 5
 	# docker exec -i $CONTAINER_NAME bash -c "cat /tmp/gz-sim-output.log"

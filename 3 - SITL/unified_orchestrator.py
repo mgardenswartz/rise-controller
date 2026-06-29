@@ -11,7 +11,9 @@ from functools import partial
 
 # Ensure JAX stays on CPU
 import jax
+import jax.numpy as jnp
 jax.config.update("jax_platform_name", "cpu")
+jax.config.update("jax_enable_x64", True)
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "ros2_ws", "src", "aviary_rise_controller", "aviary_rise_controller")))
 from jax_resnet import get_total_parameters, init_resnet_weights
@@ -23,11 +25,13 @@ FIXED_Y = -2.37
 TARGET_Z = -3.0
 
 # Fixed Phase 2 Baseline Gains (Optimized from Phase 1)
-FIXED_K1 = 0.09
-FIXED_K2 = 0.15
-FIXED_K3 = 1.4
-FIXED_K_RISE = 0.14
+FIXED_K1 = 1.31
+FIXED_K2 = 0.131
+FIXED_K3 = 0.83
+FIXED_K_RISE = 0.0287
 
+PATIENCE_TRIALS = 200
+NUM_TRIALS = 500
 RETRY_ATTEMPTS = 2
 
 class PatienceCallback:
@@ -70,7 +74,7 @@ def parse_args():
         help="Specify which controller profile to optimize."
     )
     parser.add_argument(
-        "--active_trajectory",
+        "--desired_trajectory",
         type=int,
         required=True,
         choices=[1, 2],
@@ -136,7 +140,7 @@ def write_ros_params(param_dict: dict) -> str:
 
     return "/home/root/ros2_ws/src/aviary_rise_controller/param/params.yaml"
 
-def execute_single_run(param_dict: dict, active_trajectory: int, wind: bool):
+def execute_single_run(param_dict: dict, desired_trajectory: int, wind: bool):
     cleanup_environment()
     
     container_param_path = write_ros_params(param_dict)
@@ -144,13 +148,14 @@ def execute_single_run(param_dict: dict, active_trajectory: int, wind: bool):
     
     # 1. Define the target world file with the .sdf extension
     if wind:
-        world_file = "mocap_fig8.sdf" if active_trajectory == 1 else "mocap_rose.sdf"
+        world_file = "mocap_fig8.sdf" if desired_trajectory == 1 else "mocap_rose.sdf"
     else:
         world_file = "default.sdf"
 
     # 2. Inject it into a copy of the current environment variables
     run_env = os.environ.copy()
     run_env["PX4_GZ_WORLD"] = world_file
+    run_env["GZ_SEED"] = str(SEED)
     
     # 3. Pass the modified environment to the spawn script
     subprocess.run(["./spawn-sim-env.sh"], env=run_env, stdout=subprocess.DEVNULL)
@@ -175,37 +180,41 @@ def execute_single_run(param_dict: dict, active_trajectory: int, wind: bool):
     )
     
     final_cost = None
+    rms_error = None
+    rms_control = None
     for line in process.stdout:
         print(f"  [ROS] {line.strip()}")
-        match = re.search(r"\[RESULT\] ITAE_COST = ([\d\.]+)", line)
-        if match:
+        if match := re.search(r"\[RESULT\] ITAE_COST = ([\d\.]+)", line):
             final_cost = float(match.group(1))
+        elif match := re.search(r"\[RESULT\] RMS_ERROR = ([\d\.]+)", line):
+            rms_error = float(match.group(1))
+        elif match := re.search(r"\[RESULT\] RMS_CONTROL_EFFORT = ([\d\.]+)", line):
+            rms_control = float(match.group(1))
             
     process.wait()
     cleanup_environment()
-    return final_cost
+    return final_cost, rms_error, rms_control
 
-def run_trial(param_dict: dict, active_trajectory: int, wind: bool) -> float:
+def run_trial(param_dict: dict, desired_trajectory: int, wind: bool):
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         if attempt != 1:
             print(f"\n[*] Execution Attempt {attempt}/{RETRY_ATTEMPTS}")
         
-        cost = execute_single_run(param_dict, active_trajectory, wind)
+        cost, rms_err, rms_ctrl = execute_single_run(param_dict, desired_trajectory, wind)
         
         if cost is not None:
-            return cost
+            return cost, rms_err, rms_ctrl
             
         print("[!] Trial returned None (System/SITL failure). Retrying...")
         time.sleep(5)
         
     print(f"[!] All {RETRY_ATTEMPTS} attempts failed. Assigning ultimate penalty.")
-    return 1e6
+    return 1e6, None, None
 
-def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int, wind: bool) -> float:
-    # Base parameters required for all controllers mirroring param.yaml
-    param_dict = {
+def get_base_param_dict(controller_type: str, desired_trajectory: int):
+    return {
         'is_gazebo': True,
-        'active_trajectory': active_trajectory,
+        'desired_trajectory': desired_trajectory,
         'd_out': 3,
         
         # Global Limits & Timers
@@ -229,13 +238,6 @@ def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int,
         'traj1_center_z': -0.75,
         'traj1_z_amp': 0.25,
 
-        # 'traj1_period': 45.0,
-        # 'traj1_alpha_warp': 0.0,
-        # 'traj1_x_amp': 3.0,
-        # 'traj1_y_amp': 8.0,
-        # 'traj1_center_z': -4.0,
-        # 'traj1_z_amp': 0.5,
-
         # Trajectory 2
         'traj2_target_speed': 1.0,
         'traj2_petal_radius': 2.5,
@@ -251,23 +253,20 @@ def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int,
         'r_u': 0.2,
         'w_fail': 1000.0,
     }
+
+def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int, wind: bool) -> float:
+    param_dict = get_base_param_dict(controller_type, desired_trajectory)
     
     print(f"\n==============================================")
     print(f"[*] Starting trial")
-    print(f"Controller: {controller_type} | Trajectory: {active_trajectory} | Wind: {wind}")
+    print(f"Controller: {controller_type} | Trajectory: {desired_trajectory} | Wind: {wind}")
 
-    
     if controller_type == "noresnet":
         # Phase 1 Search Space
         param_dict['k1'] = trial.suggest_float("k1", 0.01, 2.0, log=True)
         param_dict['k2'] = trial.suggest_float("k2", 0.01, 5.0, log=True)
         param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) 
         param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 2.0, log=True)
-        # param_dict['k1'] = trial.suggest_float("k1", FIXED_K1, FIXED_K1)
-        # param_dict['k2'] = trial.suggest_float("k2", FIXED_K2, FIXED_K2)
-        # param_dict['k3'] = trial.suggest_float("k3", FIXED_K3, FIXED_K3) 
-        # param_dict['k_rise'] = trial.suggest_float("k_rise", FIXED_K_RISE, FIXED_K_RISE)
-        # print("WARNING: Hard-coding one set of gains!")
 
         print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
         
@@ -284,15 +283,14 @@ def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int,
         param_dict['theta_bar'] = 1e6 # Should never come into play
         
         param_dict['d_in'] = 12 if controller_type == "baseline" else 15
-        initial_weight_scale_factor = 0.2
 
-        param_dict['num_blocks'] = 1
-        param_dict['k_0'] = 1
-        param_dict['k_i'] = 1
-
-        param_dict['hidden_width'] = trial.suggest_categorical("hidden_width", [16, 32])
-        param_dict['gamma'] = float(trial.suggest_float("gamma", 0.5, 50.0, log=True))
-        param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.001, 5.0, log=True))
+        initial_weight_scale_factor =  trial.suggest_categorical("initial_weight_scale_factor", [0.2, 1.0])
+        param_dict['num_blocks'] = trial.suggest_categorical("num_blocks", [1, 2, 4])
+        param_dict['k_0'] = trial.suggest_categorical("k_0", [1, 2, 4])
+        param_dict['k_i'] = trial.suggest_categorical("k_i", [1, 2, 4])
+        param_dict['hidden_width'] = trial.suggest_categorical("hidden_width", [4, 8, 16])
+        param_dict['gamma'] = float(trial.suggest_float("gamma", 0.1, 10.0, log=True))
+        param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.5, 5.0, log=True))
 
         total_params = get_total_parameters(param_dict['d_in'], param_dict['hidden_width'],  param_dict['d_out'], param_dict['num_blocks'], param_dict['k_0'], param_dict['k_i'])
         
@@ -301,11 +299,17 @@ def objective(trial: optuna.Trial, controller_type: str, active_trajectory: int,
         param_dict['initial_weights'] = [float(w) for w in initial_weights_jax]
         
         print(f"[*] Evaluating Architecture: {total_params} parameters.")
-        print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | hidden_width: {param_dict['hidden_width']}")
+        print(f"[*] Gamma: {param_dict['gamma']:.2f} | Sigma Mod: {param_dict['sigma_mod']:.6f} | hidden_width: {param_dict['hidden_width']} | k_i: {param_dict['k_i']} | k_0: {param_dict['k_0']} | b: {param_dict['num_blocks']} | W_s: {initial_weight_scale_factor}")
 
     print(f"==============================================")
     
-    return run_trial(param_dict, active_trajectory, wind)
+    cost, rms_err, rms_ctrl = run_trial(param_dict, desired_trajectory, wind)
+    if rms_err is not None:
+        trial.set_user_attr("rms_error", rms_err)
+    if rms_ctrl is not None:
+        trial.set_user_attr("rms_control_effort", rms_ctrl)
+    
+    return cost
 
 
 if __name__ == "__main__":
@@ -319,16 +323,16 @@ if __name__ == "__main__":
         direction="minimize"
     )
     
-    print(f"[*] Starting Tuning for {args.controller_type} (Trajectory {args.active_trajectory}, Wind {args.wind}). Saving to {db_name}")
+    print(f"[*] Starting Tuning for {args.controller_type} (Trajectory {args.desired_trajectory}, Wind {args.wind}). Saving to {db_name}")
     
-    early_stopper = PatienceCallback(patience=50)
+    early_stopper = PatienceCallback(patience=PATIENCE_TRIALS)
     
     # Inject the new arg parse choice into the objective function
-    bound_objective = partial(objective, controller_type=args.controller_type, active_trajectory=args.active_trajectory, wind=args.wind)
+    bound_objective = partial(objective, controller_type=args.controller_type, desired_trajectory=args.desired_trajectory, wind=args.wind)
     
     study.optimize(
         bound_objective, 
-        n_trials=250,
+        n_trials=NUM_TRIALS,
         callbacks=[early_stopper]
     )
     
