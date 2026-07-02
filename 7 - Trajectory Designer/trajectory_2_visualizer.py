@@ -34,7 +34,7 @@ class Trajectory2Environment:
         self.fan2_state = list(self.def_fan2)
         
         # Simulation State
-        self.theta = 0.0
+        self.theta = math.pi /4
         self.sim_time = 0.0
         self.playback_speed = self.def_speed
         self.last_wall_time = time.time()
@@ -84,8 +84,7 @@ class Trajectory2Environment:
         return self.calc_kinematics_at_theta(self.theta)
 
     def precompute_trace(self):
-        # The Rose curve is periodic over 2*pi in theta
-        theta_eval = np.linspace(0, 2 * math.pi, 500)
+        theta_eval = np.linspace(math.pi / 4.0, math.pi / 4.0 + 2.0 * math.pi, 500)
         xs, ys, zs, speeds, accels = [], [], [], [], []
         
         for th in theta_eval:
@@ -96,7 +95,7 @@ class Trajectory2Environment:
             speeds.append(np.linalg.norm(v))
             accels.append(np.linalg.norm(a))
             
-        return xs, ys, zs, max(speeds), max(accels)
+        return xs, ys, zs, min(speeds), max(speeds), max(accels)
 
     def setup_plot(self):
         self.fig = plt.figure(figsize=(16, 9))
@@ -122,7 +121,7 @@ class Trajectory2Environment:
         # Environment rendering
         xx, yy = np.meshgrid([self.x_lim[0], self.x_lim[1]], [self.y_lim[0], self.y_lim[1]])
         zz_floor = np.zeros_like(xx)
-        self.ax3d.plot_surface(xx, yy, zz_floor, color='black', alpha=0.8)
+        self.ax3d.plot_surface(xx, yy, zz_floor, color='gray', alpha=0.8)
         
         z_min, z_max = self.z_lim[1], self.z_lim[0]
         w_y1 = [[self.x_lim[0], self.y_lim[0], z_min], [self.x_lim[1], self.y_lim[0], z_min], [self.x_lim[1], self.y_lim[0], z_max], [self.x_lim[0], self.y_lim[0], z_max]]
@@ -227,7 +226,7 @@ class Trajectory2Environment:
 
     def cb_reset_traj(self, event):
         self.sim_time = 0.0
-        self.theta = 0.0
+        self.theta = math.pi / 4.0
         self.history_x.clear()
         self.history_y.clear()
         self.history_z.clear()
@@ -239,11 +238,16 @@ class Trajectory2Environment:
         
         self.cb_reset_traj(None)
         
-        xs, ys, zs, max_v, max_a = self.precompute_trace()
+        # Unpack the new min_v value
+        xs, ys, zs, min_v, max_v, max_a = self.precompute_trace()
         self.static_path3d.set_data(xs, ys)
         self.static_path3d.set_3d_properties(zs)
         self.static_path2d.set_data(xs, ys)
-        self.stats_text.set_text(f"ANALYTICS | Max Speed: {max_v:.2f} m/s | Max Accel: {max_a:.2f} m/s^2")
+        
+        # Update display string
+        self.stats_text.set_text(
+            f"ANALYTICS | Speed Range: [{min_v:.2f}, {max_v:.2f}] m/s | Max Accel: {max_a:.2f} m/s^2"
+        )
 
     def update_speed(self, val):
         try: self.playback_speed = float(val)

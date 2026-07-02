@@ -30,7 +30,7 @@ FIXED_K2 = 0.131
 FIXED_K3 = 0.83
 FIXED_K_RISE = 0.0287
 
-PATIENCE_TRIALS = 200
+PATIENCE_TRIALS = 100
 NUM_TRIALS = 500
 RETRY_ATTEMPTS = 2
 
@@ -283,12 +283,12 @@ def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int
         param_dict['theta_bar'] = 1e6 # Should never come into play
         
         param_dict['d_in'] = 12 if controller_type == "baseline" else 15
-
-        initial_weight_scale_factor =  trial.suggest_categorical("initial_weight_scale_factor", [0.2, 1.0])
-        param_dict['num_blocks'] = trial.suggest_categorical("num_blocks", [1, 2, 4])
-        param_dict['k_0'] = trial.suggest_categorical("k_0", [1, 2, 4])
-        param_dict['k_i'] = trial.suggest_categorical("k_i", [1, 2, 4])
-        param_dict['hidden_width'] = trial.suggest_categorical("hidden_width", [4, 8, 16])
+        
+        initial_weight_scale_factor =  trial.suggest_categorical("initial_weight_scale_factor", [0.1, 0.2, 0.4])
+        param_dict['num_blocks'] = trial.suggest_categorical("num_blocks", [4, 6, 8])
+        param_dict['k_0'] = trial.suggest_categorical("k_0", [2, 4, 8])
+        param_dict['k_i'] = trial.suggest_categorical("k_i", [2, 4, 8])
+        param_dict['hidden_width'] = trial.suggest_categorical("hidden_width", [4, 8, 12])
         param_dict['gamma'] = float(trial.suggest_float("gamma", 0.1, 10.0, log=True))
         param_dict['sigma_mod'] = float(trial.suggest_float("sigma_mod", 0.5, 5.0, log=True))
 

@@ -92,7 +92,7 @@ class TrajectoryEnvironment:
             accels.append(np.linalg.norm(a))
             
         self.tau = saved_tau 
-        return xs, ys, zs, max(speeds), max(accels)
+        return xs, ys, zs, min(speeds), max(speeds), max(accels)
 
     def setup_plot(self):
         self.fig = plt.figure(figsize=(16, 9))
@@ -119,7 +119,7 @@ class TrajectoryEnvironment:
         # 3D Environment rendering
         xx, yy = np.meshgrid([self.x_lim[0], self.x_lim[1]], [self.y_lim[0], self.y_lim[1]])
         zz_floor = np.zeros_like(xx)
-        self.ax3d.plot_surface(xx, yy, zz_floor, color='black', alpha=0.8)
+        self.ax3d.plot_surface(xx, yy, zz_floor, color='gray', alpha=0.8)
         
         z_min, z_max = self.z_lim[1], self.z_lim[0]
         w_y1 = [[self.x_lim[0], self.y_lim[0], z_min], [self.x_lim[1], self.y_lim[0], z_min], [self.x_lim[1], self.y_lim[0], z_max], [self.x_lim[0], self.y_lim[0], z_max]]
@@ -137,7 +137,7 @@ class TrajectoryEnvironment:
         self.ax2d.set_xlabel('X (m)')
         self.ax2d.set_ylabel('Y (m)')
         self.ax2d.grid(True)
-        self.ax2d.add_patch(Rectangle((self.x_lim[0], self.y_lim[0]), dx, dy, fill=False, edgecolor='black', linewidth=3))
+        self.ax2d.add_patch(Rectangle((self.x_lim[0], self.y_lim[0]), dx, dy, fill=False, edgecolor='gray', linewidth=3))
 
         # Animations
         self.static_path3d, = self.ax3d.plot([], [], [], color='lightblue', alpha=0.6, linewidth=2)
@@ -237,11 +237,16 @@ class TrajectoryEnvironment:
         
         self.cb_reset_traj(None)
         
-        xs, ys, zs, max_v, max_a = self.precompute_trace()
+        # Unpack the new min_v value
+        xs, ys, zs, min_v, max_v, max_a = self.precompute_trace()
         self.static_path3d.set_data(xs, ys)
         self.static_path3d.set_3d_properties(zs)
         self.static_path2d.set_data(xs, ys)
-        self.stats_text.set_text(f"ANALYTICS | Max Speed: {max_v:.2f} m/s | Max Accel: {max_a:.2f} m/s^2")
+        
+        # Update display string
+        self.stats_text.set_text(
+            f"ANALYTICS | Speed Range: [{min_v:.2f}, {max_v:.2f}] m/s | Max Accel: {max_a:.2f} m/s^2"
+        )
 
     def update_speed(self, val):
         try: self.playback_speed = float(val)

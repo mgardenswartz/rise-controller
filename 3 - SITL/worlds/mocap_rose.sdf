@@ -15,7 +15,7 @@
       <render_engine>ogre2</render_engine>
     </plugin>
     <wind>
-      <linear_velocity>0 2.5 0</linear_velocity>
+      <linear_velocity>0.75 0 0</linear_velocity>
     </wind>
     <plugin
       filename="gz-sim-wind-effects-system"
@@ -26,14 +26,14 @@
           <time_for_rise>1</time_for_rise>
           <noise type="gaussian">
            <mean>0</mean>
-           <stddev>0.4</stddev>
+           <stddev>0.25</stddev>
           </noise>
         </magnitude>
         <direction>
           <time_for_rise>1</time_for_rise>
           <noise type="gaussian">
            <mean>0</mean>
-           <stddev>0.0</stddev>
+           <stddev>1.57</stddev>
           </noise>
         </direction>
       </horizontal>

@@ -378,6 +378,12 @@ literal "false"
 \end_inset
 
 .
+ To denote a positive definite matrix, 
+\begin_inset Formula $A\succ0$
+\end_inset
+
+ is written.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -7870,7 +7876,8 @@ noprefix "false"
 
 \end_inset
 
-) with are presented next.
+) with initial states in a compact ball that can be made arbitrarily large
+ are presented next.
 \end_layout
 
 \begin_layout Theorem
@@ -9063,18 +9070,558 @@ noprefix "false"
 \end_layout
 
 \begin_layout Section
-Experiment
+Simulations
 \end_layout
 
 \begin_layout Standard
-Experimental evaluation of the developed controller is conducted on a ModalAI
- Sentinel Development Drone with a Mircohard Modem Carrier Board for wireless/RF
- communication.
+An integral of time-weighted square-error cost function was used to penalize
+ later tracking errors more than transient ones:
+\begin_inset Formula 
+\[
+J=\intop_{0}^{t_{f}}\left(q_{e}\cdot t\left\Vert e\left(t\right)\right\Vert ^{2}+r_{u}\left\Vert u\left(t\right)\right\Vert ^{2}\right)dt+W_{\text{fail}}\left(t_{\text{fail}}-t\right)^{2},
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $r_{u}=0.2$
+\end_inset
+
+, 
+\begin_inset Formula $q_{e}=1$
+\end_inset
+
+, 
+\begin_inset Formula $W_{\text{fail}}=1000$
+\end_inset
+
+, 
+\begin_inset Formula $t_{f}\in\mathbb{R}_{>t_{0}}$
+\end_inset
+
+ is the total simulation duration, and 
+\begin_inset Formula $t_{\text{fail}}\in\left(t_{0},t_{f}\right]$
+\end_inset
+
+ is time at which the drone escapes the simulated space (
+\begin_inset Formula $t_{f}=t_{\text{fail}}$
+\end_inset
+
+ if it does not escape).
+ The integral was evaluated using the trapezoidal rule.
+\end_layout
+
+\begin_layout Section
+Experiments
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Section
+Problem Statement
+\end_layout
+
+\begin_layout Plain Layout
+Let the controlled agent's dynamics be
+\begin_inset Formula 
+\begin{align*}
+\ddot{q} & =u
+\end{align*}
+
+\end_inset
+
+Assume 
+\begin_inset Formula $q$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{q}$
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+, 
+\begin_inset Formula $q_{\text{d}}$
+\end_inset
+
+, 
+\begin_inset Formula $\dot{q}_{\text{d}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\ddot{q}_{\text{d}}$
+\end_inset
+
+ are known for the sake of control development, 
+\begin_inset Formula $d\in\mathcal{C}^{1}$
+\end_inset
+
+ is unknown, and 
+\begin_inset Formula $q_{d}\in\mathcal{C}_{2}$
+\end_inset
+
+, where
+\begin_inset Formula 
+\begin{align*}
+\left\Vert d\left(t\right)\right\Vert  & \le\overline{d}\\
+\left\Vert \dot{d}\left(t\right)\right\Vert  & \le\overline{\dot{d}}
+\end{align*}
+
+\end_inset
+
+are known constants.
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color blue
+ 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Assume
+\begin_inset Formula 
+\begin{align*}
+\left\Vert q_{\text{d}}\left(t\right)\right\Vert  & \le\overline{q}_{\text{d}}\\
+\left\Vert \dot{q}_{\text{d}}\left(t\right)\right\Vert  & \le\overline{\dot{q}}_{\text{d}}\\
+\left\Vert \ddot{q}_{\text{d}}\left(t\right)\right\Vert  & \le\overline{\ddot{q}}_{\text{d}}
+\end{align*}
+
+\end_inset
+
+are known constants.
+ Define
+\begin_inset Formula 
+\begin{align*}
+e & \triangleq q_{\text{d}}-q\\
+r_{1} & \triangleq\dot{e}+k_{1}e
+\end{align*}
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+Introduce
+\begin_inset Formula 
+\[
+\zeta\triangleq\left[\begin{array}{c}
+\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)\\
+\omega
+\end{array}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Goal
+\end_layout
+
+\begin_layout Plain Layout
+Find a 
+\begin_inset Formula $u$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\begin{align*}
+e & \to0
+\end{align*}
+
+\end_inset
+
+in finite time.
+\end_layout
+
+\begin_layout Section
+Error Dynamics
+\end_layout
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Note that the generalized derivative is
+\begin_inset Formula 
+\[
+\dot{\zeta}=\left[\begin{array}{c}
+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\dot{r_{1}}\\
+\dot{\omega}
+\end{array}\right]
+\]
+
+\end_inset
+
+Design
+\begin_inset Formula 
+\[
+u=\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega-k_{1}\dot{e}
+\]
+
+\end_inset
+
+Design
+\begin_inset Formula 
+\[
+\dot{\omega}=-k_{3}\text{sgn}\left(r_{1}\right)
+\]
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+where 
+\begin_inset Formula $k_{1},k_{2},k_{3}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+ Thus,
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula 
+\begin{align*}
+\dot{r_{1}} & =\ddot{e}+k_{1}\dot{e}\\
+ & =\ddot{q}_{d}-\ddot{q}+k_{1}\dot{e}\\
+ & =\ddot{q}_{d}-\left(u\right)+k_{1}\dot{e}\\
+ & =\ddot{q}_{d}-u+k_{1}\dot{e}\\
+ & =\ddot{q}_{d}-\left(\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega-k_{1}\dot{e}\right)-k_{1}\dot{e}\\
+ & =\cancel{\ddot{q}_{d}-\ddot{q}_{d}}-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega+\cancel{k_{1}\dot{e}-k_{1}\dot{e}}\\
+ & =-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega
+\end{align*}
+
+\end_inset
+
+Note that 
+\begin_inset Formula $\left\Vert r_{1}\right\Vert ^{-1/2}r_{1}=\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)$
+\end_inset
+
+.
+ Thus,
+\begin_inset Formula 
+\begin{align*}
+\dot{\zeta} & =\left[\begin{array}{c}
+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\dot{r_{1}}\\
+\dot{\omega}
+\end{array}\right]\\
+ & =\left[\begin{array}{c}
+\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\left(-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega\right)\\
+-k_{3}\text{sgn}\left(r_{1}\right)
+\end{array}\right]\\
+ & =\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\left[\begin{array}{c}
+-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega\\
+-2k_{3}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)
+\end{array}\right]\\
+ & =\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\underbrace{\left[\begin{array}{cc}
+-k_{2} & 1\\
+-2k_{3} & 0
+\end{array}\right]}_{A}\zeta\\
+ & =\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}A\zeta
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Stability
+\end_layout
+
+\begin_layout Plain Layout
+Let
+\begin_inset Formula 
+\[
+P\triangleq\left[\begin{array}{cc}
+4k_{3}+k_{2}^{2} & -k_{2}\\
+-k_{2} & 2
+\end{array}\right]
+\]
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+PA & =\left[\begin{array}{cc}
+k_{2}\left(-k_{2}^{2}-2k_{3}\right) & k_{2}^{2}+4k_{3}\\
+k_{2}^{2}-4k_{3} & -k_{2}
+\end{array}\right]
+\end{align*}
+
+\end_inset
+
+Lemma
+\begin_inset Formula 
+\begin{align*}
+\zeta^{\top}PA\zeta & =\frac{1}{2}\zeta^{\top}PA\zeta+\frac{1}{2}\zeta^{\top}PA\zeta\\
+ & =\frac{1}{2}\zeta^{\top}PA\zeta+\frac{1}{2}\left(\zeta^{\top}PA\zeta\right)^{\top}\\
+ & =\frac{1}{2}\zeta^{\top}PA\zeta+\frac{1}{2}\left(\zeta^{\top}A^{\top}P^{\top}\zeta\right)\\
+ & =\frac{1}{2}\zeta^{\top}PA\zeta+\frac{1}{2}\zeta^{\top}\left(PA\right)^{\top}\zeta\\
+ & =\frac{1}{2}\zeta^{\top}PA\zeta+\frac{1}{2}\zeta^{\top}\left(PA\right)^{\top}\zeta\\
+ & =\zeta^{\top}\left(\frac{1}{2}PA+\frac{1}{2}\left(PA\right)^{\top}\right)\zeta\\
+ & =\zeta^{\top}\left(\frac{1}{2}PA+\frac{1}{2}\left(PA\right)^{\top}\right)\zeta\\
+ & =\zeta^{\top}\left(\frac{1}{2}\left[\begin{array}{cc}
+k_{2}\left(-k_{2}^{2}-2k_{3}\right) & \left(k_{2}^{2}+4k_{3}\right)\\
+\left(k_{2}^{2}-4k_{3}\right) & -k_{2}
+\end{array}\right]+\frac{1}{2}\left[\begin{array}{cc}
+k_{2}\left(-k_{2}^{2}-2k_{3}\right) & \left(k_{2}^{2}-4k_{3}\right)\\
+\left(k_{2}^{2}+4k_{3}\right) & -k_{2}
+\end{array}\right]\right)\zeta\\
+ & =\zeta^{\top}\underbrace{\left[\begin{array}{cc}
+-k_{2}^{3}-2k_{2}k_{3} & k_{2}^{2}\\
+k_{2}^{2} & -k_{2}
+\end{array}\right]}_{-Q}\zeta\\
+ & =-\zeta^{\top}Q\zeta
+\end{align*}
+
+\end_inset
+
+Since
+\begin_inset Formula 
+\[
+Q\triangleq\left[\begin{array}{cc}
+k_{2}^{3}+2k_{2}k_{3} & -k_{2}^{2}\\
+-k_{2}^{2} & k_{2}
+\end{array}\right]
+\]
+
+\end_inset
+
+it follows that 
+\begin_inset Formula $Q\succ0$
+\end_inset
+
+.
+ Consider the candidate Lyapunov function
+\begin_inset Formula 
+\[
+V\left(\zeta\right)=\frac{1}{2}\zeta^{\top}P\zeta
+\]
+
+\end_inset
+
+where Rayleigh quotients give
+\begin_inset Formula 
+\[
+\frac{1}{2}\lambda_{\min}\left\{ P\right\} \left\Vert \zeta\right\Vert ^{2}\le V\left(\zeta\right)\le\frac{1}{2}\lambda_{\max}\left\{ P\right\} \left\Vert \zeta\right\Vert ^{2}
+\]
+
+\end_inset
+
+The trajectory derivative is
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & =\zeta^{\top}P\dot{\zeta}\\
+ & =\zeta^{\top}P\left(\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}A\zeta\right)\\
+ & =\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\zeta^{\top}PA\zeta\\
+ & =\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\left(-\zeta^{\top}Q\zeta\right)\\
+ & =-\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\zeta^{\top}Q\zeta\\
+ & \le-\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\lambda_{\min}\left\{ Q\right\} \left\Vert \zeta\right\Vert ^{2}
+\end{align*}
+
+\end_inset
+
+Since the Rayleigh quotient gives
+\begin_inset Formula 
+\begin{align*}
+\frac{1}{2}\lambda_{\min}\left\{ P\right\} \left\Vert \zeta\right\Vert ^{2} & \le V\left(\zeta\right)\\
+\left\Vert \zeta\right\Vert ^{2} & \le\frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & \le-\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\lambda_{\min}\left\{ Q\right\} \frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\\
+ & \le-\left\Vert r_{1}\right\Vert ^{-1/2}\frac{\lambda_{\min}\left\{ Q\right\} }{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)
+\end{align*}
+
+\end_inset
+
+Lemma
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \zeta\right\Vert ^{2} & =\left\Vert \left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)\right\Vert ^{2}+\left\Vert \omega\right\Vert ^{2}\\
+ & =\left\Vert r_{1}\right\Vert +\left\Vert \omega\right\Vert ^{2}
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\[
+\left\Vert r_{1}\right\Vert \le\left\Vert \zeta\right\Vert ^{2}\le\frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)
+\]
+
+\end_inset
+
+and
+\begin_inset Formula 
+\begin{align*}
+\left\Vert r_{1}\right\Vert ^{1/2} & \le\left(\frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\right)^{1/2}\\
+\frac{1}{\left(\frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\right)^{1/2}} & \le\frac{1}{\left\Vert r_{1}\right\Vert ^{1/2}}\\
+-\frac{1}{\left\Vert r_{1}\right\Vert ^{1/2}} & \le-\frac{1}{\left(\frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\right)^{1/2}}\\
+-\left\Vert r_{1}\right\Vert ^{-1/2} & \le-\frac{\lambda_{\min}^{1/2}\left\{ P\right\} }{\left(2V\left(\zeta\right)\right)^{1/2}}\\
+-\left\Vert r_{1}\right\Vert ^{-1/2} & \le-\frac{\sqrt{2}\lambda_{\min}^{1/2}\left\{ P\right\} }{2V^{1/2}\left(\zeta\right)}
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+\dot{V} & \le-\frac{1}{2}\left\Vert r_{1}\right\Vert ^{-1/2}\lambda_{\min}\left\{ Q\right\} \frac{2}{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\\
+ & \le-\left\Vert r_{1}\right\Vert ^{-1/2}\frac{\lambda_{\min}\left\{ Q\right\} }{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\\
+ & \le-\frac{\sqrt{2}\lambda_{\min}^{1/2}\left\{ P\right\} }{2V^{1/2}\left(\zeta\right)}\frac{\lambda_{\min}\left\{ Q\right\} }{\lambda_{\min}\left\{ P\right\} }V\left(\zeta\right)\\
+ & \le-\underbrace{\frac{\sqrt{2}}{2}\frac{\lambda_{\min}\left\{ Q\right\} }{\lambda_{\min}^{1/2}\left\{ P\right\} }}_{\alpha}V^{1/2}\left(\zeta\right)\\
+ & \le-\alpha V^{1/2}\left(\zeta\right)
+\end{align*}
+
+\end_inset
+
+Thus we have finite-time stability.
+ Gain conditions are just that we need positive gains.
+\end_layout
+
+\begin_layout Section
+Implementable Controller
+\end_layout
+
+\begin_layout Plain Layout
+We assume no knowledge of 
+\begin_inset Formula $\ddot{q}_{\text{d}}$
+\end_inset
+
+ in the experiment so let's just remove that.
+ Rename 
+\begin_inset Formula $k_{1},k_{2},k_{3}$
+\end_inset
+
+ to 
+\begin_inset Formula $k_{\text{ST},1},k_{\text{ST},2},k_{\text{ST},3}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega\left(t\right)-k_{\text{ST},1}\dot{e}\\
+\dot{\omega} & =-k_{\text{ST},3}\text{sgn}\left(r_{1}\right)
+\end{align*}
+
+\end_inset
+
+Integrate both sides.
+\begin_inset Formula 
+\begin{align*}
+\intop_{t_{0}}^{t}\dot{\omega}\left(\tau\right)d\tau & =-k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau\\
+\omega\left(t\right)-\omega\left(t_{0}\right) & =-k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau\\
+\omega\left(t\right) & =\omega\left(t_{0}\right)-k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau
+\end{align*}
+
+\end_inset
+
+Choose 
+\begin_inset Formula $\omega\left(t_{0}\right)=0_{n}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\left(\cancelto{0}{\omega\left(t_{0}\right)}-k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau\right)-k_{\text{ST},1}\dot{e}\\
+ & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau-k_{\text{ST},1}\dot{e}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+Experimental validation of the developed controller is conducted with accelerati
+on-level control of a ModalAI Sentinel Development Drone with a Mircohard
+ Modem Carrier Board for wireless/RF communication.
  The vehicle weighs 1.396 kg with its battery, has a payload capacity of
  1 kg and a thrust to weight ratio of 2.32.
  The quadrotor is equipped with the ModalAI VOXL 2 onboard computer and
  autopilot built on the Qualcomm QRB5165 CPU and running Ubuntu 18.04.
- The VOXL 2 directly runs a custom branch of the PX4 version 1.14 firmware.
+ The VOXL 2 directly runs PX4 version 1.14 firmware.
 \end_layout
 
 \begin_layout Standard
@@ -9091,49 +9638,355 @@ The indoor test space is 25
 \end_inset
 
  and consists of 59 Prime 41 ethernet cameras and a Windows 10 PC running
- the Optitrack Motive application.
+ Optitrack Motive.
  Pose estimates were streamed in real-time at 120 Hz over Nat Net, which
  were then forward to the quadcopter over an Ubuntu laptop to the quadcopter
  via the Microhard.
+ 
+\color red
+Linear velocity estimates were generated with a least-squares estimator
+ running on the mocap pose estimates.
 \end_layout
 
 \begin_layout Standard
 A ROS 2 Humble node running locally on the quadcopter via an Ubuntu 22.04
  Docker container encapsulates the controller logic.
- Three controllers were compared.
- In the baseline RISE controller,
+ Three controllers are compared.
+ A baseline RISE controller was
 \begin_inset Formula 
 \[
-u\left(t\right)=u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right).
+u_{\text{B}}\left(t\right)=u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right).
 \]
 
 \end_inset
 
-The baseline RISE/ResNet controller is
+A RISE controller with a feedforward ResNet (
+\begin_inset Quotes eld
+\end_inset
+
+NN
+\begin_inset Quotes erd
+\end_inset
+
+) is
 \begin_inset Formula 
 \begin{align*}
-u\left(t\right) & =u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right)+\Phi\left(x\left(t\right),\widehat{\theta}\left(t\right)\right),\\
-\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(x\left(t\right),\hat{\theta}\left(t\right)\right)}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right),
+u_{\text{NN}}\left(t\right) & =u_{\text{RISE}}\left(t\right)+u_{\text{PID}}\left(t\right)+\Phi\left(Q\left(t\right),\widehat{\theta}\left(t\right)\right),\\
+\dot{\widehat{\theta}}\left(t\right) & =\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(Q\left(t\right),\hat{\theta}\left(t\right)\right)}\right)^{\top}r_{1}\left(t\right)-\sigma_{\text{mod}}\widehat{\theta}\left(t\right)\right),
 \end{align*}
 
 \end_inset
 
 where 
-\begin_inset Formula $x\triangleq\left[\begin{array}{cccc}
-q^{\top} & \dot{q}^{\top} & q_{d}^{\top} & \dot{q}_{d}^{\top}\end{array}\right]^{\top}\in\mathbb{R}^{4n}$
+\begin_inset Formula $Q\left(t\right)\triangleq\left[\begin{array}{cccc}
+q^{\top}\left(t\right) & \dot{q}^{\top}\left(t\right) & q_{d}^{\top}\left(t\right) & \dot{q}_{d}^{\top}\left(t\right)\end{array}\right]^{\top}\in\mathbb{R}^{4n}$
 \end_inset
 
-.
- The developed RISE/ResNet controller is
+ and 
+\begin_inset Formula $\sigma_{\text{mod}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ is the sigma-mod modification gain or forgetting factor, 
+\begin_inset Formula $\Gamma\succ0$
+\end_inset
+
+ is a fixed learning rate, and 
+\begin_inset Formula $\mho=\overline{B}_{\overline{\theta}}\left(0_{{\tt p}}\right)$
+\end_inset
+
+ is the parameter search space.
+ Throughout, 
+\begin_inset Formula $\overline{\theta}=10^{3}$
+\end_inset
+
+ was chosen.
+ Since the desired trajectory is given in a 3D position, 
+\begin_inset Formula $n=3$
+\end_inset
+
+ and 
+\begin_inset Formula $q_{\text{d}}\left(t\right)=\left[\begin{array}{ccc}
+x_{\text{d}}\left(t\right) & y_{\text{d}}\left(t\right) & z_{\text{d}}\left(t\right)\end{array}\right]^{\top}$
+\end_inset
+
+, which is assumed to be north-east-down (NED) frame convention.
+ The developed controller is called the 
+\begin_inset Quotes eld
+\end_inset
+
+integrated RISE neural network
+\begin_inset Quotes erd
+\end_inset
+
+ controller (
+\begin_inset Quotes eld
+\end_inset
+
+INN
+\begin_inset Quotes erd
+\end_inset
+
+) and is
 \begin_inset Formula 
 \begin{align*}
-u\left(t\right) & =u_{\text{PID}}\left(t\right)+u_{\text{RISE}}\left(t\right)+\intop_{t_{0}}^{t}\left(\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau,\\
-\dot{\widehat{\theta}} & =\text{proj}_{\mho}\left(\Gamma\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}r_{1}-\sigma_{\text{mod}}\widehat{\theta}\right)
+u_{\text{INN}}\left(t\right) & =u_{\text{PID}}\left(t\right)+u_{\text{RISE}}\left(t\right)+\intop_{t_{0}}^{t}\left(\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau,\\
+\dot{\widehat{\theta}}\left(t\right) & =\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}\right)^{\top}r_{1}\left(t\right)-\sigma_{\text{mod}}\widehat{\theta}\left(t\right)\right),
 \end{align*}
 
 \end_inset
 
+A super-twisting (
+\begin_inset Quotes eld
+\end_inset
 
+ST
+\begin_inset Quotes erd
+\end_inset
+
+) controller is
+\begin_inset Formula 
+\[
+u_{\text{ST}}\left(t\right)=k_{\text{ST},2}\left\Vert r_{1}\left(t\right)\right\Vert ^{1/2}\text{sgn}\left(r_{1}\left(t\right)\right)+k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau-k_{\text{ST},1}\dot{e}\left(t\right),
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $k_{\text{ST},1},k_{\text{ST},2},k_{\text{ST},3}\in\mathbb{R}_{>0}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+All controllers were run at 50 Hz.
+ Weight updates and control inputs were computed by assuming a zero-order
+ hold on 
+\begin_inset Formula $\dot{\widehat{\theta}}$
+\end_inset
+
+ with a discrete least-squares projection on 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+.
+ Control inputs were fed into PX4 as acceleration set-points.
+ PX4's vertical acceleration was limited to 
+\begin_inset Formula $3.0\ {\rm m}\slash{\rm s}^{2}$
+\end_inset
+
+ and its lateral acceleration was limited to 
+\begin_inset Formula $6.0\ {\rm m}\slash{\rm s}^{2}$
+\end_inset
+
+.
+ Integral control terms were computed with a trapezoidal summation and clamping
+ was used to prevent windup.
+ When either the lateral or vertical control components were saturating,
+ weights were frozen: 
+\begin_inset Formula $\dot{\widehat{\theta}}\left(t\right)=0_{{\tt p}}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Recall that the desired trajectory must be expressible as the solution to
+ a time-invariant ODE, as in (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:reference-dynamics"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Two desired trajectories were tested.
+ The first trajectory is a 3D figure-eight bounded by amplitudes 
+\begin_inset Formula $A_{\text{x}},A_{\text{y}},A_{\text{z}}\in\mathbb{R}_{>0}$
+\end_inset
+
+ centered at altitude 
+\begin_inset Formula $z_{\text{c}}\in\mathbb{R}_{>0}$
+\end_inset
+
+, which is the unique solution to 
+\begin_inset Formula 
+\begin{align*}
+\ddot{q}_{\text{d}}\left(t\right) & =h_{1}\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right),\\
+h_{1}\left(q_{\text{d}},\dot{q}_{\text{d}}\right) & \triangleq\left[\begin{array}{c}
+-4\omega^{2}x_{\text{d}}\dot{\tau}^{2}\left(q_{d}\right)\\
+-\omega^{2}y_{\text{d}}\dot{\tau}^{2}\left(q_{d}\right)\\
+-16\omega^{2}\left(z_{\text{d}}-z_{\text{c}}\right)\dot{\tau}^{2}\left(q_{d}\right)
+\end{array}\right]+\frac{\ddot{\tau}\left(q_{\text{d}},\dot{q}_{\text{d}}\right)}{\dot{\tau}\left(q_{\text{d}}\right)}\dot{q}_{\text{d}},\\
+\dot{\tau}\left(q_{\text{d}}\right) & =c\left(1-\alpha\left(\frac{y_{\text{d}}}{A_{\text{y}}}\right)^{2}\right),\quad c\triangleq\left(1-\alpha\right)^{-1/2},\\
+\ddot{\tau}\left(q_{\text{d}},\dot{q}_{\text{d}}\right) & =2\alpha c\left(\frac{y_{\text{d}}}{A_{\text{y}}^{2}}\right)\dot{y}_{\text{d}},
+\end{align*}
+
+\end_inset
+
+with initial conditions 
+\begin_inset Formula $q_{\text{d}}\left(t_{0}\right)=\left[\begin{array}{ccc}
+0 & 0 & z_{\text{c}}\end{array}\right]^{\top}\ {\rm m}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{q}_{\text{d}}\left(t_{0}\right)=\sqrt{2}\left[\begin{array}{ccc}
+0.2\pi & 0.2\pi & \frac{\pi}{15}\end{array}\right]^{\top}\ {\rm m}/\text{s}$
+\end_inset
+
+, where 
+\begin_inset Formula $\omega\triangleq\frac{2\pi}{T}$
+\end_inset
+
+, 
+\begin_inset Formula $T\in\mathbb{R}_{>0}$
+\end_inset
+
+ is the figure-eight's period, and 
+\begin_inset Formula $\alpha\in\left[0,1\right)$
+\end_inset
+
+ is a speed variation parameter.
+ Parameters were selected as 
+\begin_inset Formula $T=30.0\ \text{s}$
+\end_inset
+
+, 
+\begin_inset Formula $\alpha=0.5$
+\end_inset
+
+, 
+\begin_inset Formula $A_{\text{x}}=1.5\ {\rm m}$
+\end_inset
+
+, 
+\begin_inset Formula $A_{\text{y}}=3.0\ {\rm m}$
+\end_inset
+
+, 
+\begin_inset Formula $A_{\text{z}}=0.25\ {\rm m}$
+\end_inset
+
+, and 
+\begin_inset Formula $z_{\text{c}}=-0.75\ \text{m}$
+\end_inset
+
+ (NED).
+ The resulting curve achieves desired speeds ranging from 
+\begin_inset Formula $0.4\ {\rm m}/\text{s}$
+\end_inset
+
+ to 
+\begin_inset Formula $1.3\ {\rm m}/\text{s}$
+\end_inset
+
+ and a maximum acceleration of 
+\begin_inset Formula $0.5\ {\rm m}/\text{s}^{2}$
+\end_inset
+
+.
+ The second trajectory is a four-petal rose curve constrained to a speed
+ of 
+\begin_inset Formula $V_{0}\in\mathbb{R}_{>0}$
+\end_inset
+
+ at a fixed altitude 
+\begin_inset Formula $z_{\text{c}}$
+\end_inset
+
+, which is the unique solution to
+\begin_inset Formula 
+\begin{align*}
+\ddot{q}_{\text{d}}\left(t\right) & =h_{2}\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right),\\
+h_{2}\left(q_{\text{d}}\left(t\right),\dot{q}_{\text{d}}\left(t\right)\right) & \triangleq\left[\begin{array}{c}
+\left(\ddot{r}\left(q_{\text{d}},\dot{q}_{\text{d}}\right)-r\left(q_{\text{d}}\right)\dot{\theta}^{2}\left(q_{\text{d}}\right)\right)\text{cos}\left(\theta\left(q_{\text{d}}\right)\right)-\left(r\left(q_{\text{d}}\right)\ddot{\theta}\left(q_{\text{d}}\right)+2\dot{r}\left(q_{\text{d}},\dot{q}_{\text{d}}\right)\dot{\theta}\left(q_{\text{d}}\right)\right)\sin\left(\theta\left(q_{\text{d}}\right)\right)\\
+\left(\ddot{r}\left(q_{\text{d}},\dot{q}_{\text{d}}\right)-r\left(q_{\text{d}}\right)\dot{\theta}^{2}\left(q_{\text{d}}\right)\right)\sin\left(\theta\left(q_{\text{d}}\right)\right)+\left(r\left(q_{\text{d}}\right)\ddot{\theta}\left(q_{\text{d}}\right)+2\dot{r}\left(q_{\text{d}},\dot{q}_{\text{d}}\right)\dot{\theta}\left(q_{\text{d}}\right)\right)\text{cos}\left(\theta\left(q_{\text{d}}\right)\right)\\
+0
+\end{array}\right],\\
+r\left(q_{\text{d}}\right) & \triangleq\sqrt{x_{\text{d}}^{2}+y_{\text{d}}^{2}},\quad\theta\left(q_{\text{d}}\right)\triangleq\text{atan2}\left(y_{\text{d}},x_{\text{d}}\right),\\
+\dot{\theta}\left(q_{\text{d}}\right) & =\frac{V_{0}}{A\sqrt{1+3\sin^{2}\left(2\theta\left(q_{\text{d}}\right)\right)}},\\
+\ddot{\theta}\left(q_{\text{d}}\right) & =\frac{-3V_{0}^{2}\sin\left(4\theta\left(q_{\text{d}}\right)\right)}{A^{2}\left(1+3\sin^{2}\left(2\theta\left(q_{\text{d}}\right)\right)\right)^{2}},
+\end{align*}
+
+\end_inset
+
+with initial conditions
+\color red
+ 
+\color inherit
+
+\begin_inset Formula $q_{\text{d}}\left(t_{0}\right)=\left[\begin{array}{ccc}
+0 & 0 & z_{\text{c}}\end{array}\right]^{\top}\ {\rm m}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{q}_{\text{d}}\left(t_{0}\right)=\left[\begin{array}{ccc}
+-\frac{\sqrt{2}}{2}V_{0} & -\frac{\sqrt{2}}{2}V_{0} & 0\end{array}\right]^{\top}\ {\rm m}/\text{s}$
+\end_inset
+
+, where 
+\begin_inset Formula $V_{0}=1.0\ {\rm m}/\text{s}$
+\end_inset
+
+, 
+\begin_inset Formula $A=2.5\ {\rm m}$
+\end_inset
+
+, 
+\begin_inset Formula $z_{\text{c}}=-0.5\ \text{m}$
+\end_inset
+
+.
+ Although the speed is constant, the curvature induces a maximum acceleration
+ of 
+\begin_inset Formula $2.0\ {\rm m}/\text{s}^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For the first trajectory, two K-Tool International 42-inch Belt Drive Drum
+ Fans with an air flow capacity of 14800 cubic feet per minute at 537 RPM
+ were placed at 
+\begin_inset Formula $\left(x_{1},y_{1}\right)=\left(-2,3\right)\ {\rm m}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left(x_{2},y_{2}\right)=\left(-2,-3\right)\ {\rm m}$
+\end_inset
+
+, aligned with the 
+\begin_inset Formula $x$
+\end_inset
+
+-axis such that the quadcopter will face a headwind traveling in the direction
+ of the desired trajectory.
+ For the second trajectory, they were moved to 
+\begin_inset Formula $\left(x_{1},y_{1}\right)=\left(3,0\right)\ {\rm m}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left(x_{2},y_{2}\right)=\left(0,3\right)\ {\rm m}$
+\end_inset
+
+, respectively, each facing toward the origin.
+\end_layout
+
+\begin_layout Standard
+For each controller and each desired trajectory, four trials are run, each
+ starting from a different initial condition: 
+\begin_inset Formula $\left(x_{0},y_{0}\right)\in\left\{ \left(2.0,2.0\right),\left(-2.0,2.0\right),\left(2.0,-2.0\right),\left(-2.0,-2.0\right)\right\} \ {\rm m}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The update law was chosen...
 \end_layout
 
 \begin_layout Standard

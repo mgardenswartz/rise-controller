@@ -65,7 +65,6 @@ class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
 
-        # --- STRICT PARAMETER DECLARATIONS ---
         # Experiment Config
         self.declare_parameter('is_gazebo', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
         self.declare_parameter('desired_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
@@ -127,7 +126,6 @@ class AviaryRiseNode(Node):
         self.declare_parameter('o_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('shortcut_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
 
-        # --- RETRIEVE PARAMETERS ---
         self.is_gazebo = self.get_parameter('is_gazebo').value
         self.desired_trajectory = self.get_parameter('desired_trajectory').value
         self.vehicle_name = self.get_parameter('vehicle_name').value
@@ -204,7 +202,7 @@ class AviaryRiseNode(Node):
         self.last_t = 0.0
         
         self.tau = 0.0
-        self.theta = 0.0
+        self.theta = math.pi /4
         self.last_traj_time = 0.0
         
         self.d_out = self.get_parameter('d_out').value
@@ -261,13 +259,13 @@ class AviaryRiseNode(Node):
                 return final_theta, phi_val
                 
             self.compiled_update_step = compiled_update_step
-            self.enforce_realtime_constraint()
+            self.precompile_jax()
 
         self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
         self.watchdog_timer = self.create_timer(1.0/self.watchdog_freq, self.watchdog_callback)
         self.ticks_without_odom = 0
 
-    def enforce_realtime_constraint(self) -> None:
+    def precompile_jax(self) -> None:
         dummy_x = jnp.zeros(self.d_in)
         dummy_r1 = jnp.zeros(self.d_out)
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
@@ -317,22 +315,18 @@ class AviaryRiseNode(Node):
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
                 self.get_logger().fatal("NO ODOMETRY AT BOOT! KILLING NODE.")
-                if self.is_gazebo:
-                    sys.exit(1)
-                else:
-                    sys.exit(1)
+                sys.exit(1)
         else:
-            # Mid-flight timeout
             if self.is_gazebo:
                 # Use tick counter to survive Docker suspension / macOS sleep
                 if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
-                    self.get_logger().fatal("MOCAP LOST! TRIGGERING FAILSAFE (GAZEBO).")
+                    self.get_logger().fatal("YOUR PC IS RUNNING BEHIND SCHEDULE! EXITING SIM.")
                     self.trigger_failsafe_land()
             else:
                 # Use original wall clock logic for real vehicle (sim-to-real)
                 current_time = self.get_clock().now().nanoseconds / 1e9
                 if (current_time - self.last_odom_ros_time) > self.odom_timeout:
-                    self.get_logger().fatal("MOCAP LOST! TRIGGERING FAILSAFE.")
+                    self.get_logger().fatal("ODOM LOST! TRIGGERING FAILSAFE.")
                     self.trigger_failsafe_land()
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
@@ -348,7 +342,7 @@ class AviaryRiseNode(Node):
         msg.from_external = True
         self.vehicle_command_publisher.publish(msg)
 
-    def publish_offboard_control_mode(self) -> None:
+    def publish_offboard_heartbeat(self) -> None:
         msg = OffboardControlMode()
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         msg.position = False
@@ -368,9 +362,15 @@ class AviaryRiseNode(Node):
         self.trajectory_setpoint_publisher.publish(msg)
 
     def log_csv(self):
-        if not self.enable_plotting: return
-        
-        traj_name = "figure_eight" if self.desired_trajectory == 1 else "rose"
+        traj_name = "figure_eight"
+        if self.desired_trajectory == 1:
+            pass
+        elif self.desired_trajectory == 2:
+            traj_name = "rose"
+        else:
+            self.get_logger().fatal("INVALID DESIRED TRAJECTORY SELECTED.")
+            self.trigger_failsafe_land()
+
         base_dir = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
         os.makedirs(base_dir, exist_ok=True)
         
@@ -397,9 +397,11 @@ class AviaryRiseNode(Node):
             self.get_logger().error(f"Failed to write CSV: {e}")
 
     def trigger_failsafe_land(self) -> None:
-        self.log_csv()
+        if self.enable_plotting:
+            self.log_csv()
+
         if self.is_gazebo:
-            self.get_logger().error("GAZEBO SIM: BOUNDARY/SAFETY FAILURE. EXITING SIM.")
+            self.get_logger().error("GAZEBO FAILSAFE TRIGGERED. EXITING SIM.")
             sys.exit(0)
         else:
             self.get_logger().error("SAFETY BOUNDARY BREACHED. EMERGENCY LANDING.")
@@ -482,8 +484,6 @@ class AviaryRiseNode(Node):
     def control_timer_callback(self) -> None:
         if self.latest_odom is None: return
         current_timestamp_s = self.latest_odom.timestamp / 1e6
-        
-        if not self.is_gazebo: self.publish_offboard_control_mode() 
 
         if not self.in_offboard_mode:
             if self.experiment_state in [3, 4]:
@@ -507,8 +507,10 @@ class AviaryRiseNode(Node):
                 return
 
             case 0:
+                self.landing_command_sent = False
+
                 self.get_logger().info("IN CASE 0, PUBLISHING OFFBOARD CONTROL MODE AND ARM COMMANDS!", throttle_duration_sec=1.0)
-                if self.is_gazebo: self.publish_offboard_control_mode()
+                self.publish_offboard_heartbeat()
                 self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
 
                 if self.is_gazebo:
@@ -524,7 +526,7 @@ class AviaryRiseNode(Node):
                     self.experiment_state = 3
 
             case 3 | 4:
-                if self.is_gazebo: self.publish_offboard_control_mode() 
+                self.publish_offboard_heartbeat() 
                 t = current_timestamp_s - self.t_0
                 dt = t - self.last_t
                 if dt <= 0.0:
