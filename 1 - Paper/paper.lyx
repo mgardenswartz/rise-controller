@@ -9308,7 +9308,7 @@ Note that the generalized derivative is
 Design
 \begin_inset Formula 
 \[
-u=\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega-k_{1}\dot{e}
+u=\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega+k_{1}\dot{e}
 \]
 
 \end_inset
@@ -9359,8 +9359,8 @@ where
  & =\ddot{q}_{d}-\ddot{q}+k_{1}\dot{e}\\
  & =\ddot{q}_{d}-\left(u\right)+k_{1}\dot{e}\\
  & =\ddot{q}_{d}-u+k_{1}\dot{e}\\
- & =\ddot{q}_{d}-\left(\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega-k_{1}\dot{e}\right)-k_{1}\dot{e}\\
- & =\cancel{\ddot{q}_{d}-\ddot{q}_{d}}-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega+\cancel{k_{1}\dot{e}-k_{1}\dot{e}}\\
+ & =\ddot{q}_{d}-\left(\ddot{q}_{d}+k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega+k_{1}\dot{e}\right)+k_{1}\dot{e}\\
+ & =\cancel{\ddot{q}_{d}-\ddot{q}_{d}}-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega-\cancel{k_{1}\dot{e}+k_{1}\dot{e}}\\
  & =-k_{2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+\omega
 \end{align*}
 
@@ -9746,7 +9746,7 @@ ST
 ) controller is
 \begin_inset Formula 
 \[
-u_{\text{ST}}\left(t\right)=k_{\text{ST},2}\left\Vert r_{1}\left(t\right)\right\Vert ^{1/2}\text{sgn}\left(r_{1}\left(t\right)\right)+k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau-k_{\text{ST},1}\dot{e}\left(t\right),
+u_{\text{ST}}\left(t\right)=k_{\text{ST},2}\left\Vert r_{1}\left(t\right)\right\Vert ^{1/2}\text{sgn}\left(r_{1}\left(t\right)\right)+k_{\text{ST},3}\intop_{t_{0}}^{t}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau+k_{\text{ST},1}\dot{e}\left(t\right),
 \]
 
 \end_inset
