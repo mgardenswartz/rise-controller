@@ -36,24 +36,39 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
     # If it's a Neural Network controller, define the network config
     if controller_type == "baseline":        
         param_dict['d_in'] = 12
-        param_dict['num_blocks'] = 4
+        # param_dict['num_blocks'] = 4
+        # param_dict['k_0'] = 2
+        # param_dict['k_i'] = 4
+        # param_dict['hidden_width'] = 8
+        # param_dict['gamma'] = 6.7
+        # param_dict['sigma_mod'] = 1.0
+        # initial_weight_scale_factor = 0.2
+
+        param_dict['num_blocks'] = 8
         param_dict['k_0'] = 2
-        param_dict['k_i'] = 4
-        param_dict['hidden_width'] = 8
-        param_dict['gamma'] = 6.7
-        param_dict['sigma_mod'] = 1.0
-        initial_weight_scale_factor = 0.2
+        param_dict['k_i'] = 2
+        param_dict['hidden_width'] = 4
+        param_dict['gamma'] = 0.4
+        param_dict['sigma_mod'] = 0.65
+        initial_weight_scale_factor = 0.1
     elif controller_type == "developed":        
         param_dict['d_in'] = 15
-        param_dict['num_blocks'] = 4
+        # param_dict['num_blocks'] = 4
+        # param_dict['k_0'] = 4
+        # param_dict['k_i'] = 4
+        # param_dict['hidden_width'] = 8
+        # param_dict['gamma'] = 6.7
+        # param_dict['sigma_mod'] = 2.2
+        # initial_weight_scale_factor = 0.2
+
+        param_dict['num_blocks'] = 8
         param_dict['k_0'] = 4
         param_dict['k_i'] = 4
         param_dict['hidden_width'] = 8
-        param_dict['gamma'] = 6.7
-        param_dict['sigma_mod'] = 2.2
+        param_dict['gamma'] = 6.3
+        param_dict['sigma_mod'] = 3.9
         initial_weight_scale_factor = 0.2
    
-
     if not controller_type == "noresnet":
         param_dict['h_act_func'] = 'swish'
         param_dict['o_act_func'] = 'tanh'

@@ -11,7 +11,6 @@ from functools import partial
 
 # Ensure JAX stays on CPU
 import jax
-import jax.numpy as jnp
 jax.config.update("jax_platform_name", "cpu")
 jax.config.update("jax_enable_x64", True)
 
@@ -22,7 +21,6 @@ SEED = 42
 
 FIXED_X = 0.70
 FIXED_Y = -2.37
-TARGET_Z = -3.0
 
 # Fixed Phase 2 Baseline Gains (Optimized from Phase 1)
 FIXED_K1 = 1.31

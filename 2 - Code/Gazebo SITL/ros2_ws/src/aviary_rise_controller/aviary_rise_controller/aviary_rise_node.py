@@ -654,7 +654,7 @@ class AviaryRiseNode(Node):
                     # Anti-windup: freeze integral if e_xy is pushing in the same direction as u_xy
                     if np.dot(e[0:2], u[0:2]) > 0.0:
                         self.freeze_int_xy = True
-                    self.get_logger().warn(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
+                    self.get_logger().debug(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
                     
                 if abs(u[2]) > self.acc_vert_max:
                     u[2] = self.acc_vert_max * np.sign(u[2])
@@ -662,7 +662,7 @@ class AviaryRiseNode(Node):
                     # Anti-windup: freeze integral if e_z is pushing in the same direction as u_z
                     if np.sign(e[2]) == np.sign(u[2]):
                         self.freeze_int_z = True
-                    self.get_logger().warn(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
+                    self.get_logger().debug(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
                 self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
                 self.last_t = t

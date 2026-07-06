@@ -9100,7 +9100,7 @@ where
 \end_inset
 
  is the total simulation duration, and 
-\begin_inset Formula $t_{\text{fail}}\in\left(t_{0},t_{f}\right]$
+\begin_inset Formula $t_{\text{fail}}\in\left(t_{0},t_{f}\right)$
 \end_inset
 
  is time at which the drone escapes the simulated space (
