@@ -25,6 +25,13 @@ jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network
 
+class ExperimentState:
+    STATE_INIT = 0
+    STATE_TAKEOFF = 1
+    STATE_FOLLOW_TRAJ = 2
+    STATE_PAUSED = 3
+    STATE_FAILSAFE = 99
+
 @jax.jit
 def discrete_projection(
     theta_hat: jax.Array,
@@ -61,6 +68,43 @@ def discrete_projection(
     return jax.lax.cond(is_inside, bypass_projection, apply_projection, None)
 
 
+@jax.jit
+def traj1_spatial_derivs(
+    tau: float,
+    target_z: float,
+    traj1_period: float,
+    traj1_x_amp: float,
+    traj1_y_amp: float,
+    traj1_z_amp: float
+) -> jax.Array:
+    def pos_fn(t):
+        w = (2.0 * jnp.pi) / traj1_period
+        wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
+        # Keeping your exact original orientation mappings
+        return jnp.array([
+            traj1_x_amp * jnp.sin(wx * t),
+            traj1_y_amp * jnp.sin(wy * t),
+            traj1_z_amp * jnp.sin(wz * t) + target_z
+        ])
+    return pos_fn(tau), jax.jacfwd(pos_fn)(tau), jax.jacfwd(jax.jacfwd(pos_fn))(tau)
+
+
+@jax.jit
+def traj2_spatial_derivs(
+    theta: float,
+    target_z: float,
+    traj2_A: float
+) -> jax.Array:
+    def pos_fn(th):
+        r = traj2_A * jnp.cos(2.0 * th)
+        return jnp.array([
+            r * jnp.cos(th),
+            r * jnp.sin(th),
+            target_z
+        ])
+    return pos_fn(theta), jax.jacfwd(pos_fn)(theta), jax.jacfwd(jax.jacfwd(pos_fn))(theta)
+
+
 class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
@@ -78,8 +122,8 @@ class AviaryRiseNode(Node):
         self.declare_parameter('safe_z_min', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('odom_timeout_sec', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('settle_ticks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('hover_tolerance', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('windup_time_sec', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('init_tol', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('init_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('watchdog_freq', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
         # Trajectory 1
@@ -99,13 +143,13 @@ class AviaryRiseNode(Node):
         self.declare_parameter('vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('control_frequency', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('plot', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
+        self.declare_parameter('save_data', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
         self.declare_parameter('sim_time', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         
-        # RISE Gains & Cost weights
-        self.declare_parameter('k1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('k2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('k3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        # Gains & Cost weights
+        self.declare_parameter('k_1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('k_2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('k_3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('k_rise', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
@@ -130,7 +174,7 @@ class AviaryRiseNode(Node):
         self.desired_trajectory = self.get_parameter('desired_trajectory').value
         self.vehicle_name = self.get_parameter('vehicle_name').value
         self.controller_type = self.get_parameter('controller_type').value
-        self.enable_plotting = self.get_parameter('plot').value
+        self.save_data = self.get_parameter('save_data').value
         self.t_f = self.get_parameter('sim_time').value
         
         self.acc_hor_max = self.get_parameter('mpc_acc_hor_max').value
@@ -140,7 +184,10 @@ class AviaryRiseNode(Node):
         self.safe_z_max = self.get_parameter('safe_z_max').value
         self.safe_z_min = self.get_parameter('safe_z_min').value
         self.odom_timeout = self.get_parameter('odom_timeout_sec').value
-        self.windup_time = self.get_parameter('windup_time_sec').value
+        
+        # New Takeoff Parameters
+        self.init_z = self.get_parameter('init_z').value
+        self.init_tol = self.get_parameter('init_tol').value
         self.watchdog_freq = self.get_parameter('watchdog_freq').value
 
         self.target_z = self.get_parameter('traj1_center_z').value if self.desired_trajectory == 1 else self.get_parameter('traj2_center_z').value
@@ -154,12 +201,12 @@ class AviaryRiseNode(Node):
         self.traj2_v0 = self.get_parameter('traj2_target_speed').value
         self.traj2_A = self.get_parameter('traj2_petal_radius').value
 
-        self.k1 = self.get_parameter('k1').value
-        k2 = self.get_parameter('k2').value
-        k3 = self.get_parameter('k3').value
-        self.K_P = (self.k1 * k2) + (self.k1 * k3) + (k2 * k3) + 1.0
-        self.K_I = (self.k1 * k2 * k3) + self.k1
-        self.K_D = self.k1 + k2 + k3
+        self.k_1 = self.get_parameter('k_1').value
+        self.k_2 = self.get_parameter('k_2').value
+        self.k_3 = self.get_parameter('k_3').value
+        self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
+        self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
+        self.K_D = self.k_1 + self.k_2 + self.k_3
         self.K_RISE = self.get_parameter('k_rise').value
         self.q_e = self.get_parameter('q_e').value
         self.r_u = self.get_parameter('r_u').value
@@ -197,7 +244,7 @@ class AviaryRiseNode(Node):
         self.start_x = 0.0
         self.start_y = 0.0
 
-        self.experiment_state = 0
+        self.experiment_state = ExperimentState.STATE_INIT
         self.t_0 = 0.0
         self.last_t = 0.0
         
@@ -208,8 +255,12 @@ class AviaryRiseNode(Node):
         self.d_out = self.get_parameter('d_out').value
         self.integral_term = np.zeros(self.d_out, dtype=np.float64)
         self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
+        self.st_integral = np.zeros(self.d_out, dtype=np.float64)
+        
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
+        self.cost_started = False
+        
         self.is_saturated = False
         self.freeze_int_xy = False
         self.freeze_int_z = False
@@ -223,6 +274,10 @@ class AviaryRiseNode(Node):
         self.weight_history = []
         self.q_history = []
         self.qd_history = []
+
+        self.offboard_timeout_sec = 15.0
+        self.init_wait_start = 0.0
+        self.last_auto_cmd_time = 0.0
 
         control_frequency = self.get_parameter('control_frequency').value
         self.control_period = 1 / control_frequency
@@ -270,23 +325,27 @@ class AviaryRiseNode(Node):
         dummy_r1 = jnp.zeros(self.d_out)
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
         
-        # Warmup and lock-in JAX trace shapes/dtypes
+        # 1. Warmup Neural Net Update Mechanics
         self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
+        
+        # 2. Warmup Spatial Derivatives (Prevents JIT latency spike on first trajectory tick)
+        _ = traj1_spatial_derivs(0.0, self.target_z, self.traj1_period, self.traj1_x_amp, self.traj1_y_amp, self.traj1_z_amp)
+        _ = traj2_spatial_derivs(0.0, self.target_z, self.traj2_A)
         
         start_time = time.perf_counter()
         self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
         hot_time = time.perf_counter() - start_time
         
-        # Reset the weights back to true initial conditions (since the zero dummy inputs decayed them)
+        # Reset the weights back to true initial conditions
         self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
         self.theta_hat.block_until_ready()
         self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
         if hot_time > self.control_period:
             self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
             if self.is_gazebo:
-                sys.exit(1)
+                os._exit(1)
             else:
                 self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
 
@@ -315,7 +374,7 @@ class AviaryRiseNode(Node):
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
                 self.get_logger().fatal("NO ODOMETRY AT BOOT! KILLING NODE.")
-                sys.exit(1)
+                os._exit(1)
         else:
             if self.is_gazebo:
                 # Use tick counter to survive Docker suspension / macOS sleep
@@ -330,11 +389,12 @@ class AviaryRiseNode(Node):
                     self.trigger_failsafe_land()
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
+        self.get_logger().info(f"[DEBUG] Publishing command {command}")
         msg = VehicleCommand()
-        msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
+        msg.timestamp = int(self.latest_odom.timestamp) if self.latest_odom is not None else int(self.get_clock().now().nanoseconds / 1000)
         msg.param1 = float(param1)
         msg.param2 = float(param2)
-        msg.command = command
+        msg.command = int(command)
         msg.target_system = self.vehicle_system_id
         msg.target_component = self.vehicle_component_id
         msg.source_system = 1
@@ -344,7 +404,7 @@ class AviaryRiseNode(Node):
 
     def publish_offboard_heartbeat(self) -> None:
         msg = OffboardControlMode()
-        msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
+        msg.timestamp = int(self.latest_odom.timestamp) if self.latest_odom is not None else int(self.get_clock().now().nanoseconds / 1000)
         msg.position = False
         msg.velocity = False
         msg.acceleration = True
@@ -354,11 +414,12 @@ class AviaryRiseNode(Node):
 
     def publish_trajectory_setpoint_acceleration(self, ax: float, ay: float, az: float) -> None:
         msg = TrajectorySetpoint()
-        msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
+        msg.acceleration = [ax, ay, az]
         msg.position = [float('nan'), float('nan'), float('nan')]
         msg.velocity = [float('nan'), float('nan'), float('nan')]
-        msg.acceleration = [float(ax), float(ay), float(az)]
         msg.yaw = 0.0
+        if self.latest_odom is not None:
+            msg.timestamp = self.latest_odom.timestamp
         self.trajectory_setpoint_publisher.publish(msg)
 
     def log_csv(self):
@@ -397,16 +458,16 @@ class AviaryRiseNode(Node):
             self.get_logger().error(f"Failed to write CSV: {e}")
 
     def trigger_failsafe_land(self) -> None:
-        if self.enable_plotting:
+        if self.save_data:
             self.log_csv()
 
         if self.is_gazebo:
             self.get_logger().error("GAZEBO FAILSAFE TRIGGERED. EXITING SIM.")
-            sys.exit(0)
+            os._exit(1)
         else:
             self.get_logger().error("SAFETY BOUNDARY BREACHED. EMERGENCY LANDING.")
             self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-            self.experiment_state = 99
+            self.experiment_state = ExperimentState.STATE_FAILSAFE
 
     def check_safety_boundary(self, q: np.ndarray) -> bool:
         if not (-self.safe_x_max <= q[0] <= self.safe_x_max):
@@ -420,16 +481,15 @@ class AviaryRiseNode(Node):
             return True 
         return False
 
+
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        if self.experiment_state == 3:
-            return (np.array([self.start_x, self.start_y, self.target_z], dtype=np.float64), 
+        if self.experiment_state == ExperimentState.STATE_TAKEOFF:
+            # During takeoff, hold exactly above where it initialized
+            return (np.array([self.start_x, self.start_y, self.init_z], dtype=np.float64), 
                     np.zeros(3, dtype=np.float64), np.zeros(3, dtype=np.float64))
             
-        traj_t = t - self.windup_time
-        if traj_t < 0: traj_t = 0.0
-        
-        dt = traj_t - self.last_traj_time
-        self.last_traj_time = traj_t
+        dt = t - self.last_traj_time
+        self.last_traj_time = t
         if dt < 0: dt = 0.0
 
         if self.desired_trajectory == 1:
@@ -438,121 +498,149 @@ class AviaryRiseNode(Node):
             tau_ddot = -self.traj1_warp_c * self.traj1_alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
             
             self.tau += tau_dot * dt
-            wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
             
-            xd = self.traj1_x_amp * math.sin(wx * self.tau)
-            yd = self.traj1_y_amp * math.sin(wy * self.tau)
-            zd = self.traj1_z_amp * math.sin(wz * self.tau) + self.target_z
+            pos_jnp, dp_dtau, d2p_dtau2 = traj1_spatial_derivs(
+                self.tau, self.target_z, self.traj1_period, self.traj1_x_amp, self.traj1_y_amp, self.traj1_z_amp
+            )
             
-            vxd = (self.traj1_x_amp * wx * math.cos(wx * self.tau)) * tau_dot
-            vyd = (self.traj1_y_amp * wy * math.cos(wy * self.tau)) * tau_dot
-            vzd = (self.traj1_z_amp * wz * math.cos(wz * self.tau)) * tau_dot
-            
-            axd = -(self.traj1_x_amp * wx**2 * math.sin(wx * self.tau)) * (tau_dot**2) + (self.traj1_x_amp * wx * math.cos(wx * self.tau)) * tau_ddot
-            ayd = -(self.traj1_y_amp * wy**2 * math.sin(wy * self.tau)) * (tau_dot**2) + (self.traj1_y_amp * wy * math.cos(wy * self.tau)) * tau_ddot
-            azd = -(self.traj1_z_amp * wz**2 * math.sin(wz * self.tau)) * (tau_dot**2) + (self.traj1_z_amp * wz * math.cos(wz * self.tau)) * tau_ddot
-            
+            qd = np.array(pos_jnp, dtype=np.float64)
+            qd_dot = np.array(dp_dtau, dtype=np.float64) * tau_dot
+            qd_ddot = (np.array(d2p_dtau2, dtype=np.float64) * (tau_dot**2)) + (np.array(dp_dtau, dtype=np.float64) * tau_ddot)
+
         else:
             f_theta = 1.0 + 3.0 * (math.sin(2.0 * self.theta)**2)
             theta_dot = self.traj2_v0 / (self.traj2_A * math.sqrt(f_theta))
-            self.theta += theta_dot * dt
             
             sin_4theta = math.sin(4.0 * self.theta)
             theta_ddot = - (3.0 * (self.traj2_v0**2) * sin_4theta) / ((self.traj2_A**2) * (f_theta**2))
             
-            r = self.traj2_A * math.cos(2.0 * self.theta)
-            r_dot = -2.0 * self.traj2_A * math.sin(2.0 * self.theta) * theta_dot
-            r_ddot = -4.0 * self.traj2_A * math.cos(2.0 * self.theta) * (theta_dot**2) - 2.0 * self.traj2_A * math.sin(2.0 * self.theta) * theta_ddot
+            self.theta += theta_dot * dt
             
-            ct, st = math.cos(self.theta), math.sin(self.theta)
+            pos_jnp, dp_dth, d2p_dth2 = traj2_spatial_derivs(
+                self.theta, self.target_z, self.traj2_A
+            )
             
-            xd, yd, zd = r * ct, r * st, self.target_z
-            vxd = r_dot * ct - r * st * theta_dot
-            vyd = r_dot * st + r * ct * theta_dot
-            vzd = 0.0
-            
-            axd = (r_ddot - r * (theta_dot**2)) * ct - (r * theta_ddot + 2.0 * r_dot * theta_dot) * st
-            ayd = (r_ddot - r * (theta_dot**2)) * st + (r * theta_ddot + 2.0 * r_dot * theta_dot) * ct
-            azd = 0.0
+            qd = np.array(pos_jnp, dtype=np.float64)
+            qd_dot = np.array(dp_dth, dtype=np.float64) * theta_dot
+            qd_ddot = (np.array(d2p_dth2, dtype=np.float64) * (theta_dot**2)) + (np.array(dp_dth, dtype=np.float64) * theta_ddot)
 
-        return (
-            np.array([xd, yd, zd], dtype=np.float64),
-            np.array([vxd, vyd, vzd], dtype=np.float64),
-            np.array([axd, ayd, azd], dtype=np.float64)
-        )
+        return qd, qd_dot, qd_ddot
 
     def control_timer_callback(self) -> None:
         if self.latest_odom is None: return
         current_timestamp_s = self.latest_odom.timestamp / 1e6
 
-        if not self.in_offboard_mode:
-            if self.experiment_state in [3, 4]:
-                if self.is_gazebo:
-                    self.get_logger().error("PX4 LEFT OFFBOARD MODE IN SITL! FAILING TRIAL.")
-                    self.trigger_failsafe_land()
-                    return
-                else:
-                    self.get_logger().warn("RC Override Detected! Resetting state.", throttle_duration_sec=1.0)
-                    self.experiment_state = 0
-                    self.integral_term = np.zeros(self.d_out, dtype=np.float64)
-                    self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
-            if self.experiment_state != 0:
-                return
-
         match self.experiment_state:
-            case 99:
+            case ExperimentState.STATE_FAILSAFE:
                 if not self.landing_command_sent:
                     self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
                     self.landing_command_sent = True
                 return
 
-            case 0:
+            case ExperimentState.STATE_INIT:
                 self.landing_command_sent = False
+                self.cost_started = False
+                
+                if self.init_wait_start == 0.0:
+                    self.init_wait_start = current_timestamp_s
+                
+                if not self.in_offboard_mode: # haven't started or 
+                    if int(current_timestamp_s * 10) % 20 == 0:
+                        self.get_logger().info(f"[DEBUG] ticks={self.ticks_without_odom}, current_ts={current_timestamp_s:.2f}, init_wait={self.init_wait_start:.2f}, last_cmd={self.last_auto_cmd_time:.2f}")
 
-                self.get_logger().info("IN CASE 0, PUBLISHING OFFBOARD CONTROL MODE AND ARM COMMANDS!", throttle_duration_sec=1.0)
-                self.publish_offboard_heartbeat()
-                self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
+                    self.get_logger().info("Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
+                    self.publish_offboard_heartbeat()
+                    self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0)
+                    
+                    if self.is_gazebo:
+                        # Throttle automatic MAVLink commands to 1 Hz to prevent PX4 Commander flood
+                        if current_timestamp_s - self.last_auto_cmd_time > 1.0:
+                            if not self.in_offboard_mode:
+                                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
+                            if not self.is_armed:
+                                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 0.0)
+                            self.last_auto_cmd_time = current_timestamp_s
 
-                if self.is_gazebo:
-                    if not self.is_armed:
-                        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 21196.0)
-                    if not self.in_offboard_mode:
-                        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
+                    # Timeout check
+                    if current_timestamp_s - self.init_wait_start > self.offboard_timeout_sec:
+                        self.get_logger().fatal(f"OFFBOARD TIMEOUT: Failed to engage offboard mode within {self.offboard_timeout_sec}s. Triggering Failsafe.")
+                        self.trigger_failsafe_land()
+                    return
 
                 if self.in_offboard_mode and self.is_armed:
-                    self.get_logger().info("ARMED & OFFBOARD: Starting RISE Windup Phase.")
-                    self.t_0 = current_timestamp_s
-                    self.last_t = 0.0
-                    self.experiment_state = 3
+                    self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z}.")
+                    self.integral_term = np.zeros(self.d_out, dtype=np.float64)
+                    self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
+                    self.st_integral = np.zeros(self.d_out, dtype=np.float64)
+                    self.experiment_state = ExperimentState.STATE_TAKEOFF
 
-            case 3 | 4:
-                self.publish_offboard_heartbeat() 
-                t = current_timestamp_s - self.t_0
-                dt = t - self.last_t
-                if dt <= 0.0:
-                    self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0) 
-                    return
+            case ExperimentState.STATE_PAUSED:
+                if self.in_offboard_mode and self.is_armed:
+                    # Pilot re-engaged offboard mode. 
+                    # We shift t_0 forward by the elapsed paused time so the trajectory completely froze during the dropout
+                    time_paused = current_timestamp_s - self.pause_start_time
+                    self.t_0 += time_paused  
+                    self.experiment_state = self.pre_pause_state
+                    self.get_logger().info("Offboard Mode re-engaged! Resuming trajectory seamlessly.")
+                else:
+                    self.get_logger().info("Trajectory Paused. Waiting for Pilot to re-engage Offboard...", throttle_duration_sec=2.0)
+                return
+
+            case ExperimentState.STATE_FOLLOW_TRAJ | ExperimentState.STATE_TAKEOFF:
+                self.publish_offboard_heartbeat()
+
+                if not self.in_offboard_mode:
+                    if self.is_gazebo:
+                        self.get_logger().error("PX4 LEFT OFFBOARD MODE IN SITL! FAILING TRIAL.")
+                        self.trigger_failsafe_land()
+                        return
+                    else:
+                        self.get_logger().warn("RC Pilot Intervention Detected! Pausing trajectory.", throttle_duration_sec=1.0)
+                        self.pre_pause_state = self.experiment_state
+                        self.experiment_state = ExperimentState.STATE_PAUSED
+                        self.pause_start_time = current_timestamp_s
+                        
+                        # Reset memory integrals so they don't explosively un-wind when re-engaged
+                        self.integral_term = np.zeros(self.d_out, dtype=np.float64)
+                        self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
+                        self.st_integral = np.zeros(self.d_out, dtype=np.float64)
+                        return
                 
-                if self.experiment_state == 3 and t >= self.windup_time:
-                    self.experiment_state = 4
-                    self.get_logger().info(f"WINDUP COMPLETE: Starting Trajectory {self.desired_trajectory}.")
-
+                # Check transitions before updating the clock if in TAKEOFF
                 q = np.array(self.latest_odom.position, dtype=np.float64)
+                if self.experiment_state == ExperimentState.STATE_TAKEOFF:
+                    e_takeoff = np.array([self.start_x, self.start_y, self.init_z], dtype=np.float64) - q
+                    if np.linalg.norm(e_takeoff) <= self.init_tol:
+                        self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
+                        # Reset t_0 so the trajectory clock starts at exactly 0.0 now
+                        self.t_0 = current_timestamp_s
+                        self.last_t = 0.0
+                        self.last_traj_time = 0.0
+                        self.tau = 0.0
+                        self.theta = math.pi / 4.0
+                        self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
+
+                # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
+                # However get_desired_state(t) strictly ignores t during TAKEOFF.
+                t = current_timestamp_s - self.t_0 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else 0.0
+                dt = t - self.last_t if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else self.control_period
+                
                 q_dot = np.array(self.latest_odom.velocity, dtype=np.float64)
                 
                 if self.check_safety_boundary(q):
-                    self.cost_J += self.w_fail * ((self.t_f - t) ** 2)
-                    self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
+                    if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
+                        self.cost_J += self.w_fail * ((self.t_f - t) ** 2)
+                        self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
                     self.trigger_failsafe_land()
                     return
 
-                qd, qd_dot, qd_ddot = self.get_desired_state(t)
+                qd, qd_dot, _ = self.get_desired_state(t)
                 e = qd - q
                 e_dot = qd_dot - q_dot
-                r1 = e_dot + (self.k1 * e)
+                r1 = e_dot + (self.k_1 * e)
 
-                u = np.zeros(3, dtype=np.float64)
-                phi_val = np.zeros(3, dtype=np.float64)
+                u = np.zeros(self.d_out, dtype=np.float64)
+                phi_val = np.zeros(self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
                     case "noresnet":
@@ -563,10 +651,10 @@ class AviaryRiseNode(Node):
                         if not self.freeze_int_z:
                             self.integral_term[2] += delta_int[2]
                         self.last_integrand = current_integrand
-                        u = qd_ddot + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
                     case "baseline":
-                        if self.experiment_state == 4: 
+                        if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ: 
                             x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
                             
                             t_start_jax = time.perf_counter()
@@ -591,7 +679,7 @@ class AviaryRiseNode(Node):
                         u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
                     case "developed":
-                        if self.experiment_state == 4:
+                        if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                             u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                             kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
                             
@@ -615,6 +703,12 @@ class AviaryRiseNode(Node):
                             self.integral_term[2] += delta_int[2]
                         self.last_integrand = current_integrand
                         u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+
+                    case "supertwisting":
+                        norm_r1 = np.linalg.norm(r1)
+                        sgn_r1 = np.sign(r1)
+                        self.st_integral += sgn_r1 * dt
+                        u = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
         
                 norm_e = float(np.linalg.norm(e))
                 norm_u = float(np.linalg.norm(u))
@@ -627,20 +721,28 @@ class AviaryRiseNode(Node):
                 if self.controller_type in ["baseline", "developed"]:
                     self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
 
-                if self.experiment_state == 4:
-                    traj_t = max(0.0, t - self.windup_time)
-                    
+                if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                     current_error_sq = float(norm_e ** 2)
+                    current_u_sq = float(norm_u ** 2)
+                    current_cost_integrand = (t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
+
+                    if not self.cost_started:
+                        # Seed the history at exact start to prevent trapezoidal integration jump
+                        self.last_error_sq = current_error_sq
+                        self.last_u_sq = current_u_sq
+                        self.last_cost_integrand = current_cost_integrand
+                        self.cost_started = True
+                    
                     self.error_sq_integral += (dt / 2.0) * (current_error_sq + self.last_error_sq)
                     self.last_error_sq = current_error_sq
                     
-                    current_u_sq = float(norm_u ** 2)
                     self.u_sq_integral += (dt / 2.0) * (current_u_sq + self.last_u_sq)
                     self.last_u_sq = current_u_sq
 
-                    current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
                     self.cost_J += (dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
                     self.last_cost_integrand = current_cost_integrand
+                    
+                    self.last_t = t
                 
                 self.is_saturated = False
                 self.freeze_int_xy = False
@@ -651,7 +753,6 @@ class AviaryRiseNode(Node):
                 if norm_uxy > self.acc_hor_max:
                     u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
                     self.is_saturated = True
-                    # Anti-windup: freeze integral if e_xy is pushing in the same direction as u_xy
                     if np.dot(e[0:2], u[0:2]) > 0.0:
                         self.freeze_int_xy = True
                     self.get_logger().debug(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
@@ -659,22 +760,19 @@ class AviaryRiseNode(Node):
                 if abs(u[2]) > self.acc_vert_max:
                     u[2] = self.acc_vert_max * np.sign(u[2])
                     self.is_saturated = True
-                    # Anti-windup: freeze integral if e_z is pushing in the same direction as u_z
                     if np.sign(e[2]) == np.sign(u[2]):
                         self.freeze_int_z = True
                     self.get_logger().debug(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
                 self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
-                self.last_t = t
-
-                if t >= self.t_f:
-                    desired_time = self.t_f - self.windup_time
-                    rms_error = math.sqrt(self.error_sq_integral / desired_time) if desired_time > 0 else 0.0
-                    rms_u = math.sqrt(self.u_sq_integral / desired_time) if desired_time > 0 else 0.0
+                
+                if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.t_f:
+                    rms_error = math.sqrt(self.error_sq_integral / self.t_f) if self.t_f > 0 else 0.0
+                    rms_u = math.sqrt(self.u_sq_integral / self.t_f) if self.t_f > 0 else 0.0
                     self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.4f}")
                     self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
                     self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.4f}")
-                    self.trigger_failsafe_land() 
+                    self.trigger_failsafe_land()
 
 def main(args=None):
     rclpy.init(args=args)

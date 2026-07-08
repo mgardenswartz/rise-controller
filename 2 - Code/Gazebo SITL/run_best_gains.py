@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import subprocess
 import argparse
 import glob
 import jax
@@ -13,68 +12,55 @@ import matplotlib.animation as animation
 jax.config.update("jax_platform_name", "cpu")
 jax.config.update("jax_enable_x64", True)
 
-from unified_orchestrator import run_trial, get_base_param_dict, FIXED_K1, FIXED_K2, FIXED_K3, FIXED_K_RISE, SEED
+from unified_orchestrator import run_trial, get_base_param_dict, FIXED_K_1, FIXED_K_2, FIXED_K_3, FIXED_K_RISE, SEED, FIXED_K_ST_1, FIXED_K_ST_2, FIXED_K_ST_3
 
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "ros2_ws", "src", "aviary_rise_controller", "aviary_rise_controller")))
 from jax_resnet import init_resnet_weights
 
 def build_param_dict(controller_type: str, desired_trajectory: int):
-    # Pull the exact same base parameters used by the Optuna orchestrator
+    key = jax.random.PRNGKey(SEED)
+
     param_dict = get_base_param_dict(controller_type, desired_trajectory)
+    param_dict['save_data'] = True
+    param_dict['h_act_func'] = 'swish'
+    param_dict['o_act_func'] = 'tanh'
+    param_dict['shortcut_act_func'] = 'swish'
+    param_dict['theta_bar'] = 1e6
     
-    # Override for evaluation!
-    param_dict['plot'] = True
-    
-    # Inject the optimal baseline/developed fixed gains
-    param_dict['k1'] = FIXED_K1
-    param_dict['k2'] = FIXED_K2
-    param_dict['k3'] = FIXED_K3
+    param_dict['k_1'] = FIXED_K_1
+    param_dict['k_2'] = FIXED_K_2
+    param_dict['k_3'] = FIXED_K_3
     param_dict['k_rise'] = FIXED_K_RISE
 
+    initial_weight_scale_factor = float('nan')
 
-    # If it's a Neural Network controller, define the network config
     if controller_type == "baseline":        
         param_dict['d_in'] = 12
-        # param_dict['num_blocks'] = 4
-        # param_dict['k_0'] = 2
-        # param_dict['k_i'] = 4
-        # param_dict['hidden_width'] = 8
-        # param_dict['gamma'] = 6.7
-        # param_dict['sigma_mod'] = 1.0
-        # initial_weight_scale_factor = 0.2
 
         param_dict['num_blocks'] = 8
         param_dict['k_0'] = 2
         param_dict['k_i'] = 2
         param_dict['hidden_width'] = 4
-        param_dict['gamma'] = 0.4
+        param_dict['gamma'] = 0.385
         param_dict['sigma_mod'] = 0.65
         initial_weight_scale_factor = 0.1
     elif controller_type == "developed":        
         param_dict['d_in'] = 15
-        # param_dict['num_blocks'] = 4
-        # param_dict['k_0'] = 4
-        # param_dict['k_i'] = 4
-        # param_dict['hidden_width'] = 8
-        # param_dict['gamma'] = 6.7
-        # param_dict['sigma_mod'] = 2.2
-        # initial_weight_scale_factor = 0.2
 
         param_dict['num_blocks'] = 8
         param_dict['k_0'] = 4
         param_dict['k_i'] = 4
         param_dict['hidden_width'] = 8
-        param_dict['gamma'] = 6.3
-        param_dict['sigma_mod'] = 3.9
-        initial_weight_scale_factor = 0.2
+        param_dict['gamma'] = 7
+        param_dict['sigma_mod'] = 4.0
+        initial_weight_scale_factor = 0.4
+    elif controller_type == "supertwisting":
+        param_dict['k_1'] = FIXED_K_ST_1
+        param_dict['k_2'] = FIXED_K_ST_2
+        param_dict['k_3'] = FIXED_K_ST_3
    
-    if not controller_type == "noresnet":
-        param_dict['h_act_func'] = 'swish'
-        param_dict['o_act_func'] = 'tanh'
-        param_dict['shortcut_act_func'] = 'swish'
-        param_dict['theta_bar'] = 1e6
-        key = jax.random.PRNGKey(SEED)
+    if controller_type in ["developed", "baseline"]:
         initial_weights_jax = initial_weight_scale_factor * init_resnet_weights(
             key, param_dict['d_in'], param_dict['hidden_width'],  
             param_dict['d_out'], param_dict['num_blocks'], 
@@ -90,7 +76,7 @@ def main():
     parser.add_argument("--wind", action="store_true")
     args = parser.parse_args()
 
-    controllers = ["noresnet", "baseline", "developed"]
+    controllers = ["noresnet", "baseline", "developed", "supertwisting"]
     
     for controller in controllers:
         print(f"\n{'='*60}")
@@ -107,23 +93,25 @@ def main():
             print(f"    - RMS Error: {result[1]}")
             print(f"    - RMS Control: {result[2]}")
 
-        # Find the newly generated CSV in plot_data/controller/traj
-        traj_name = "figure_eight" if args.desired_trajectory == 1 else "rose"
-        
-        # Since we run on the host Mac, we check the local plot_data directory
-        local_csv_dir = f"plot_data/{controller}/{traj_name}"
-        
-        if os.path.exists(local_csv_dir):
-            csv_files = glob.glob(f"{local_csv_dir}/*.csv")
-            if csv_files:
-                # Find the most recently created CSV file
-                latest_csv = max(csv_files, key=os.path.getctime)
-                print(f"[*] Triggering post-flight analysis on: {latest_csv}")
-                run_post_flight_analysis(latest_csv)
+            # Find the newly generated CSV in plot_data/controller/traj
+            traj_name = "figure_eight" if args.desired_trajectory == 1 else "rose"
+            
+            # Since we run on the host Mac, we check the local plot_data directory
+            local_csv_dir = f"plot_data/{controller}/{traj_name}"
+            
+            if os.path.exists(local_csv_dir):
+                csv_files = glob.glob(f"{local_csv_dir}/*.csv")
+                if csv_files:
+                    # Find the most recently created CSV file
+                    latest_csv = max(csv_files, key=os.path.getctime)
+                    print(f"[*] Triggering post-flight analysis on: {latest_csv}")
+                    run_post_flight_analysis(latest_csv)
+                else:
+                    print(f"[!] No CSV found in {local_csv_dir}")
             else:
-                print(f"[!] No CSV found in {local_csv_dir}")
+                print(f"[!] Directory {local_csv_dir} does not exist.")
         else:
-            print(f"[!] Directory {local_csv_dir} does not exist.")
+            print(f"[!] Trial failed for {controller.upper()}, skipping analysis.")
 
 def run_post_flight_analysis(latest_csv: str):
     print(f"[*] Analyzing: {latest_csv}")

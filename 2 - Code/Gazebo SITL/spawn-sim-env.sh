@@ -102,7 +102,7 @@ else
         for i in $(seq 1 $N_QUAD); do
             echo "Starting px4_sitl instance for sentinel vision model px4_"$i
             # don't log px4 output, creates too large of files as blinking cursor is read as output for some reason
-            docker exec -d $CONTAINER_NAME bash -c "source /home/root/ros-sources.sh; PX4_SYS_AUTOSTART=4101 PX4_GZ_MODEL_NAME=$vehicle_name$i PX4_GZ_STANDALONE=1 /home/root/voxl-px4/px4-firmware/build/px4_sitl_default/bin/px4 -i $i >/dev/null 2>&1"
+            docker exec -d $CONTAINER_NAME bash -c "source /home/root/ros-sources.sh; PX4_SYS_AUTOSTART=4101 PX4_GZ_MODEL_NAME=$vehicle_name$i PX4_GZ_STANDALONE=1 /home/root/voxl-px4/px4-firmware/build/px4_sitl_default/bin/px4 -i $i >/tmp/px4.log 2>&1"
             # give gazebo time to start up/load models before we load another
             sleep $sleep_time
         done

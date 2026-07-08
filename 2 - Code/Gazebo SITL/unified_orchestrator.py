@@ -21,12 +21,24 @@ SEED = 42
 
 FIXED_X = 0.70
 FIXED_Y = -2.37
+FIXED_Z = -1.5
 
-# Fixed Phase 2 Baseline Gains (Optimized from Phase 1)
-FIXED_K1 = 1.31
-FIXED_K2 = 0.131
-FIXED_K3 = 0.83
-FIXED_K_RISE = 0.0287
+# Low RISE good, no wind though
+# FIXED_K_1 = 1.31
+# FIXED_K_2 = 0.131
+# FIXED_K_3 = 0.83
+# FIXED_K_RISE = 0.0287
+
+# Yes wind
+FIXED_K_1 = 0.72
+FIXED_K_2 = 0.11
+FIXED_K_3 = 2.4
+FIXED_K_RISE = 0.5
+
+# these are not the best yet
+FIXED_K_ST_1 = 2.1467
+FIXED_K_ST_2 = 1.09
+FIXED_K_ST_3 = 0.06267
 
 PATIENCE_TRIALS = 100
 NUM_TRIALS = 500
@@ -68,7 +80,7 @@ def parse_args():
         "--controller_type", 
         type=str, 
         required=True,
-        choices=["baseline", "developed", "noresnet"],
+        choices=["baseline", "developed", "noresnet", "supertwisting"],
         help="Specify which controller profile to optimize."
     )
     parser.add_argument(
@@ -90,13 +102,10 @@ def parse_args():
         
     return args
 
-def get_storage_config(controller_type: str, wind: bool):
-    if controller_type == "noresnet":
-        return "sqlite:///phase1_tuning.db", "phase1_noresnet_baseline_tuning"
-    else:
-        controller_type_augmented = controller_type
-        if wind: controller_type_augmented += "_wind"
-        return f"sqlite:///phase2_{controller_type_augmented}.db", f"phase2_{controller_type_augmented}_optimization"
+def get_storage_config(controller_type: str, wind: bool, desired_trajectory: int):
+    if wind: controller_type += "_wind"
+    controller_type += f"_{desired_trajectory}"
+    return f"sqlite:///{controller_type}.db", f"{controller_type}"
 
 def write_spawn_location(x: float, y: float) -> None:
     env_path = "spawn-locations.env"
@@ -116,7 +125,7 @@ def wait_for_sim_ready() -> bool:
         result = subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if result.returncode == 0:
             print("[*] EKF2 converged! Odometry is publishing.")
-            time.sleep(1) 
+            time.sleep(1)
             return True
         time.sleep(1)
     return False
@@ -161,7 +170,7 @@ def execute_single_run(param_dict: dict, desired_trajectory: int, wind: bool):
     if not wait_for_sim_ready():
         print("[!] Polling timeout. Simulator failed to boot properly.")
         cleanup_environment()
-        return None
+        return None, None, None
     
     ros_cmd = (
         f"source /home/root/ros-sources.sh && "
@@ -224,9 +233,9 @@ def get_base_param_dict(controller_type: str, desired_trajectory: int):
         'safe_z_min': -6.5,
         'odom_timeout_sec': 15.0,
         'settle_ticks': 50,
-        'hover_tolerance': 0.2,
-        'windup_time_sec': 5.0,
+        'init_tol': 0.2,
         'watchdog_freq': 10.0,
+        'init_z': FIXED_Z,
 
         # Trajectory 1
         'traj1_period': 30.0,
@@ -244,7 +253,7 @@ def get_base_param_dict(controller_type: str, desired_trajectory: int):
         'vehicle_name': 'px4_1',
         'controller_type': controller_type,
         'control_frequency': 50.0,
-        'plot': False,
+        'save_data': False,
         'sim_time': 60.0,
         
         'q_e': 1.0,
@@ -259,29 +268,32 @@ def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int
     print(f"[*] Starting trial")
     print(f"Controller: {controller_type} | Trajectory: {desired_trajectory} | Wind: {wind}")
 
+    param_dict['k_1'] = FIXED_K_1
+    param_dict['k_2'] = FIXED_K_2
+    param_dict['k_3'] = FIXED_K_3
+    param_dict['k_rise'] = FIXED_K_RISE
+    
+    param_dict['h_act_func'] = 'swish'
+    param_dict['o_act_func'] = 'tanh'
+    param_dict['shortcut_act_func'] = 'swish'
+    param_dict['theta_bar'] = 1e6 # Should never come into play
+    
+    param_dict['d_in'] = 12 if controller_type == "baseline" else 15
+
     if controller_type == "noresnet":
-        # Phase 1 Search Space
-        param_dict['k1'] = trial.suggest_float("k1", 0.01, 2.0, log=True)
-        param_dict['k2'] = trial.suggest_float("k2", 0.01, 5.0, log=True)
-        param_dict['k3'] = trial.suggest_float("k3", param_dict['k2'], 5.0) 
+        param_dict['k_1'] = trial.suggest_float("k_1", 0.01, 2.0, log=True)
+        param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 5.0, log=True)
+        param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 5.0) 
         param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 2.0, log=True)
 
-        print(f"[*] Suggested Baseline Gains -> k1: {param_dict['k1']:.2f} | k2: {param_dict['k2']:.2f} | k3: {param_dict['k3']:.2f} | krise: {param_dict['k_rise']:.6f}")
-        
-    else:
-        # Phase 2 Search Space (baseline or developed)
-        param_dict['k1'] = FIXED_K1
-        param_dict['k2'] = FIXED_K2
-        param_dict['k3'] = FIXED_K3
-        param_dict['k_rise'] = FIXED_K_RISE
+        print(f"[*] Suggested Baseline Gains -> k_1: {param_dict['k_1']:.2f} | k_2: {param_dict['k_2']:.2f} | k_3: {param_dict['k_3']:.2f} | krise: {param_dict['k_rise']:.6f}")
 
-        param_dict['h_act_func'] = 'swish'
-        param_dict['o_act_func'] = 'tanh'
-        param_dict['shortcut_act_func'] = 'swish'
-        param_dict['theta_bar'] = 1e6 # Should never come into play
-        
-        param_dict['d_in'] = 12 if controller_type == "baseline" else 15
-        
+    elif controller_type == "supertwisting":
+        param_dict['k_1'] = trial.suggest_float("k_st_1", 0.001, 5.0, log=True)
+        param_dict['k_2'] = trial.suggest_float("k_st_2", 0.001, 5.0, log=True)
+        param_dict['k_3'] = trial.suggest_float("k_st_3", 0.001, 5.0, log=True)
+
+    else:    
         initial_weight_scale_factor =  trial.suggest_categorical("initial_weight_scale_factor", [0.1, 0.2, 0.4])
         param_dict['num_blocks'] = trial.suggest_categorical("num_blocks", [4, 6, 8])
         param_dict['k_0'] = trial.suggest_categorical("k_0", [2, 4, 8])
@@ -312,7 +324,7 @@ def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int
 
 if __name__ == "__main__":
     args = parse_args()
-    db_name, study_name = get_storage_config(args.controller_type, args.wind)
+    db_name, study_name = get_storage_config(args.controller_type, args.wind, args.desired_trajectory)
     
     study = optuna.create_study(
         study_name=study_name,

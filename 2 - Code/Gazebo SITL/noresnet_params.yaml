@@ -4,23 +4,27 @@ aviary_rise_node:
     controller_type: noresnet
     d_out: 3
     desired_trajectory: 1
-    hover_tolerance: 0.2
+    h_act_func: swish
+    init_tol: 0.2
+    init_z: -1.5
     is_gazebo: false
-    k1: 1.31
-    k2: 0.131
-    k3: 0.83
-    k_rise: 0.0287
+    k_1: 0.72
+    k_2: 0.11
+    k_3: 2.4
+    k_rise: 0.5
     mpc_acc_hor_max: 6.0
-    mpc_acc_vert_max: 24.0
-    odom_timeout_sec: 15.0
-    plot: true
+    mpc_acc_vert_max: 26.0
+    o_act_func: tanh
+    odom_timeout_sec: 2.0
     q_e: 1.0
     r_u: 0.2
     safe_x_max: 5.0
     safe_y_max: 11.5
     safe_z_max: 0.5
     safe_z_min: -6.5
+    save_data: true
     settle_ticks: 50
+    shortcut_act_func: swish
     sim_time: 60.0
     theta_bar: 1000.0
     traj1_alpha_warp: 0.5
@@ -35,4 +39,3 @@ aviary_rise_node:
     vehicle_name: px4_1
     w_fail: 1000.0
     watchdog_freq: 10.0
-    windup_time_sec: 45.0
