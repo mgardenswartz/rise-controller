@@ -282,9 +282,9 @@ def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int
 
     if controller_type == "noresnet":
         param_dict['k_1'] = trial.suggest_float("k_1", 0.01, 2.0, log=True)
-        param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 5.0, log=True)
-        param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 5.0) 
-        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 2.0, log=True)
+        param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
+        param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 8.0) 
+        param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 5.0, log=True)
 
         print(f"[*] Suggested Baseline Gains -> k_1: {param_dict['k_1']:.2f} | k_2: {param_dict['k_2']:.2f} | k_3: {param_dict['k_3']:.2f} | krise: {param_dict['k_rise']:.6f}")
 
