@@ -23,19 +23,11 @@ FIXED_X = 0.70
 FIXED_Y = -2.37
 FIXED_Z = -1.5
 
-# Low RISE good, no wind though
-# FIXED_K_1 = 1.31
-# FIXED_K_2 = 0.131
-# FIXED_K_3 = 0.83
-# FIXED_K_RISE = 0.0287
-
-# Yes wind
 FIXED_K_1 = 0.72
 FIXED_K_2 = 0.11
 FIXED_K_3 = 2.4
 FIXED_K_RISE = 0.5
 
-# these are not the best yet
 FIXED_K_ST_1 = 2.1467
 FIXED_K_ST_2 = 1.09
 FIXED_K_ST_3 = 0.06267
