@@ -9,9 +9,9 @@ aviary_rise_node:
     hover_start_z: -0.75 # NED
     initial_weight_scale_factor: 0.1
     init_tol: 0.2
-    init_x: 0.70
-    init_y: -2.37
-    init_z: -1.5
+    init_x: 2.0 # 0.70 # NED
+    init_y: -3.0 #-2.37 # NED
+    init_z: -0.5 # NED
     k_1: 0.125
     k_2: 0.9
     k_3: 1.3
@@ -25,7 +25,7 @@ aviary_rise_node:
     safe_z_min: -6.5
     save_data: false
     shortcut_act_func: swish
-    sim_time: 60.0
+    sim_time: 10.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
     traj1_center_z: -0.75

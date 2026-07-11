@@ -1,7 +1,9 @@
 import math
+import time
 import numpy as np
 import yaml
 from typing import Any, Tuple
+from scipy.spatial.transform import Rotation
 
 import jax
 import jax.numpy as jnp
@@ -57,10 +59,11 @@ class SimRun:
         self.r_u = self.config['r_u']
 
         # Initial Conditions
-        self.init_x = self.config['init_x']
-        self.init_y = self.config['init_y']
-        self.init_z = self.config['init_z']
-        self.hover_start_z = self.config['hover_start_z']
+        self.init_x_ned_global = self.config['init_x']
+        self.init_y_ned_global = self.config['init_y']
+        self.init_z_ned_global = self.config['init_z']
+        self.init_ned_global = np.array([self.init_x_ned_global, self.init_y_ned_global, self.init_z_ned_global], dtype=np.float64)
+        self.hover_start_z_ned_global = self.config['hover_start_z']
         
         # State & Cost Memory
         self.cost_J = 0.0
@@ -114,18 +117,26 @@ class SimRun:
         self.theta_hat.block_until_ready()
 
     @staticmethod
-    def unity_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
+    def unity_to_ned_global(vec: np.ndarray | list[float]) -> np.ndarray:
         """
         Maps Unity to NED.
         Unity: (X, Y, Z)
-        NED: (Z, X, -Y)
+        NED: (X, -Z, -Y)
         """
-        return np.array([vec[2], vec[0], -vec[1]], dtype=np.float64)
+        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
 
     @staticmethod
     def ned_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
         """
         Maps NED to Unity.
+        NED: (X, Y, Z)
+        Unity: (X, -Z, -Y)
+        """
+        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+
+    @staticmethod
+    def gps_frame_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
+        """
         NED: (X, Y, Z)
         Unity: (Y, -Z, X)
         """
@@ -168,32 +179,35 @@ class SimRun:
         """Executes the simulation loop and returns the cost."""
         with QuadSim() as sim:
             drone = sim.drone()
-            sim.pause()
             
             status = sim.get_status()
             steps_per_tick = max(1, round((1.0 / self.control_hz) / status.fixed_dt))
             
             # Spawn in Unity coordinates using explicit config keys
-            init_ned = np.array([self.init_x, self.init_y, self.init_z])
-            init_unity = self.ned_to_unity(init_ned)
-            drone.reset_pose(x=init_unity[0], y=init_unity[1], z=init_unity[2])
+            init_unity = self.ned_to_unity(self.init_ned_global)
+            print(f"Init unity is s{init_unity}.")
             
+            sqrt2_ = math.sqrt(2)/2
+            # drone.reset_pose(x=init_unity[0], y=init_unity[2], z=init_unity[1], qx=0, qy=-sqrt2_2, qz=0, qw=sqrt2_2) # This function has a bug and hence I swapped the 2 and 1.
+            drone.reset_pose(x=init_unity[0], y=init_unity[2], z=init_unity[1], qx=0, qy=0, qz=0, qw=1)
             total_steps = round(self.control_hz * self.t_f)
             
-            is_takeoff = True
-            traj_t = 0.0 # Dedicated timer for the trajectory and cost integration
+            traj_t = 0.0
             
             for step in range(total_steps):
                 # We use fixed dt for the discrete math
                 sensors = drone.get_sensors()
                 
-                q = np.array([sensors.gps_position[1], sensors.gps_position[0], -sensors.gps_position[2]], dtype=np.float64)
-                q_dot = np.array(sensors.gps_vel_ned, dtype=np.float64)
+                gps_position_unity_frame = np.array([sensors.gps_position[0], sensors.gps_position[2], sensors.gps_position[1]], dtype=np.float64) # This function has a bug and hence I swapped the 2 and 1.
+                #print(f"GPS pos. meas. in unity frame is q = {gps_position_unity_frame}")
+                q = self.unity_to_ned_global(gps_position_unity_frame) # NED Global
+                #print(f"GPS pos. meas. in NED is q = {q}")
+                gps_vel_unity_frame = np.array([sensors.gps_vel_ned[0], sensors.gps_vel_ned[2], sensors.gps_vel_ned[1]], dtype=np.float64)
+                q_dot = self.unity_to_ned_global(gps_vel_unity_frame) # NED Global
+                # print(f"Velocity meas. says {q_dot}")
 
-                from scipy.spatial.transform import Rotation
                 quat = np.array(sensors.imu_orientation)
-                if np.linalg.norm(quat) < 1e-6:
-                    quat = np.array([0.0, 0.0, 0.0, 1.0])
+                if np.linalg.norm(quat) < 1e-6: quat = np.array([0.0, 0.0, 0.0, 1.0])
                 r = Rotation.from_quat(quat)
                 yaw_enu = r.as_euler('zyx')[0]
                 current_yaw = (np.pi / 2.0 - yaw_enu + np.pi) % (2 * np.pi) - np.pi
@@ -203,107 +217,122 @@ class SimRun:
                    not (-self.safe_y_max <= q[1] <= self.safe_y_max) or \
                    not (self.safe_z_min <= q[2] <= self.safe_z_max):
                     # Only penalize if we've actually started the trajectory
-                    if not is_takeoff:
-                        self.cost_J += self.w_fail * ((self.t_f - traj_t) ** 2)
-                    break 
+                    # if not is_takeoff:
+                    #     self.cost_J += self.w_fail * ((self.t_f - traj_t) ** 2)
+                    #break
+                    pass
                 
                 # --- STATE MACHINE: Takeoff vs Trajectory ---
-                if is_takeoff:
-                    qd = np.array([self.init_x, self.init_y, self.hover_start_z], dtype=np.float64)
-                    qd_dot = np.zeros(3, dtype=np.float64)
-                    e = qd - q
-                    e_dot = qd_dot - q_dot
+                qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
+                qd_dot = np.zeros(3, dtype=np.float64)
+                e = qd - q
+                print(f"e: {e}")
+                e_dot = qd_dot - q_dot
+
+                u = 0.02 * e + 0.4 * e_dot
+                # if is_takeoff:
+                #     qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
+                #     qd_dot = np.zeros(3, dtype=np.float64)
+                #     e = qd - q
+                #     e_dot = qd_dot - q_dot
                     
-                    if np.linalg.norm(e) <= self.config['init_tol']:
-                        is_takeoff = False
-                        # Reset memory integrals so they don't unwind from the takeoff effort
-                        self.integral_term = np.zeros(3, dtype=np.float64)
-                        self.last_integrand = np.zeros(3, dtype=np.float64)
-                        self.st_integral = np.zeros(3, dtype=np.float64)
-                else:
-                    traj_t += self.dt
-                    qd, qd_dot, _ = self.get_desired_state(traj_t)
-                    e = qd - q
-                    e_dot = qd_dot - q_dot
+                    # if np.linalg.norm(e) <= self.config['init_tol']:
+                    #     is_takeoff = False
+                    #     # Reset memory integrals so they don't unwind from the takeoff effort
+                    #     self.integral_term = np.zeros(3, dtype=np.float64)
+                    #     self.last_integrand = np.zeros(3, dtype=np.float64)
+                    #     self.st_integral = np.zeros(3, dtype=np.float64)
+                # else:
+                #     traj_t += self.dt
+
+                    # # TEMPORARY
+                    # qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
+                    # qd_dot = np.zeros(3, dtype=np.float64)
+                    # qd, qd_dot, _ = self.get_desired_state(traj_t)
+                    # e = qd - q
+                    # e_dot = qd_dot - q_dot
                 
                 r1 = e_dot + (self.k_1 * e)
                 
                 u = np.zeros(3, dtype=np.float64)
                 phi_val = np.zeros(3, dtype=np.float64)
                 
-                # --- CONTROL LAW EVALUATION ---
+                # # --- CONTROL LAW EVALUATION ---
                 if self.controller_type == "noresnet":
                     current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
                     delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
                     self.last_integrand = current_integrand
                     u_unclamped = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                     
-                elif self.controller_type == "baseline":
-                    x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
-                    self.theta_hat, phi_out = self.compiled_update_step(
-                        self.theta_hat, x_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
-                    )
-                    phi_val = np.array(phi_out, dtype=np.float64)
-                    current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                    delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
-                    self.last_integrand = current_integrand
-                    u_unclamped = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                # elif self.controller_type == "baseline":
+                #     x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
+                #     self.theta_hat, phi_out = self.compiled_update_step(
+                #         self.theta_hat, x_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
+                #     )
+                #     phi_val = np.array(phi_out, dtype=np.float64)
+                #     current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                #     delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
+                #     self.last_integrand = current_integrand
+                #     u_unclamped = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                     
-                elif self.controller_type == "developed":
-                    u_last = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                    kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
-                    self.theta_hat, phi_out = self.compiled_update_step(
-                        self.theta_hat, kappa_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
-                    )
-                    phi_val = np.array(phi_out, dtype=np.float64)
-                    current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
-                    delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
-                    self.last_integrand = current_integrand
-                    u_unclamped = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                # elif self.controller_type == "developed":
+                #     u_last = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                #     kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
+                #     self.theta_hat, phi_out = self.compiled_update_step(
+                #         self.theta_hat, kappa_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
+                #     )
+                #     phi_val = np.array(phi_out, dtype=np.float64)
+                #     current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
+                #     delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
+                #     self.last_integrand = current_integrand
+                #     u_unclamped = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                     
-                elif self.controller_type == "supertwisting":
-                    norm_r1 = np.linalg.norm(r1)
-                    sgn_r1 = np.sign(r1)
-                    # NOTE: ST integral is not conditionally clamped in standard literature, 
-                    # but bounds can be added if it winds up.
-                    self.integral_term += sgn_r1 * self.dt
-                    u_unclamped = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.integral_term + self.k_1 * e_dot
+                # elif self.controller_type == "supertwisting":
+                #     norm_r1 = np.linalg.norm(r1)
+                #     sgn_r1 = np.sign(r1)
+                #     # NOTE: ST integral is not conditionally clamped in standard literature, 
+                #     # but bounds can be added if it winds up.
+                #     self.integral_term += sgn_r1 * self.dt
+                #     u_unclamped = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.integral_term + self.k_1 * e_dot
 
-                # --- SATURATION & ANTI-WINDUP ---
-                u = np.copy(u_unclamped)
-                freeze_int_xy = False
-                freeze_int_z = False
+                # # --- SATURATION & ANTI-WINDUP ---
+                # u = np.copy(u_unclamped)
+                # freeze_int_xy = False
+                # freeze_int_z = False
 
-                u_xy = u[0:2]
-                norm_uxy = float(np.linalg.norm(u_xy))
-                if norm_uxy > self.acc_hor_max:
-                    u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
-                    if np.dot(e[0:2], u[0:2]) > 0.0:
-                        freeze_int_xy = True
+                # u_xy = u[0:2]
+                # norm_uxy = float(np.linalg.norm(u_xy))
+                # if norm_uxy > self.acc_hor_max:
+                #     u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
+                #     if np.dot(e[0:2], u[0:2]) > 0.0:
+                #         freeze_int_xy = True
                         
-                if abs(u[2]) > self.acc_vert_max:
-                    u[2] = self.acc_vert_max * np.sign(u[2])
-                    if np.sign(e[2]) == np.sign(u[2]):
-                        freeze_int_z = True
+                # if abs(u[2]) > self.acc_vert_max:
+                #     u[2] = self.acc_vert_max * np.sign(u[2])
+                #     if np.sign(e[2]) == np.sign(u[2]):
+                #         freeze_int_z = True
 
-                # Apply integrations based on freeze flags (for continuous controllers)
-                if self.controller_type != "supertwisting":
-                    if not freeze_int_xy:
-                        self.integral_term[0:2] += delta_int[0:2]
-                    if not freeze_int_z:
-                        self.integral_term[2] += delta_int[2]
+                # # Apply integrations based on freeze flags (for continuous controllers)
+                # if self.controller_type != "supertwisting":
+                #     if not freeze_int_xy:
+                #         self.integral_term[0:2] += delta_int[0:2]
+                #     if not freeze_int_z:
+                #         self.integral_term[2] += delta_int[2]
 
-                # --- COST INTEGRATION (Only if Tracking) ---
-                if not is_takeoff:
-                    norm_e = float(np.linalg.norm(e))
-                    norm_u = float(np.linalg.norm(u))
-                    current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
+                # # --- COST INTEGRATION (Only if Tracking) ---
+                # if not is_takeoff:
+                #     norm_e = float(np.linalg.norm(e))
+                #     norm_u = float(np.linalg.norm(u))
+                #     current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
                     
-                    if traj_t == self.dt: # First timestep of trajectory
-                        self.last_cost_integrand = current_cost_integrand
+                #     if traj_t == self.dt: # First timestep of trajectory
+                #         self.last_cost_integrand = current_cost_integrand
                         
-                    self.cost_J += (self.dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
-                    self.last_cost_integrand = current_cost_integrand
+                #     self.cost_J += (self.dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
+                #     self.last_cost_integrand = current_cost_integrand
+
+                u = u_unclamped
+
 
                 # Convert control action from Global NED to Body FLU
                 cy = np.cos(current_yaw)
@@ -313,25 +342,26 @@ class SimRun:
                     sy * u[0] - cy * u[1],   # Left
                     -u[2]                    # Up
                 ], dtype=np.float64)
+                print(u_flu)
 
                 yaw_rate_cmd = 2.0 * (0.0 - current_yaw)
 
-                # Periodic Debug Print (once per second based on control_hz)
-                if step % int(self.control_hz) == 0:
-                    stage = "TAKEOFF" if is_takeoff else "TRAJECTORY"
-                    print(f"[{step:04d}/{total_steps}] {stage} | "
-                          f"q(NED): [{q[0]:+5.2f}, {q[1]:+5.2f}, {q[2]:+5.2f}] | "
-                          f"qd(NED): [{qd[0]:+5.2f}, {qd[1]:+5.2f}, {qd[2]:+5.2f}] | "
-                          f"u(NED): [{u[0]:+5.2f}, {u[1]:+5.2f}, {u[2]:+5.2f}] | "
-                          f"u(FLU): [{u_flu[0]:+5.2f}, {u_flu[1]:+5.2f}, {u_flu[2]:+5.2f}]")
+                # drone.step_with_acceleration(
+                #     ax=u_flu[0],
+                #     ay=u_flu[1],
+                #     az=u_flu[2],
+                #     yaw_rate=0.0, #yaw_rate_cmd,
+                #     count=steps_per_tick
+                # )
 
                 drone.step_with_acceleration(
-                    ax=u_flu[0],
-                    ay=u_flu[1],
-                    az=u_flu[2],
-                    yaw_rate=yaw_rate_cmd,
+                    ax=1.0,
+                    ay=0.0,
+                    az=0.0,
+                    yaw_rate=0.0, #yaw_rate_cmd,
                     count=steps_per_tick
                 )
+
 
             sim.pause()
             return self.cost_J
