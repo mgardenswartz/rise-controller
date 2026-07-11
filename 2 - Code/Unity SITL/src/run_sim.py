@@ -1,21 +1,21 @@
 import math
-import time
 import numpy as np
 import yaml
+from typing import Any, Tuple
 
 import jax
 import jax.numpy as jnp
-jax.config.update("jax_platform_name", "cpu")
-jax.config.update("jax_enable_x64", True)
 
-# Assuming these have been modularized as you noted
-from controllers.proj import discrete_projection
-from controllers.desired_trajectory import traj1_spatial_derivs, traj2_spatial_derivs
+from src.proj import discrete_projection
+from src.desired_trajectory import traj1_spatial_derivs, traj2_spatial_derivs
 from jax_resnet import resnet_network
 from quadsim import QuadSim
 
+jax.config.update("jax_platform_name", "cpu") # type: ignore
+jax.config.update("jax_enable_x64", True) # type: ignore
+
 class SimRun:
-    def __init__(self, param_dict: dict, yaml_config_path: str = "params.yaml"):
+    def __init__(self, param_dict: dict[str, Any], yaml_config_path: str) -> None:
         # 1. Load base configuration
         with open(yaml_config_path, 'r') as f:
             full_config = yaml.safe_load(f)
@@ -72,14 +72,14 @@ class SimRun:
         if self.controller_type in ["baseline", "developed"]:
             self.setup_neural_network()
 
-    def setup_neural_network(self):
+    def setup_neural_network(self) -> None:
         self.theta_bar = self.config['theta_bar']
         self.sigma_mod = self.config['sigma_mod']
         self.gamma_diag = jnp.ones(len(self.config['initial_weights'])) * self.config['gamma']
         init_scale = self.config['initial_weight_scale_factor']
         self.theta_hat = jnp.array(self.config['initial_weights']) * init_scale
         
-        self.bound_resnet = jax.jit(jax.tree_util.Partial(
+        self.bound_resnet = jax.jit(jax.tree_util.Partial( # type: ignore
             resnet_network,
             d_in=self.config['d_in'],
             hidden_width=self.config['hidden_width'],
@@ -93,7 +93,11 @@ class SimRun:
         ))
         
         @jax.jit
-        def compiled_update_step(theta_hat, x_vec, r1_vec, dt, theta_bar, gamma_diag, s_mod, saturated):
+        def compiled_update_step(
+            theta_hat: jax.Array, x_vec: jax.Array, r1_vec: jax.Array,
+            dt: float, theta_bar: float, gamma_diag: jax.Array,
+            s_mod: float, saturated: bool
+        ) -> Tuple[jax.Array, Any]:
             phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), theta_hat)
             grad_term = vjp_fn(r1_vec)[0]
             theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
@@ -110,27 +114,24 @@ class SimRun:
         self.theta_hat.block_until_ready()
 
     @staticmethod
-    def unity_to_ned(vec):
+    def unity_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
         """
-        Maps Unity (Left-Handed: X-Right, Y-Up, Z-Fwd) to NED (Right-Handed).
-        Based on lab alignment:
-        Unity X (Right) -> NED X (North)
-        Unity Z (Fwd)   -> NED -Y (West)
-        Unity Y (Up)    -> NED -Z (Up)
+        Maps Unity to NED.
+        Unity: (X, Y, Z)
+        NED: (Z, X, -Y)
         """
-        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+        return np.array([vec[2], vec[0], -vec[1]], dtype=np.float64)
 
     @staticmethod
-    def ned_to_unity(vec):
+    def ned_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
         """
-        Maps NED to Unity based on lab alignment:
-        NED X -> Unity X
-        NED Y -> Unity -Z
-        NED Z -> Unity -Y
+        Maps NED to Unity.
+        NED: (X, Y, Z)
+        Unity: (Y, -Z, X)
         """
-        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+        return np.array([vec[1], -vec[2], vec[0]], dtype=np.float64)
 
-    def get_desired_state(self, t: float):
+    def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.desired_traj == 1:
             w = (2.0 * math.pi) / self.config['traj1_period']
             tau_dot = self.traj1_warp_c * (1.0 - self.config['traj1_alpha_warp'] * (math.sin(w * t)**2))
@@ -161,6 +162,8 @@ class SimRun:
 
         return qd, qd_dot, qd_ddot
 
+  
+
     def run(self) -> float:
         """Executes the simulation loop and returns the cost."""
         with QuadSim() as sim:
@@ -184,9 +187,16 @@ class SimRun:
                 # We use fixed dt for the discrete math
                 sensors = drone.get_sensors()
                 
-                q = self.unity_to_ned(sensors.position)
-                q_dot = self.unity_to_ned(sensors.velocity)
-                current_yaw = sensors.yaw 
+                q = np.array([sensors.gps_position[1], sensors.gps_position[0], -sensors.gps_position[2]], dtype=np.float64)
+                q_dot = np.array(sensors.gps_vel_ned, dtype=np.float64)
+
+                from scipy.spatial.transform import Rotation
+                quat = np.array(sensors.imu_orientation)
+                if np.linalg.norm(quat) < 1e-6:
+                    quat = np.array([0.0, 0.0, 0.0, 1.0])
+                r = Rotation.from_quat(quat)
+                yaw_enu = r.as_euler('zyx')[0]
+                current_yaw = (np.pi / 2.0 - yaw_enu + np.pi) % (2 * np.pi) - np.pi
                 
                 # Boundary Failsafe Check
                 if not (-self.safe_x_max <= q[0] <= self.safe_x_max) or \
@@ -295,14 +305,30 @@ class SimRun:
                     self.cost_J += (self.dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
                     self.last_cost_integrand = current_cost_integrand
 
-                # Convert control action to Unity coordinates
-                u_unity = self.ned_to_unity(u)
+                # Convert control action from Global NED to Body FLU
+                cy = np.cos(current_yaw)
+                sy = np.sin(current_yaw)
+                u_flu = np.array([
+                    cy * u[0] + sy * u[1],   # Forward
+                    sy * u[0] - cy * u[1],   # Left
+                    -u[2]                    # Up
+                ], dtype=np.float64)
+
                 yaw_rate_cmd = 2.0 * (0.0 - current_yaw)
 
+                # Periodic Debug Print (once per second based on control_hz)
+                if step % int(self.control_hz) == 0:
+                    stage = "TAKEOFF" if is_takeoff else "TRAJECTORY"
+                    print(f"[{step:04d}/{total_steps}] {stage} | "
+                          f"q(NED): [{q[0]:+5.2f}, {q[1]:+5.2f}, {q[2]:+5.2f}] | "
+                          f"qd(NED): [{qd[0]:+5.2f}, {qd[1]:+5.2f}, {qd[2]:+5.2f}] | "
+                          f"u(NED): [{u[0]:+5.2f}, {u[1]:+5.2f}, {u[2]:+5.2f}] | "
+                          f"u(FLU): [{u_flu[0]:+5.2f}, {u_flu[1]:+5.2f}, {u_flu[2]:+5.2f}]")
+
                 drone.step_with_acceleration(
-                    ax=u_unity[0],
-                    ay=u_unity[1],
-                    az=u_unity[2],
+                    ax=u_flu[0],
+                    ay=u_flu[1],
+                    az=u_flu[2],
                     yaw_rate=yaw_rate_cmd,
                     count=steps_per_tick
                 )

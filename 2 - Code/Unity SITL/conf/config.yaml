@@ -4,17 +4,18 @@ aviary_rise_node:
     controller_type: noresnet
     d_in: 15
     d_out: 3
-    desired_trajectory: 2
+    desired_trajectory: 1
     h_act_func: swish
+    hover_start_z: -0.75 # NED
     initial_weight_scale_factor: 0.1
     init_tol: 0.2
     init_x: 0.70
     init_y: -2.37
     init_z: -1.5
-    k_1: 0.1250013535217034
-    k_2: 0.8987431755260068
-    k_3: 3.647668260273761
-    k_rise: 0.9771171288636008
+    k_1: 0.125
+    k_2: 0.9
+    k_3: 1.3
+    k_rise: 2.0
     o_act_func: tanh
     q_e: 1.0
     r_u: 0.2
@@ -38,3 +39,12 @@ aviary_rise_node:
     w_fail: 1000.0
     xy_rand_range: 1.0    # +/- meters variation for takeoff X and Y
     z_rand_range: 0.25    # +/- meters variation for hover_start_z
+    mpc_acc_hor_max: 6.0
+    mpc_acc_vert_max: 3.0
+    num_eval_seeds: 3 # For mini-batches in the optimization
+    base_seed: 42
+    
+    # Dynamic paths configuration to avoid hardcoding in Python scripts:
+    db_path: "sqlite:///output/optimization.db"
+    robustness_output_path: "output/robustness_results.csv"
+    best_gains_path: "conf/best_gains.yaml"

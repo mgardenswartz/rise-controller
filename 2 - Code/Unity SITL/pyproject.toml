@@ -15,7 +15,10 @@ dependencies = [
     "numpy",
     "pandas",
     "matplotlib",
-    "quadsim-sdk"
+    "quadsim-sdk",
+    "optuna",
+    "pyyaml",
+    "jax-resnet@git+https://git@github.com/mgardenswartz/resnet.git@v1.2.0"
 ]
 
 [project.optional-dependencies]
@@ -27,6 +30,10 @@ dev = [
     "ruff",
     "mypy"
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
 
 [tool.ruff]
 line-length = 88

@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+from typing import Tuple
 
 
 @jax.jit
@@ -10,8 +11,8 @@ def traj1_spatial_derivs(
     traj1_x_amp: float,
     traj1_y_amp: float,
     traj1_z_amp: float
-) -> jax.Array:
-    def pos_fn(t):
+) -> Tuple[jax.Array, jax.Array, jax.Array]:
+    def pos_fn(t: float) -> jax.Array:
         w = (2.0 * jnp.pi) / traj1_period
         wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
         return jnp.array([
@@ -27,8 +28,8 @@ def traj2_spatial_derivs(
     theta: float,
     target_z: float,
     traj2_A: float
-) -> jax.Array:
-    def pos_fn(th):
+) -> Tuple[jax.Array, jax.Array, jax.Array]:
+    def pos_fn(th: float) -> jax.Array:
         r = traj2_A * jnp.cos(2.0 * th)
         return jnp.array([
             r * jnp.cos(th),
