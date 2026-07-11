@@ -1,0 +1,1253 @@
+#LyX 2.5 created this file. For more info see https://www.lyx.org/
+\lyxformat 643
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement class
+\float_alignment class
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification default
+\crossref_package refstyle
+\use_formatted_ref 0
+\use_minted 0
+\use_lineno 0
+\backgroundcolor none
+\fontcolor none
+\notefontcolor lightgray
+\boxbgcolor red
+\table_border_color default
+\table_odd_row_color default
+\table_even_row_color default
+\table_alt_row_colors_start 1
+\index Index
+\shortcut idx
+\color #008080
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tablestyle default
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content true
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\docbook_mathml_version 0
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+Let the target agent's dynamics be
+\begin_inset Formula 
+\begin{align*}
+\ddot{q}_{d} & =h\left(q_{d},\dot{q}_{d}\right)
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $h\in\mathcal{C}^{2}$
+\end_inset
+
+ is unknown (not necessarily linear-in-the-parameters).
+ Let the controlled agent's dynamics be
+\begin_inset Formula 
+\begin{align*}
+\ddot{q} & =f\left(q,\dot{q}\right)+u+d\left(t\right)
+\end{align*}
+
+\end_inset
+
+where 
+\begin_inset Formula $f\in\mathcal{C}^{2}$
+\end_inset
+
+ is unknown (not necessarily linear-in-the-parameters).
+ Assume 
+\begin_inset Formula $q$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\dot{q}$
+\end_inset
+
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+,
+ 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $\dot{q}_{d}$
+\end_inset
+
+ are known,
+ 
+\begin_inset Formula $d\in\mathcal{C}^{2}$
+\end_inset
+
+ is unknown,
+ and 
+\begin_inset Formula $q_{d}\in\mathcal{C}^{3}$
+\end_inset
+
+,
+ where
+\begin_inset Formula 
+\begin{align*}
+\left\Vert d\left(t\right)\right\Vert  & \le\overline{d}\\
+\left\Vert \dot{d}\left(t\right)\right\Vert  & \le\overline{\dot{d}}\\
+\left\Vert \ddot{d}\left(t\right)\right\Vert  & \le\overline{\ddot{d}}
+\end{align*}
+
+\end_inset
+
+are known constants.
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color blue
+ 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+Assume
+\begin_inset Formula 
+\begin{align*}
+\left\Vert q_{d}\left(t\right)\right\Vert  & \le\overline{q}_{d}\\
+\left\Vert \dot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dot{q}}_{d}\\
+\left\Vert \ddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\ddot{q}}_{d}\\
+\left\Vert \dddot{q}_{d}\left(t\right)\right\Vert  & \le\overline{\dddot{q}}_{d}
+\end{align*}
+
+\end_inset
+
+are known constants.
+ Define
+\begin_inset Formula 
+\begin{align*}
+e & \triangleq q_{d}-q\\
+r_{1} & \triangleq\dot{e}+k_{1}e\\
+r_{2} & \triangleq\dot{r}_{1}+k_{2}r_{1}
+\end{align*}
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+Assume
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widehat{\theta}\right\Vert  & \le\overline{\theta}\\
+\left\Vert \theta^{\ast}\right\Vert  & \le\overline{\theta}\\
+\left\Vert \dot{\widehat{\theta}}\right\Vert  & \le\eta_{1}\\
+\left\Vert \ddot{\widehat{\theta}}\right\Vert  & \le\eta_{2}
+\end{align*}
+
+\end_inset
+
+are known constants.
+ Let
+\begin_inset Formula 
+\begin{align*}
+z & \triangleq\left[\begin{array}{ccc}
+e^{\top} & r^{\top}_{1} & r^{\top}_{2}\end{array}\right]^{\top}\in\mathbb{R}^{3n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+Goal
+\end_layout
+
+\begin_layout Standard
+Find a continuous 
+\begin_inset Formula $u$
+\end_inset
+
+ such that 
+\begin_inset Formula 
+\begin{align*}
+z & \to0
+\end{align*}
+
+\end_inset
+
+exponentially.
+\end_layout
+
+\begin_layout Subsection
+Stability
+\end_layout
+
+\begin_layout Standard
+Assume that 
+\begin_inset Formula $\left\Vert \nu\right\Vert \le\eta_{1}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\left\Vert \dot{\nu}\right\Vert \le\eta_{2}$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $\left\Vert \ddot{\nu}\right\Vert \le\eta_{3}+\eta_{4}\left\Vert z\right\Vert +\rho_{21}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+ Thus,
+ 
+\begin_inset Formula $\gamma_{1},\gamma_{3},\gamma_{4}\in\mathbb{R}_{\ge0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert N_{B}\right\Vert \le\gamma_{1}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $\left\Vert \dot{N}_{B}\right\Vert \le\gamma_{3}+\gamma_{4}\left\Vert z\right\Vert +\rho_{2}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+ and 
+\begin_inset Formula $\left\Vert \widetilde{N}\right\Vert \le\gamma_{2}\left\Vert z\right\Vert +\rho_{1}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert $
+\end_inset
+
+.
+ Proof:
+ 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+First,
+ let 
+\begin_inset Formula $\nu=\widehat{\theta}$
+\end_inset
+
+.
+\begin_inset Formula 
+\begin{align*}
+f\left(x,\nu,t\right) & =f_{1}\left(x,t\right)-\Phi\left(x,\widehat{\theta}\right)\\
+ & =\Phi\left(x,\theta^{\ast}\right)+\varepsilon\left(x\right)-\Phi\left(x,\widehat{\theta}\right)\\
+ & =\frac{\partial\Phi}{\partial\widehat{\theta}}\widetilde{\theta}+R\left(x,\widetilde{\theta}\right)+\varepsilon\left(x\right)
+\end{align*}
+
+\end_inset
+
+First
+\begin_inset Formula 
+\[
+\frac{d}{dt}\left(f\left(x_{d},\nu,t\right)\right)=\frac{\partial f}{\partial t}+\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}+\frac{\partial f}{\partial\nu}\dot{\nu}
+\]
+
+\end_inset
+
+Assume that 
+\begin_inset Formula $\frac{\partial f}{\partial t}$
+\end_inset
+
+ is bounded by a constant globally.
+ Assume 
+\begin_inset Formula $f$
+\end_inset
+
+ is 
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+.
+\begin_inset Formula 
+\[
+\left\Vert N_{B}\right\Vert \le\left\Vert \frac{\partial f}{\partial t}+\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}+\frac{\partial f}{\partial\nu}\dot{\nu}\right\Vert \le\gamma_{1}
+\]
+
+\end_inset
+
+Instead suppose
+\begin_inset Formula 
+\[
+\left\Vert \ddot{\nu}\right\Vert \le\rho_{\nu}\left(\left\Vert z\right\Vert \right)
+\]
+
+\end_inset
+
+Write,
+\begin_inset Formula 
+\begin{align*}
+\dot{N}_{B} & =\frac{d}{dt}\left(\frac{\partial f}{\partial t}+\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}+\frac{\partial f}{\partial\nu}\dot{\nu}\right)\\
+ & =\frac{\partial^{2}f}{\partial t^{2}}+\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\ddot{x}_{d}+\left.\frac{\partial^{2}f}{\partial x^{2}}\right|_{x_{d}}\dot{x}_{d}+\frac{\partial^{2}f}{\partial\nu^{2}}\dot{\nu}+\frac{\partial f}{\partial\nu}\ddot{\nu}\\
+ & \le\rho_{N_{B}}\left(\left\Vert z\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+What about 
+\begin_inset Formula $\dot{x}$
+\end_inset
+
+?
+\begin_inset Formula 
+\begin{align*}
+\dot{e} & =\dot{x}_{d}-\dot{x}\\
+\dot{x} & =\dot{e}+\dot{x}_{d}\\
+\left\Vert \dot{x}\right\Vert  & \le\left\Vert \dot{e}\right\Vert +\left\Vert \dot{x}_{d}\right\Vert \\
+ & \le\overline{\dot{x}}_{d}+\left\Vert r-\alpha e\right\Vert \\
+ & \le\overline{\dot{x}}_{d}+\left\Vert r\right\Vert +\alpha\left\Vert e\right\Vert \\
+ & \le\overline{\dot{x}}_{d}+\left(\alpha+1\right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+What about 
+\begin_inset Formula $\widetilde{N}$
+\end_inset
+
+?
+\begin_inset Formula 
+\begin{align*}
+\widetilde{N} & =\frac{d}{dt}\left(f\left(x,\nu,t\right)\right)-\frac{d}{dt}\left(f\left(x_{d},\nu,t\right)\right)\\
+ & =\frac{\partial f}{\partial t}+\left.\frac{\partial f}{\partial x}\right|_{x}\dot{x}+\frac{\partial f}{\partial\nu}\dot{\nu}-\frac{\partial f}{\partial t}-\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}-\frac{\partial f}{\partial\nu}\dot{\nu}\\
+\left\Vert \widetilde{N}\right\Vert  & \le\left.\frac{\partial f}{\partial x}\right|_{x}\dot{x}-\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}\\
+ & {\color{red}\le\left.\frac{\partial f}{\partial x}\right|_{x}\left(\overline{\dot{x}}_{d}+\left(\alpha+1\right)\left\Vert z\right\Vert \right)-\left.\frac{\partial f}{\partial x}\right|_{x_{d}}\dot{x}_{d}}\\
+ & {\color{red}\le c_{1}+c_{2}\left\Vert z\right\Vert }\\
+ & {\color{red}\le\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)}
+\end{align*}
+
+\end_inset
+
+Try again.
+ 
+\begin_inset Formula $g\in\mathcal{C}^{1}$
+\end_inset
+
+:
+\begin_inset Formula 
+\[
+g\left(\xi,\dot{\xi}\right)=f\left(\xi\right)\dot{\xi}
+\]
+
+\end_inset
+
+By Rushi's lemma,
+\begin_inset Formula 
+\[
+\left\Vert g\left(\xi,\dot{\xi}\right)-g\left(\xi_{d},\dot{\xi}_{d}\right)\right\Vert \le\rho_{g}\left(\left\Vert e_{\xi}\right\Vert \right)\left\Vert e_{\xi}\right\Vert 
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align*}
+e_{\xi} & \triangleq\left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\\
+\left\Vert e_{\xi}\right\Vert  & \le\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert \\
+ & \le\left\Vert r-\alpha e\right\Vert +\left\Vert e\right\Vert \\
+ & \le\left\Vert r\right\Vert +\alpha\left\Vert e\right\Vert +\left\Vert e\right\Vert \\
+ & \le\left\Vert r\right\Vert +\left(\alpha+1\right)\left\Vert e\right\Vert \\
+ & \le\left(\alpha+2\right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert g\left(\xi,\dot{\xi}\right)-g\left(\xi_{d},\dot{\xi}_{d}\right)\right\Vert  & \le\rho_{g}\left(\left(\alpha+2\right)\left\Vert z\right\Vert \right)\left(\alpha+2\right)\left\Vert z\right\Vert \\
+ & \le\rho_{\widetilde{N}}\left(\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Error Dynamics
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+E Error derivative
+\begin_inset Formula 
+\[
+\dot{e}=r_{1}-k_{1}e
+\]
+
+\end_inset
+
+R1 Error derivative
+\begin_inset Formula 
+\[
+\dot{r}_{1}=r_{2}-k_{2}r_{1}
+\]
+
+\end_inset
+
+Let
+\begin_inset Formula 
+\[
+Q\left(t\right)\triangleq\left[\begin{array}{cccc}
+q^{\top}\left(t\right) & \dot{q}^{\top}\left(t\right) & q^{\top}_{d}\left(t\right) & \dot{q}^{\top}_{d}\left(t\right)\end{array}\right]^{\top}\in\mathbb{R}^{4n}
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+Q_{d}\left(t\right)\triangleq\left[\begin{array}{cccc}
+q^{\top}_{d}\left(t\right) & \dot{q}^{\top}_{d}\left(t\right) & q^{\top}_{d}\left(t\right) & \dot{q}^{\top}_{d}\left(t\right)\end{array}\right]^{\top}\in\mathbb{R}^{4n}
+\]
+
+\end_inset
+
+R2 Error
+\begin_inset Formula 
+\begin{align*}
+r_{2} & =\dot{r}_{1}+k_{2}r_{1}\\
+ & =\ddot{e}+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\ddot{q}_{d}-\ddot{q}+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\ddot{q}_{d}-\ddot{q}+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\underbrace{h\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)}_{F\left(Q\right)}-u-d\left(t\right)+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =F\left(Q\right)-u-d+k_{1}\dot{e}+k_{2}r_{1}
+\end{align*}
+
+\end_inset
+
+Let
+\begin_inset Formula 
+\[
+u=\Phi\left(Q,\widehat{\theta}\right)+u_{1}
+\]
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+r_{2} & =F\left(Q\right)-\left(\Phi\left(Q,\widehat{\theta}\right)+u_{1}\right)-d\left(t\right)+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =F\left(Q\right)-\Phi\left(Q,\widehat{\theta}\right)-u_{1}-d\left(t\right)+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\underbrace{F\left(Q\right)-\Phi\left(Q,\theta^{\ast}\right)}_{\varepsilon\left(Q,\theta^{\ast}\right)}+\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)-u_{1}-d\left(t\right)+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\varepsilon\left(Q,\theta^{\ast}\right)+\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)-u_{1}-d\left(t\right)+k_{1}\dot{e}+k_{2}r_{1}\\
+ & =\varepsilon\left(Q,\theta^{\ast}\right)+\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)-u_{1}-d\left(t\right)+k_{1}\left(r_{1}-k_{1}e\right)+k_{2}r_{1}\\
+ & =\varepsilon\left(Q,\theta^{\ast}\right)-\varepsilon\left(Q_{d},\theta^{\ast}\right)+\varepsilon\left(Q_{d},\theta^{\ast}\right)+\underbrace{\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)}_{N_{0}\left(Q,\theta^{\ast},\hat{\theta}\right)}-u_{1}-d\left(t\right)+\left(k_{1}+k_{2}\right)r_{1}-k^{2}_{1}e\\
+ & =\underbrace{\varepsilon\left(Q,\theta^{\ast}\right)-\varepsilon\left(Q_{d},\theta^{\ast}\right)}_{\widetilde{N}_{\varepsilon}\left(Q,Q_{d},\theta^{\ast}\right)}+\varepsilon\left(Q_{d},\theta^{\ast}\right)+\underbrace{N_{0}\left(Q,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}_{1}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)}+N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)-u_{1}-d\left(t\right)+\left(k_{1}+k_{2}\right)r_{1}-k^{2}_{1}e\\
+ & =\underbrace{\widetilde{N}_{\varepsilon}\left(Q,Q_{d},\theta^{\ast}\right)+\widetilde{N}_{1}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)}_{\widetilde{N}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)}+\underbrace{\varepsilon\left(Q_{d},\theta^{\ast}\right)+N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)-d\left(t\right)}_{D\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)}-u_{1}+\left(k_{1}+k_{2}\right)r_{1}-k^{2}_{1}e\\
+ & =\widetilde{N}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+D\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-u_{1}+\left(k_{1}+k_{2}\right)r_{1}-k^{2}_{1}e
+\end{align*}
+
+\end_inset
+
+R2 Error derivative
+\begin_inset Formula 
+\begin{align*}
+\dot{r}_{2} & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\dot{u}_{1}+\left(k_{1}+k_{2}\right)\dot{r}_{1}-k^{2}_{1}\dot{e}\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\dot{u}_{1}+\left(k_{1}+k_{2}\right)\left(r_{2}-k_{2}r_{1}\right)-k^{2}_{1}\left(r_{1}-k_{1}e\right)\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\dot{u}_{1}+\left(k_{1}+k_{2}\right)\left(r_{2}-k_{2}r_{1}\right)-k^{2}_{1}r_{1}+k^{3}_{1}e\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\dot{u}_{1}+\left(k_{1}+k_{2}\right)r_{2}-\left(k_{1}+k_{2}\right)k_{2}r_{1}-k^{2}_{1}r_{1}+k^{3}_{1}e\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\dot{u}_{1}+\left(k_{1}r_{2}+k_{2}r_{2}\right)-\left(k_{1}k_{2}+k^{2}_{2}+k^{2}_{1}\right)r_{1}+k^{3}_{1}e
+\end{align*}
+
+\end_inset
+
+Design
+\begin_inset Formula 
+\[
+\dot{u}_{1}=\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}k_{2}-k^{2}_{2}-k^{2}_{1}\right)r_{1}+k^{3}_{1}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)
+\]
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+\dot{r}_{2} & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\left(\left(k_{1}+k_{2}+k_{3}\right)r_{2}+\left(1-k_{1}k_{2}-k^{2}_{2}-k^{2}_{1}\right)r_{1}+k^{3}_{1}e+K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\right)+\left(k_{1}r_{2}+k_{2}r_{2}\right)-\left(k_{1}k_{2}+k^{2}_{2}+k^{2}_{1}\right)r_{1}+k^{3}_{1}e\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-\left(\cancel{k_{1}+k_{2}}+k_{3}\right)r_{2}-\left(1\cancel{-k_{1}k_{2}-k^{2}_{2}-k^{2}_{1}}\right)r_{1}-\cancel{k^{3}_{1}e}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)+\cancel{\left(k_{1}r_{2}+k_{2}r_{2}\right)}-\cancel{\left(k_{1}k_{2}+k^{2}_{2}+k^{2}_{1}\right)r_{1}}+\cancel{k^{3}_{1}e}\\
+ & =\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}\text{sgn}\left(r_{1}\right)\\
+ & \in\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)-k_{3}r_{2}-r_{1}-K_{\text{RISE}}K[\text{sgn}]\left(r_{1}\right)
+\end{align*}
+
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color green
+The implementable controller is 
+\begin_inset Formula 
+\[
+u\left(t\right)=\Phi\left(Q\left(t\right),\hat{\theta}\left(t\right)\right)+K_{P}e\left(t\right)+K_{D}\dot{e}\left(t\right)+\intop^{t}_{t_{0}}\left(K_{I}e\left(\tau\right)+K_{\text{RISE}}\text{sgn}\left(r_{1}\left(\tau\right)\right)\right)d\tau
+\]
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align*}
+K_{P} & \triangleq k_{1}k_{2}+k_{1}k_{3}+k_{2}k_{3}+1\\
+K_{I} & \triangleq k_{1}k_{2}k_{3}+k_{1}\\
+K_{D} & \triangleq k_{1}+k_{2}+k_{3}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Bounding Lemmas
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 1.1
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert  & \le\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert \\
+ & \le\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert \\
+ & \le\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \\
+ & \le\left(k_{1}+1\right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 1.2
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset Formula $q_{d}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{q}_{d}$
+\end_inset
+
+ are bounded and 
+\begin_inset Formula $f$
+\end_inset
+
+ is class 
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{2}$
+\end_inset
+
+ in fact),
+ there exists a 
+\begin_inset Formula $\mathcal{C}^{0}$
+\end_inset
+
+ (
+\begin_inset Formula $\mathcal{C}^{1}$
+\end_inset
+
+ in fact) nondecreasing function 
+\begin_inset Formula $\sigma_{f}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that
+\begin_inset Formula 
+\begin{align*}
+\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert  & \le\sigma_{f}\left(\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
+\sigma_{f}\left(s\right) & \triangleq\sup_{\left[\begin{array}{cc}
+q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}\in\overline{B}_{\overline{q}_{d}+\overline{\dot{q}}_{d}+s}\left(0_{2n}\right)}\left(\left\Vert \left.\frac{df}{d\left[\begin{array}{cc}
+q^{\top} & \dot{q}^{\top}\end{array}\right]^{\top}}\right|_{\left(q,\dot{q}\right)}\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+There exists a class 
+\begin_inset Formula $\mathcal{P}_{\infty}$
+\end_inset
+
+ function 
+\begin_inset Formula $\rho_{f}:\mathbb{R}_{\ge0}\to\mathbb{R}_{\ge0}$
+\end_inset
+
+ such that (for some 
+\begin_inset Formula $c>0$
+\end_inset
+
+)
+\begin_inset Formula 
+\begin{align*}
+\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert  & \le\rho_{f1}\left(\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
+\rho_{f1}\left(s\right) & \triangleq\sigma_{f}\left(s\right)+cs
+\end{align*}
+
+\end_inset
+
+By Bounding Lemma 1.1,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert  & \le\rho_{f1}\left(\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+e^{\top} & \dot{e}^{\top}\end{array}\right]^{\top}\right\Vert \\
+ & \le\underbrace{\rho_{f1}\left(\left(k_{1}+1\right)\left\Vert z\right\Vert \right)\left(k_{1}+1\right)}_{\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 2.1
+\end_layout
+
+\begin_layout Plain Layout
+The ideal controller 
+\begin_inset Formula $u_{d}$
+\end_inset
+
+ satisfies
+\begin_inset Formula 
+\begin{align*}
+\ddot{q}_{d} & =f\left(q_{d},\dot{q}_{d}\right)+u_{d}+d\left(t\right)\\
+\ddot{q}_{d}-f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right) & =u_{d}\\
+u_{d} & =\ddot{q}_{d}-f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)
+\end{align*}
+
+\end_inset
+
+By the stated assumptions and EVT,
+ there exists an unknown constant
+\begin_inset Formula 
+\[
+\overline{u}_{d}\triangleq\overline{\ddot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert \right)+\overline{d}
+\]
+
+\end_inset
+
+such that
+\begin_inset Formula 
+\[
+\left\Vert u_{d}\right\Vert \le\overline{u}_{d}
+\]
+
+\end_inset
+
+We assume this constant is known.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Note Note
+status open
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 2.2
+\end_layout
+
+\begin_layout Plain Layout
+Taking the derivative of the ideal controller gives
+\begin_inset Formula 
+\[
+\dot{u}_{d}=\dddot{q}_{d}-\left.\frac{\partial f}{\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\dot{q}_{d}-\left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\ddot{q}_{d}-\dot{d}\left(t\right)
+\]
+
+\end_inset
+
+By the stated assumptions and EVT,
+ there exists an unknown constant
+\begin_inset Formula 
+\[
+\overline{\dot{u}}_{d}\triangleq\overline{\dddot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert \left.\frac{\partial f}{\partial q}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \right)\overline{\dot{q}}_{d}+\sup_{\left(q_{d},\dot{q}_{d}\right)\in\overline{B}_{\overline{q}_{d}}\left(0_{n}\right)\times\overline{B}_{\overline{\dot{q}}_{d}}\left(0_{n}\right)}\left(\left\Vert \left.\frac{\partial f}{\partial\dot{q}}\right|_{\left(q_{d},\dot{q}_{d}\right)}\right\Vert \right)\overline{\ddot{q}}_{d}+\overline{\dot{d}}
+\]
+
+\end_inset
+
+such that
+\begin_inset Formula 
+\[
+\left\Vert \dot{u}_{d}\right\Vert \le\overline{\dot{u}}_{d}
+\]
+
+\end_inset
+
+We assume this constant is known.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 2.3
+\end_layout
+
+\begin_layout Plain Layout
+Define
+\begin_inset Formula 
+\[
+\widetilde{u}\triangleq u_{d}-u
+\]
+
+\end_inset
+
+Recall 
+\begin_inset Formula $u_{d}$
+\end_inset
+
+ satisfies
+\begin_inset Formula 
+\[
+\ddot{q}_{d}=d\left(t\right)+f\left(q_{d},\dot{q}_{d}\right)+u_{d}
+\]
+
+\end_inset
+
+Recall 
+\begin_inset Formula $u$
+\end_inset
+
+ satisfies
+\begin_inset Formula 
+\[
+\ddot{q}=d\left(t\right)+f\left(q,\dot{q}\right)+u
+\]
+
+\end_inset
+
+Subtract them
+\begin_inset Formula 
+\begin{align*}
+\ddot{q}_{d}-\ddot{q} & =f\left(q_{d},\dot{q}_{d}\right)+u_{d}-f\left(q,\dot{q}\right)-u\\
+\ddot{e} & =f\left(q_{d},\dot{q}_{d}\right)+\widetilde{u}-f\left(q,\dot{q}\right)\\
+\ddot{e}-f\left(q_{d},\dot{q}_{d}\right)+f\left(q,\dot{q}\right) & =\widetilde{u}\\
+\widetilde{u} & =\ddot{e}-f\left(q_{d},\dot{q}_{d}\right)+f\left(q,\dot{q}\right)
+\end{align*}
+
+\end_inset
+
+Recall
+\begin_inset Formula 
+\begin{align*}
+r_{1} & \triangleq\dot{e}+k_{1}e\\
+\dot{r}_{1} & =\ddot{e}+k_{1}\dot{e}\\
+r_{2} & \triangleq\dot{r}_{1}+k_{2}r_{1}
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\begin{align*}
+r_{2} & =\ddot{e}+k_{1}\dot{e}+k_{2}r_{1}\\
+r_{2}-k_{1}\dot{e}-k_{2}r_{1} & =\ddot{e}\\
+\ddot{e} & =r_{2}-k_{1}\dot{e}-k_{2}r_{1}
+\end{align*}
+
+\end_inset
+
+Thus,
+\begin_inset Formula 
+\[
+\widetilde{u}=r_{2}-k_{1}\dot{e}-k_{2}r_{1}-f\left(q_{d},\dot{q}_{d}\right)+f\left(q,\dot{q}\right)
+\]
+
+\end_inset
+
+By Bounding Lemma 1.2,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \widetilde{u}\right\Vert  & \le\left\Vert r_{2}\right\Vert +k_{1}\left\Vert \dot{e}\right\Vert +k_{2}\left\Vert r_{1}\right\Vert +\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert \\
+ & \le\left\Vert r_{2}\right\Vert +k_{1}\left\Vert r_{1}-k_{1}e\right\Vert +k_{2}\left\Vert r_{1}\right\Vert +\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left\Vert r_{2}\right\Vert +k_{1}\left\Vert r_{1}\right\Vert +k^{2}_{1}\left\Vert e\right\Vert +k_{2}\left\Vert r_{1}\right\Vert +\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert +k^{2}_{1}\left\Vert z\right\Vert +k_{2}\left\Vert z\right\Vert +\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(\underbrace{1+k_{1}+k^{2}_{1}+k_{2}+\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert \\
+\left\Vert \widetilde{u}\right\Vert  & \le\rho_{\widetilde{u}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 2.4
+\end_layout
+
+\begin_layout Standard
+Aside:
+\begin_inset Formula 
+\begin{align*}
+r_{2} & =\dot{r}_{1}+k_{2}r_{1}\\
+r_{2} & =\ddot{e}+k_{1}\dot{e}+k_{2}r_{1}\\
+r_{2}-k_{1}\dot{e}-k_{2}r_{1} & =\ddot{e}\\
+\ddot{e} & =r_{2}-k_{1}\dot{e}-k_{2}r_{1}\\
+\ddot{e} & =r_{2}-k_{1}\left(r_{1}-k_{1}e\right)-k_{2}r_{1}\\
+\ddot{e} & =r_{2}-k_{1}r_{1}+k^{2}_{1}e-k_{2}r_{1}\\
+\ddot{e} & =r_{2}-\left(k_{1}+k_{2}\right)r_{1}+k^{2}_{1}e
+\end{align*}
+
+\end_inset
+
+Algebra:
+\begin_inset Formula 
+\begin{align*}
+\ddot{q} & =f\left(q,\dot{q}\right)+u+d\left(t\right)\\
+\ddot{q}-f\left(q,\dot{q}\right)-d\left(t\right) & =u\\
+u & =\ddot{q}-f\left(q,\dot{q}\right)-d\left(t\right)\\
+u & =\ddot{q}-\ddot{q}_{d}+\ddot{q}_{d}-f\left(q,\dot{q}\right)+f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)\\
+u & =\ddot{e}+\ddot{q}_{d}-f\left(q,\dot{q}\right)+f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)\\
+u & =r_{2}-\left(k_{1}+k_{2}\right)r_{1}+k^{2}_{1}e+\ddot{q}_{d}-f\left(q,\dot{q}\right)+f\left(q_{d},\dot{q}_{d}\right)-d\left(t\right)
+\end{align*}
+
+\end_inset
+
+So,
+\begin_inset Formula 
+\begin{align*}
+\left\Vert u\right\Vert  & \le\left\Vert r_{2}\right\Vert +\left(k_{1}+k_{2}\right)\left\Vert r_{1}\right\Vert +k^{2}_{1}\left\Vert e\right\Vert +\left\Vert \ddot{q}_{d}\right\Vert +\left\Vert f\left(q_{d},\dot{q}_{d}\right)-f\left(q,\dot{q}\right)\right\Vert +\left\Vert d\left(t\right)\right\Vert \\
+ & \le\underbrace{\left\Vert z\right\Vert +\left(k_{1}+k_{2}\right)\left\Vert z\right\Vert +k^{2}_{1}\left\Vert z\right\Vert +\overline{\ddot{q}}_{d}+\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\overline{d}}_{\rho_{u}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\\
+ & \le\rho_{u}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.1
+\end_layout
+
+\begin_layout Standard
+Bound
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \dot{Q}\right\Vert  & \le\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert \ddot{q}\right\Vert +\left\Vert \dot{q}\right\Vert \\
+ & \le\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert \ddot{q}\right\Vert +\left\Vert \dot{q}_{d}-\dot{e}\right\Vert \\
+ & \le\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert f\left(q,\dot{q}\right)+u+d\left(t\right)\right\Vert +\left\Vert \dot{q}_{d}-\dot{e}\right\Vert \\
+ & \le\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert f\left(q,\dot{q}\right)\right\Vert +\left\Vert u\left(t\right)\right\Vert +\left\Vert d\left(t\right)\right\Vert +\overline{\dot{q}}_{d}+\left\Vert \dot{e}\right\Vert \\
+ & \le\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert f\left(q,\dot{q}\right)\right\Vert +\left\Vert u\left(t\right)\right\Vert +\left\Vert d\left(t\right)\right\Vert +\overline{\dot{q}}_{d}+\left\Vert r_{1}-k_{1}e\right\Vert \\
+ & \le2\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)+f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\left\Vert u\left(t\right)\right\Vert +\left\Vert d\left(t\right)\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \\
+ & \le2\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\left\Vert f\left(q,\dot{q}\right)-f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\rho_{u}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{d}+\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert \\
+ & \le\underbrace{2\overline{\dot{q}}_{d}+\overline{\ddot{q}}_{d}+\rho_{f}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\left\Vert f\left(q_{d},\dot{q}_{d}\right)\right\Vert +\rho_{u}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\overline{d}+\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert }_{\rho_{\dot{Q}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\\
+ & \le\rho_{\dot{Q}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.2
+\end_layout
+
+\begin_layout Standard
+Note that
+\begin_inset Formula 
+\[
+\left\Vert \dot{Q}_{d}\right\Vert \le2\overline{\dot{q}}_{d}+2\overline{\ddot{q}}_{d}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.3
+\end_layout
+
+\begin_layout Standard
+Write
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left[\begin{array}{cc}
+Q^{\top} & \dot{Q}^{\top}\end{array}\right]^{\top}-\left[\begin{array}{cc}
+Q^{\top}_{d} & \dot{Q}^{\top}_{d}\end{array}\right]^{\top}\right\Vert  & \le\left\Vert e\right\Vert +2\left\Vert \dot{e}\right\Vert +\left\Vert \ddot{e}\right\Vert \\
+ & \le\left\Vert e\right\Vert +2\left\Vert r_{1}-k_{1}e\right\Vert +\left\Vert r_{2}-\left(k_{1}+k_{2}\right)r_{1}+k^{2}_{1}e\right\Vert \\
+ & \le\left\Vert e\right\Vert +2\left\Vert r_{1}\right\Vert +2k_{1}\left\Vert e\right\Vert +\left\Vert r_{2}\right\Vert +\left(k_{1}+k_{2}\right)\left\Vert r_{1}\right\Vert +k^{2}_{1}\left\Vert e\right\Vert \\
+ & \le\left\Vert z\right\Vert +2\left\Vert z\right\Vert +2k_{1}\left\Vert z\right\Vert +\left\Vert z\right\Vert +\left(k_{1}+k_{2}\right)\left\Vert z\right\Vert +k^{2}_{1}\left\Vert z\right\Vert \\
+ & \le\left(4+3k_{1}+k_{2}+k^{2}_{1}\right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.4
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is class 2 and 
+\begin_inset Formula $\theta^{\ast}$
+\end_inset
+
+ is bounded...
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left(\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}\right)\right\Vert  & \le\rho_{\Phi1}\left(\left\Vert \left[\begin{array}{cc}
+Q^{\top} & \dot{Q}^{\top}\end{array}\right]^{\top}-\left[\begin{array}{cc}
+Q^{\top}_{d} & \dot{Q}^{\top}_{d}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+Q^{\top} & \dot{Q}^{\top}\end{array}\right]^{\top}-\left[\begin{array}{cc}
+Q^{\top}_{d} & \dot{Q}^{\top}_{d}\end{array}\right]^{\top}\right\Vert \\
+ & \le\underbrace{\rho_{\Phi1}\left(\left(4+3k_{1}+k_{2}+k^{2}_{1}\right)\left\Vert z\right\Vert \right)\left(4+3k_{1}+k_{2}+k^{2}_{1}\right)}_{\rho_{\Phi^{\ast}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{\Phi^{\ast}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+and also since 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+ is bounded...
+\begin_inset Formula 
+\[
+\left\Vert \left(\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\widehat{\theta}\right)}\dot{Q}\right)\right\Vert \le\rho_{\widehat{\Phi}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.5
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ is class 2 and 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta^{\ast}$
+\end_inset
+
+ are bounded...
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left(\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}\right)\right\Vert  & \le\rho_{\varepsilon^{\prime}1}\left(\left\Vert \left[\begin{array}{cc}
+Q^{\top} & \dot{Q}^{\top}\end{array}\right]^{\top}-\left[\begin{array}{cc}
+Q^{\top}_{d} & \dot{Q}^{\top}_{d}\end{array}\right]^{\top}\right\Vert \right)\left\Vert \left[\begin{array}{cc}
+Q^{\top} & \dot{Q}^{\top}\end{array}\right]^{\top}-\left[\begin{array}{cc}
+Q^{\top}_{d} & \dot{Q}^{\top}_{d}\end{array}\right]^{\top}\right\Vert \\
+ & \le\underbrace{\rho_{\varepsilon^{\prime}1}\left(\left(4+3k_{1}+k_{2}+k^{2}_{1}\right)\left\Vert z\right\Vert \right)\left(4+3k_{1}+k_{2}+k^{2}_{1}\right)}_{\rho_{\varepsilon^{\prime}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{\varepsilon^{\prime}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.6
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ is class 2 and 
+\begin_inset Formula $\widehat{\theta}$
+\end_inset
+
+ is bounded...
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q,\widehat{\theta}\right)}\right\Vert  & \le\rho_{\Phi1}\left(\left\Vert Q_{d}-Q\right\Vert \right)\left\Vert Q_{d}-Q\right\Vert \\
+ & \le\rho_{\Phi1}\left(\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert \dot{e}\right\Vert \right)\\
+ & \le\rho_{\Phi1}\left(\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}-k_{1}e\right\Vert \right)\\
+ & \le\rho_{\Phi1}\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \right)\left(\left\Vert e\right\Vert +\left\Vert r_{1}\right\Vert +k_{1}\left\Vert e\right\Vert \right)\\
+ & \le\underbrace{\rho_{\Phi1}\left(2\left\Vert z\right\Vert +k_{1}\left\Vert z\right\Vert \right)\left(2+k_{1}\right)}_{\rho_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)}\left\Vert z\right\Vert \\
+ & \le\rho_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 3.7
+\end_layout
+
+\begin_layout Standard
+Recall:
+\begin_inset Formula 
+\begin{align*}
+\dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right) & =\dot{\widetilde{N}}_{\varepsilon}\left(Q,Q_{d},\theta^{\ast}\right)+\dot{\widetilde{N}}_{1}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)\\
+ & =\frac{d}{dt}\left(\varepsilon\left(Q,\theta^{\ast}\right)-\varepsilon\left(Q_{d},\theta^{\ast}\right)\right)+\frac{d}{dt}\left(N_{0}\left(Q,\theta^{\ast},\hat{\theta}\right)-N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}+\left.\frac{\partial\varepsilon}{\partial\theta^{\ast}}\right|_{\left(Q,\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\varepsilon}{\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}+\frac{d}{dt}\left(\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)-\Phi\left(Q_{d},\theta^{\ast}\right)+\Phi\left(Q_{d},\widehat{\theta}\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}+\frac{d}{dt}\left(\Phi\left(Q,\theta^{\ast}\right)-\Phi\left(Q_{d},\theta^{\ast}\right)-\Phi\left(Q,\widehat{\theta}\right)+\Phi\left(Q_{d},\widehat{\theta}\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}+\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}+\left.\frac{\partial\Phi}{\partial\theta^{\ast}}\right|_{\left(Q,\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}+\frac{d}{dt}\left(\Phi\left(Q_{d},\widehat{\theta}\right)-\Phi\left(Q,\widehat{\theta}\right)\right)\\
+ & =\left(\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}\right)+\left(\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}\right)+\frac{d}{dt}\left(\Phi\left(Q_{d},\widehat{\theta}\right)-\Phi\left(Q,\widehat{\theta}\right)\right)\\
+ & =\left(\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}\right)+\left(\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}\right)+\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}+\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}-\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\widehat{\theta}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q,\widehat{\theta}\right)}\dot{\widehat{\theta}}\\
+ & =\left(\left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}\right)+\left(\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}\right)+\left(\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\widehat{\theta}\right)}\dot{Q}\right)+\left(\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q,\widehat{\theta}\right)}\right)\dot{\widehat{\theta}}
+\end{align*}
+
+\end_inset
+
+In order to develop bounds,
+ 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ must be C2.
+\begin_inset Formula 
+\begin{align*}
+\left\Vert \dot{\widetilde{N}}\left(Q,Q_{d},\theta^{\ast},\hat{\theta}\right)\right\Vert  & \le\left\Vert \left.\frac{\partial\varepsilon}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}\right\Vert +\left\Vert \left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\theta^{\ast}\right)}\dot{Q}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}\right\Vert +\left\Vert \left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial Q}\right|_{\left(Q,\widehat{\theta}\right)}\dot{Q}\right\Vert +\left\Vert \left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q,\widehat{\theta}\right)}\right\Vert \left\Vert \dot{\widehat{\theta}}\right\Vert \\
+ & \le\rho_{\varepsilon^{\prime}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\Phi^{\ast}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\rho_{\widehat{\Phi}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert +\eta_{1}\rho_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)\left\Vert z\right\Vert \\
+ & \le\left(\underbrace{\rho_{\varepsilon^{\prime}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{\Phi^{\ast}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\rho_{\widehat{\Phi}}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)+\eta_{1}\rho_{\Phi}\left(k_{1},\left\Vert z\right\Vert \right)}_{\rho_{0}\left(k_{1},k_{2},\left\Vert z\right\Vert \right)}\right)\left\Vert z\right\Vert 
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 4.1
+\end_layout
+
+\begin_layout Standard
+Recall
+\begin_inset Formula 
+\begin{align*}
+\dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right) & =\frac{d}{dt}\left(\varepsilon\left(Q_{d},\theta^{\ast}\right)+N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)-d\left(t\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}+\left.\frac{\partial\varepsilon}{\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}-\dot{d}\left(t\right)+\frac{d}{dt}\left(N_{0}\left(Q_{d},\theta^{\ast},\hat{\theta}\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}-\dot{d}\left(t\right)+\frac{d}{dt}\left(\Phi\left(Q_{d},\theta^{\ast}\right)-\Phi\left(Q_{d},\widehat{\theta}\right)\right)\\
+ & =\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}-\dot{d}\left(t\right)+\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}+\left.\frac{\partial\Phi}{\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}
+\end{align*}
+
+\end_inset
+
+By formulation and EVT,
+ there exists a constant such that
+\begin_inset Formula 
+\[
+\left\Vert \dot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert \le\overline{\dot{D}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+BOUNDING LEMMA 4.2
+\end_layout
+
+\begin_layout Standard
+Derivative
+\begin_inset Formula 
+\begin{align*}
+\ddot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right) & =\frac{d}{dt}\left(\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}-\dot{d}\left(t\right)+\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}\right)\\
+ & =\left(\left.\frac{\partial^{2}\varepsilon}{\partial^{2}Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}+\left.\frac{\partial^{2}\varepsilon}{\partial Q_{d}\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}\right)\dot{Q}_{d}+\left.\frac{\partial\varepsilon}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\ddot{Q}_{d}-\ddot{d}\left(t\right)-\left(\left.\frac{\partial^{2}\Phi}{\partial^{2}Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\dot{Q}_{d}+\left.\frac{\partial^{2}\Phi}{\partial Q_{d}\partial\theta^{\ast}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\cancelto{0}{\dot{\theta}^{\ast}}\right)\dot{Q}_{d}-\left.\frac{\partial\Phi}{\partial Q_{d}}\right|_{\left(Q_{d},\theta^{\ast}\right)}\ddot{Q}_{d}-\left(\left.\frac{\partial^{2}\Phi}{\partial\widehat{\theta}\partial Q_{d}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{Q}_{d}+\left.\frac{\partial^{2}\Phi}{\partial^{2}\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\dot{\widehat{\theta}}\right)\dot{\widehat{\theta}}-\left.\frac{\partial\Phi}{\partial\widehat{\theta}}\right|_{\left(Q_{d},\widehat{\theta}\right)}\ddot{\widehat{\theta}}
+\end{align*}
+
+\end_inset
+
+By formulation and EVT,
+ there exists a constant such that
+\begin_inset Formula 
+\[
+\left\Vert \ddot{D}\left(Q_{d},\theta^{\ast},\hat{\theta},t\right)\right\Vert \le\overline{\ddot{D}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Stability
+\end_layout
+
+\begin_layout Standard
+It will be USAS with exponential convergence.
+ 
+\begin_inset Formula $K_{\text{RISE}}\ge\overline{\dot{D}}+\frac{\overline{\ddot{D}}}{k_{2}-2\lambda}$
+\end_inset
+
+,
+ and 
+\begin_inset Formula $k_{3}>$
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
