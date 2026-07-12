@@ -18,36 +18,32 @@ jax.config.update("jax_enable_x64", True) # type: ignore
 
 class SimRun:
     def __init__(self, param_dict: dict[str, Any], yaml_config_path: str) -> None:
-        # 1. Load base configuration
         with open(yaml_config_path, 'r') as f:
             full_config = yaml.safe_load(f)
         self.config = full_config['aviary_rise_node']['ros__parameters']
         
-        # 2. Override base config with Optuna suggestions
         for k, v in param_dict.items():
             self.config[k] = v
-            
-        # 3. Simulation & Environment Constants
-        self.control_hz = self.config['control_frequency']
-        self.dt = 1.0 / self.control_hz
-        self.t_f = self.config['sim_time']
+        
+        self.control_frequency_hz = self.config['control_frequency_hz']
+        self.control_period_s = 1.0 / self.control_frequency_hz
+        self.sim_time_s = self.config['sim_time_s']
         self.controller_type = self.config['controller_type']
         self.desired_traj = self.config['desired_trajectory']
         
-        # Safety & Limits
-        self.acc_hor_max = self.config['mpc_acc_hor_max']
-        self.acc_vert_max = self.config['mpc_acc_vert_max']
-        self.safe_x_max = self.config['safe_x_max']
-        self.safe_y_max = self.config['safe_y_max']
-        self.safe_z_max = self.config['safe_z_max']
-        self.safe_z_min = self.config['safe_z_min']
+        self.acc_hor_max_mps2 = self.config['mpc_acc_hor_max_mps2']
+        self.acc_vert_max_mps2 = self.config['mpc_acc_vert_max_mps2']
+        self.safe_x_min_m_ned_aviary = self.config['safe_x_min_m_ned']
+        self.safe_x_max_m_ned_aviary = self.config['safe_x_max_m_ned']
+        self.safe_y_min_m_ned_aviary = self.config['safe_y_min_m_ned']
+        self.safe_y_max_m_ned_aviary = self.config['safe_y_max_m_ned']
+        self.safe_z_max_m_ned_aviary = self.config['safe_z_max_m_ned']
+        self.safe_z_min_m_ned_aviary = self.config['safe_z_min_m_ned']
         self.w_fail = self.config['w_fail']
         
-        # Trajectory Parameters
-        self.target_z = self.config['traj1_center_z'] if self.desired_traj == 1 else self.config['traj2_center_z']
+        self.target_z_m_ned = self.config['traj1_center_z_m_ned'] if self.desired_traj == 1 else self.config['traj2_center_z_m_ned']
         self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.config['traj1_alpha_warp']) if self.config['traj1_alpha_warp'] < 1.0 else 1.0
         
-        # Gains
         self.k_1 = self.config['k_1']
         self.k_2 = self.config['k_2']
         self.k_3 = self.config['k_3']
@@ -57,21 +53,22 @@ class SimRun:
         self.K_RISE = self.config['k_rise']
         self.q_e = self.config['q_e']
         self.r_u = self.config['r_u']
+        self.K_yaw = self.config['K_yaw']
 
-        # Initial Conditions
-        self.init_x_ned_global = self.config['init_x']
-        self.init_y_ned_global = self.config['init_y']
-        self.init_z_ned_global = self.config['init_z']
-        self.init_ned_global = np.array([self.init_x_ned_global, self.init_y_ned_global, self.init_z_ned_global], dtype=np.float64)
-        self.hover_start_z_ned_global = self.config['hover_start_z']
+        self.init_x_ned = self.config['init_x_m_ned']
+        self.init_y_ned = self.config['init_y_m_ned']
+        self.init_z_ned = self.config['init_z_m_ned']
+        self.init_ned = np.array([self.init_x_ned, self.init_y_ned, self.init_z_ned], dtype=np.float64)
+        self.hover_start_z_m_ned = self.config['hover_start_z_m_ned']
+        self.init_tol_m = self.config['init_tol_m']
+        self.yaw_des_deg = self.config['yaw_des_deg']
+        self.init_yaw_deg = self.config['init_yaw_deg']
         
-        # State & Cost Memory
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
         self.integral_term = np.zeros(3, dtype=np.float64)
         self.last_integrand = np.zeros(3, dtype=np.float64)
         
-        # NN Setup
         if self.controller_type in ["baseline", "developed"]:
             self.setup_neural_network()
 
@@ -110,47 +107,67 @@ class SimRun:
 
         self.compiled_update_step = compiled_update_step
         
-        # JIT Warmup
         dummy_x = jnp.zeros(self.config['d_in'])
         dummy_r1 = jnp.zeros(self.config['d_out'])
-        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
 
-    @staticmethod
-    def unity_to_ned_global(vec: np.ndarray | list[float]) -> np.ndarray:
-        """
-        Maps Unity to NED.
-        Unity: (X, Y, Z)
-        NED: (X, -Z, -Y)
-        """
-        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+    # @staticmethod
+    # def unity_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
+    #     """
+    #     Maps Unity to NED.
+    #     Unity: (X, Y, Z)
+    #     NED: (X, -Z, -Y)
+    #     """
+    #     return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+
+    # @staticmethod
+    # def ned_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
+    #     """
+    #     Maps NED to Unity.
+    #     NED: (X, Y, Z)
+    #     Unity: (X, -Z, -Y)
+    #     """
+    #     return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
 
     @staticmethod
-    def ned_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
+    def swap_ned_aviary_and_enu(vec: np.ndarray | list[float]) -> np.ndarray:
         """
-        Maps NED to Unity.
-        NED: (X, Y, Z)
-        Unity: (X, -Z, -Y)
+        Maps NED to ENU.
+        ENU: (X, Y, Z)
+        NED: (Y, )
         """
-        return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
+        return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
 
-    @staticmethod
-    def gps_frame_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
-        """
-        NED: (X, Y, Z)
-        Unity: (Y, -Z, X)
-        """
-        return np.array([vec[1], -vec[2], vec[0]], dtype=np.float64)
+    # @staticmethod
+    # def enu_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
+    #     """
+    #     Maps NED to ENU.
+    #     ENU: (X, Y, Z)
+    #     NED: (X, -Y, -Z)
+    #     """
+    #     return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
+
+    # @staticmethod
+    # def enu_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
+    #     """
+    #     Maps NED to ENU.
+    #     ENU: (X, Y, Z)
+    #     NED: (X, -Y, -Z)
+    #     """
+    #     return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
+
 
     def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        # TODO: Fix repeated use of [''] in favor of a self attribute. And, move these to src/desired_trajectory.py
         if self.desired_traj == 1:
-            w = (2.0 * math.pi) / self.config['traj1_period']
+            w = (2.0 * math.pi) / self.config['traj1_period_s']
             tau_dot = self.traj1_warp_c * (1.0 - self.config['traj1_alpha_warp'] * (math.sin(w * t)**2))
             tau_ddot = -self.traj1_warp_c * self.config['traj1_alpha_warp'] * w * math.sin(2.0 * w * t) * tau_dot
             
             pos_jnp, dp_dtau, d2p_dtau2 = traj1_spatial_derivs(
-                t, self.target_z, self.config['traj1_period'], 
-                self.config['traj1_x_amp'], self.config['traj1_y_amp'], self.config['traj1_z_amp']
+                t, self.target_z_m_ned, self.config['traj1_period_s'], 
+                self.config['traj1_x_amp_m_ned'], self.config['traj1_y_amp_m_ned'], self.config['traj1_z_amp_m_ned']
             )
             
             qd = np.array(pos_jnp, dtype=np.float64)
@@ -158,14 +175,14 @@ class SimRun:
             qd_ddot = (np.array(d2p_dtau2, dtype=np.float64) * (tau_dot**2)) + (np.array(dp_dtau, dtype=np.float64) * tau_ddot)
             
         else:
-            theta = (self.config['traj2_target_speed'] / self.config['traj2_petal_radius']) * t # Simplified integration for example
+            theta = (self.config['traj2_target_speed_mps'] / self.config['traj2_petal_radius_m']) * t # Simplified integration for example
             f_theta = 1.0 + 3.0 * (math.sin(2.0 * theta)**2)
-            theta_dot = self.config['traj2_target_speed'] / (self.config['traj2_petal_radius'] * math.sqrt(f_theta))
+            theta_dot = self.config['traj2_target_speed_mps'] / (self.config['traj2_petal_radius_m'] * math.sqrt(f_theta))
             
             sin_4theta = math.sin(4.0 * theta)
-            theta_ddot = - (3.0 * (self.config['traj2_target_speed']**2) * sin_4theta) / ((self.config['traj2_petal_radius']**2) * (f_theta**2))
+            theta_ddot = - (3.0 * (self.config['traj2_target_speed_mps']**2) * sin_4theta) / ((self.config['traj2_petal_radius_m']**2) * (f_theta**2))
             
-            pos_jnp, dp_dth, d2p_dth2 = traj2_spatial_derivs(theta, self.target_z, self.config['traj2_petal_radius'])
+            pos_jnp, dp_dth, d2p_dth2 = traj2_spatial_derivs(theta, self.target_z_m_ned, self.config['traj2_petal_radius_m'])
             
             qd = np.array(pos_jnp, dtype=np.float64)
             qd_dot = np.array(dp_dth, dtype=np.float64) * theta_dot
@@ -173,68 +190,71 @@ class SimRun:
 
         return qd, qd_dot, qd_ddot
 
-  
+    def check_boundary_escape(self, q_ned: np.ndarray) -> bool:
+        if not (self.safe_x_min_m_ned <= q_ned[0] <= self.safe_x_max_m_ned) or \
+        not (self.safe_y_min_m_ned <= q_ned[1] <= self.safe_y_max_m_ned) or \
+        not (self.safe_z_min_m_ned <= q_ned[2] <= self.safe_z_max_m_ned):
+            return True
+        return False
 
     def run(self) -> float:
         """Executes the simulation loop and returns the cost."""
         with QuadSim() as sim:
-            drone = sim.drone()
-            
             status = sim.get_status()
-            steps_per_tick = max(1, round((1.0 / self.control_hz) / status.fixed_dt))
+            steps_per_tick = max(1, round((1.0 / self.control_frequency_hz) / status.fixed_dt))
             
-            # Spawn in Unity coordinates using explicit config keys
-            init_unity = self.ned_to_unity(self.init_ned_global)
-            print(f"Init unity is s{init_unity}.")
+            drone = sim.drone()
+            init_position_enu = self.swap_ned_and_enu(self.init_ned)
+            drone.reset_pose(
+                x=init_position_enu[0],
+                y=init_position_enu[1], 
+                z=init_position_enu[2],
+                qx=0,
+                qy=0,
+                qz=math.sin(math.radians(self.init_yaw_deg / 2)),
+                qw=math.cos(math.radians(self.init_yaw_deg / 2))
+            )
             
-            sqrt2_ = math.sqrt(2)/2
-            # drone.reset_pose(x=init_unity[0], y=init_unity[2], z=init_unity[1], qx=0, qy=-sqrt2_2, qz=0, qw=sqrt2_2) # This function has a bug and hence I swapped the 2 and 1.
-            drone.reset_pose(x=init_unity[0], y=init_unity[2], z=init_unity[1], qx=0, qy=0, qz=0, qw=1)
-            total_steps = round(self.control_hz * self.t_f)
-            
+            takeoff_complete = False
+            step = 0
             traj_t = 0.0
-            
-            for step in range(total_steps):
-                # We use fixed dt for the discrete math
+            total_steps = round(self.control_frequency_hz * self.sim_time_s)
+            while step < total_steps: 
+                print(f"step: {step}")
                 sensors = drone.get_sensors()
-                
-                gps_position_unity_frame = np.array([sensors.gps_position[0], sensors.gps_position[2], sensors.gps_position[1]], dtype=np.float64) # This function has a bug and hence I swapped the 2 and 1.
-                #print(f"GPS pos. meas. in unity frame is q = {gps_position_unity_frame}")
-                q = self.unity_to_ned_global(gps_position_unity_frame) # NED Global
-                #print(f"GPS pos. meas. in NED is q = {q}")
-                gps_vel_unity_frame = np.array([sensors.gps_vel_ned[0], sensors.gps_vel_ned[2], sensors.gps_vel_ned[1]], dtype=np.float64)
-                q_dot = self.unity_to_ned_global(gps_vel_unity_frame) # NED Global
-                # print(f"Velocity meas. says {q_dot}")
 
-                quat = np.array(sensors.imu_orientation)
-                if np.linalg.norm(quat) < 1e-6: quat = np.array([0.0, 0.0, 0.0, 1.0])
-                r = Rotation.from_quat(quat)
-                yaw_enu = r.as_euler('zyx')[0]
-                current_yaw = (np.pi / 2.0 - yaw_enu + np.pi) % (2 * np.pi) - np.pi
+                # Read sensors
+                q_ned = self.swap_ned_and_enu(sensors.gps_position) # GPS is ENU
+                q_dot_ned = sensors.velocity_ned# np.array([sensors.velocity_ned[1], -sensors.velocity_ned[0]])
                 
-                # Boundary Failsafe Check
-                if not (-self.safe_x_max <= q[0] <= self.safe_x_max) or \
-                   not (-self.safe_y_max <= q[1] <= self.safe_y_max) or \
-                   not (self.safe_z_min <= q[2] <= self.safe_z_max):
-                    # Only penalize if we've actually started the trajectory
-                    # if not is_takeoff:
-                    #     self.cost_J += self.w_fail * ((self.t_f - traj_t) ** 2)
-                    #break
-                    pass
-                
+                # print(f"q_enu is {sensors.gps_position} <--Correct!")
+                # print(f"your sensors.position_enu say {sensors.position_enu} <--Also correct!")
+                # print(f"q_ned {q_ned} <--Correct!")
+                # print(f"your sensors.position_ned says {sensors.position_ned} <--Wrong!")
+                # print(f"translating the above gives {self.swap_ned_and_enu(sensors.position_ned)}")
+                yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
+
+                if self.check_boundary_escape(q_ned=q_ned):
+                    print("Hit a wall! Exiting.")
+                    if takeoff_complete:
+                        self.cost_J += self.w_fail * ((self.sim_time_s - traj_t) ** 2)
+                    else:
+                        self.cost_J = 1e6
+                    break
+        
                 # --- STATE MACHINE: Takeoff vs Trajectory ---
-                qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
-                qd_dot = np.zeros(3, dtype=np.float64)
-                e = qd - q
-                print(f"e: {e}")
-                e_dot = qd_dot - q_dot
+                # qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
+                qd_ned = np.array([self.init_x_ned, 0.0, self.init_z_ned], dtype=np.float64)
+                qd_dot_ned = np.zeros(3, dtype=np.float64)
+                e_ned = qd_ned - q_ned
+                #print(f"e_ned {e_ned}")
+                e_dot_ned = qd_dot_ned - q_dot_ned
 
-                u = 0.02 * e + 0.4 * e_dot
                 # if is_takeoff:
-                #     qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
+                #     qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
                 #     qd_dot = np.zeros(3, dtype=np.float64)
                 #     e = qd - q
-                #     e_dot = qd_dot - q_dot
+                #     e_dot = qd_dot - q_dot_ned
                     
                     # if np.linalg.norm(e) <= self.config['init_tol']:
                     #     is_takeoff = False
@@ -246,26 +266,28 @@ class SimRun:
                 #     traj_t += self.dt
 
                     # # TEMPORARY
-                    # qd = np.array([self.init_x_ned_global, self.init_y_ned_global, self.hover_start_z_ned_global], dtype=np.float64)
+                    # qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
                     # qd_dot = np.zeros(3, dtype=np.float64)
                     # qd, qd_dot, _ = self.get_desired_state(traj_t)
                     # e = qd - q
-                    # e_dot = qd_dot - q_dot
+                    # e_dot = qd_dot - q_dot_ned
                 
-                r1 = e_dot + (self.k_1 * e)
+                r1_ned = e_dot_ned + (self.k_1 * e_ned)
                 
                 u = np.zeros(3, dtype=np.float64)
                 phi_val = np.zeros(3, dtype=np.float64)
                 
                 # # --- CONTROL LAW EVALUATION ---
                 if self.controller_type == "noresnet":
-                    current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                    delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
+                    current_integrand = self.K_I * e_ned + (self.K_RISE * np.sign(r1_ned))
+                    #delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
                     self.last_integrand = current_integrand
-                    u_unclamped = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                    u_unclamped = (self.K_P * e_ned) + (self.K_D * e_dot_ned) + self.integral_term
+                else:
+                    raise ValueError
                     
                 # elif self.controller_type == "baseline":
-                #     x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
+                #     x_vec = jnp.array(np.concatenate((q, q_dot_ned, qd, qd_dot)))
                 #     self.theta_hat, phi_out = self.compiled_update_step(
                 #         self.theta_hat, x_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
                 #     )
@@ -277,7 +299,7 @@ class SimRun:
                     
                 # elif self.controller_type == "developed":
                 #     u_last = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                #     kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
+                #     kappa_vec = jnp.array(np.concatenate((q, q_dot_ned, qd, qd_dot, u_last)))
                 #     self.theta_hat, phi_out = self.compiled_update_step(
                 #         self.theta_hat, kappa_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
                 #     )
@@ -331,37 +353,38 @@ class SimRun:
                 #     self.cost_J += (self.dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
                 #     self.last_cost_integrand = current_cost_integrand
 
-                u = u_unclamped
+                u_ned = u_unclamped
+                #print(f"u_ned {u_ned}")
 
+                u_enu = self.swap_ned_and_enu(u_ned)
+                quat_rotation_enu = Rotation.from_quat(sensors.imu_orientation, scalar_first=False)
+                u_flu = quat_rotation_enu.inv().apply(u_enu) 
 
-                # Convert control action from Global NED to Body FLU
-                cy = np.cos(current_yaw)
-                sy = np.sin(current_yaw)
-                u_flu = np.array([
-                    cy * u[0] + sy * u[1],   # Forward
-                    sy * u[0] - cy * u[1],   # Left
-                    -u[2]                    # Up
-                ], dtype=np.float64)
-                print(u_flu)
-
-                yaw_rate_cmd = 2.0 * (0.0 - current_yaw)
+                # P Controller for yaw (with wrap-around fix)
+                yaw_target_deg = 0.0
+                current_yaw_deg = yaw_enu
+                # Shortest angular error in degrees: (target - current + 180) % 360 - 180
+                e_yaw_deg = (yaw_target_deg - current_yaw_deg + 180.0) % 360.0 - 180.0
+                
+                yaw_rate_cmd = self.K_yaw * e_yaw_deg
 
                 # drone.step_with_acceleration(
                 #     ax=u_flu[0],
                 #     ay=u_flu[1],
                 #     az=u_flu[2],
-                #     yaw_rate=0.0, #yaw_rate_cmd,
+                #     yaw_rate=yaw_rate_cmd,
                 #     count=steps_per_tick
                 # )
 
                 drone.step_with_acceleration(
-                    ax=1.0,
-                    ay=0.0,
-                    az=0.0,
-                    yaw_rate=0.0, #yaw_rate_cmd,
+                    ax=8,
+                    ay=0,
+                    az=0,
+                    yaw_rate=0,
                     count=steps_per_tick
                 )
 
+                step += 1
 
             sim.pause()
             return self.cost_J
