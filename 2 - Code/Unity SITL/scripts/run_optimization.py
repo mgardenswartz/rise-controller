@@ -12,8 +12,8 @@ def evaluate_minibatch(param_dict: dict[str, Any]) -> float:
 
     num_seeds = base_config['num_eval_seeds']
     base_seed = base_config['base_seed']
-    xy_range = base_config['xy_rand_range']
-    z_range = base_config['z_rand_range']
+    xy_range = base_config['xy_rand_range_m']
+    z_range = base_config['z_rand_range_m']
 
     costs = []
     for i in range(num_seeds):

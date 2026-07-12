@@ -53,7 +53,7 @@ class SimRun:
         self.K_RISE = self.config['k_rise']
         self.q_e = self.config['q_e']
         self.r_u = self.config['r_u']
-        self.K_yaw = self.config['K_yaw']
+        self.K_P_yaw = self.config['K_P_yaw']
 
         self.init_x_ned = self.config['init_x_m_ned']
         self.init_y_ned = self.config['init_y_m_ned']
@@ -112,24 +112,6 @@ class SimRun:
         self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
 
-    # @staticmethod
-    # def unity_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
-    #     """
-    #     Maps Unity to NED.
-    #     Unity: (X, Y, Z)
-    #     NED: (X, -Z, -Y)
-    #     """
-    #     return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
-
-    # @staticmethod
-    # def ned_to_unity(vec: np.ndarray | list[float]) -> np.ndarray:
-    #     """
-    #     Maps NED to Unity.
-    #     NED: (X, Y, Z)
-    #     Unity: (X, -Z, -Y)
-    #     """
-    #     return np.array([vec[0], -vec[2], -vec[1]], dtype=np.float64)
-
     @staticmethod
     def swap_ned_aviary_and_enu(vec: np.ndarray | list[float]) -> np.ndarray:
         """
@@ -139,27 +121,9 @@ class SimRun:
         """
         return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
 
-    # @staticmethod
-    # def enu_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
-    #     """
-    #     Maps NED to ENU.
-    #     ENU: (X, Y, Z)
-    #     NED: (X, -Y, -Z)
-    #     """
-    #     return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
-
-    # @staticmethod
-    # def enu_to_ned(vec: np.ndarray | list[float]) -> np.ndarray:
-    #     """
-    #     Maps NED to ENU.
-    #     ENU: (X, Y, Z)
-    #     NED: (X, -Y, -Z)
-    #     """
-    #     return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
-
-
     def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        # TODO: Fix repeated use of [''] in favor of a self attribute. And, move these to src/desired_trajectory.py
+        # TODO: Fix repeated use of [''] in favor of a self dot attributes. And, move get_desired_state to src/desired_trajectory.py. The only logic here should be calling a get_traj1 or get_traj2 function based on self.desired_traj
+        # Write get_traj1 and get_traj2 to take in all the params they need like traj1_alpha_warp, but maybe consider mirroring the Jax ResNet code and creating a "bound" object in init. Whatever makes the most sense design-wise.
         if self.desired_traj == 1:
             w = (2.0 * math.pi) / self.config['traj1_period_s']
             tau_dot = self.traj1_warp_c * (1.0 - self.config['traj1_alpha_warp'] * (math.sin(w * t)**2))
@@ -191,9 +155,9 @@ class SimRun:
         return qd, qd_dot, qd_ddot
 
     def check_boundary_escape(self, q_ned: np.ndarray) -> bool:
-        if not (self.safe_x_min_m_ned <= q_ned[0] <= self.safe_x_max_m_ned) or \
-        not (self.safe_y_min_m_ned <= q_ned[1] <= self.safe_y_max_m_ned) or \
-        not (self.safe_z_min_m_ned <= q_ned[2] <= self.safe_z_max_m_ned):
+        if not (self.safe_x_min_m_ned_aviary <= q_ned[0] <= self.safe_x_max_m_ned_aviary) or \
+        not (self.safe_y_min_m_ned_aviary <= q_ned[1] <= self.safe_y_max_m_ned_aviary) or \
+        not (self.safe_z_min_m_ned_aviary <= q_ned[2] <= self.safe_z_max_m_ned_aviary):
             return True
         return False
 
@@ -204,7 +168,7 @@ class SimRun:
             steps_per_tick = max(1, round((1.0 / self.control_frequency_hz) / status.fixed_dt))
             
             drone = sim.drone()
-            init_position_enu = self.swap_ned_and_enu(self.init_ned)
+            init_position_enu = self.swap_ned_aviary_and_enu(self.init_ned)
             drone.reset_pose(
                 x=init_position_enu[0],
                 y=init_position_enu[1], 
@@ -224,18 +188,13 @@ class SimRun:
                 sensors = drone.get_sensors()
 
                 # Read sensors
-                q_ned = self.swap_ned_and_enu(sensors.gps_position) # GPS is ENU
-                q_dot_ned = sensors.velocity_ned# np.array([sensors.velocity_ned[1], -sensors.velocity_ned[0]])
+                q_ned = self.swap_ned_aviary_and_enu(sensors.gps_position) # GPS is ENU
+                q_dot_ned = self.swap_ned_aviary_and_enu(sensors.velocity_enu) # Velocity is ENU
                 
-                # print(f"q_enu is {sensors.gps_position} <--Correct!")
-                # print(f"your sensors.position_enu say {sensors.position_enu} <--Also correct!")
-                # print(f"q_ned {q_ned} <--Correct!")
-                # print(f"your sensors.position_ned says {sensors.position_ned} <--Wrong!")
-                # print(f"translating the above gives {self.swap_ned_and_enu(sensors.position_ned)}")
                 yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
 
                 if self.check_boundary_escape(q_ned=q_ned):
-                    print("Hit a wall! Exiting.")
+                    print(f"Hit a wall! Position: {q_ned}. Exiting.")
                     if takeoff_complete:
                         self.cost_J += self.w_fail * ((self.sim_time_s - traj_t) ** 2)
                     else:
@@ -243,17 +202,10 @@ class SimRun:
                     break
         
                 # --- STATE MACHINE: Takeoff vs Trajectory ---
-                # qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
-                qd_ned = np.array([self.init_x_ned, 0.0, self.init_z_ned], dtype=np.float64)
+                qd_ned = np.array([0.0, 0.0, self.init_z_ned], dtype=np.float64)
                 qd_dot_ned = np.zeros(3, dtype=np.float64)
                 e_ned = qd_ned - q_ned
-                #print(f"e_ned {e_ned}")
                 e_dot_ned = qd_dot_ned - q_dot_ned
-
-                # if is_takeoff:
-                #     qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
-                #     qd_dot = np.zeros(3, dtype=np.float64)
-                #     e = qd - q
                 #     e_dot = qd_dot - q_dot_ned
                     
                     # if np.linalg.norm(e) <= self.config['init_tol']:
@@ -356,7 +308,7 @@ class SimRun:
                 u_ned = u_unclamped
                 #print(f"u_ned {u_ned}")
 
-                u_enu = self.swap_ned_and_enu(u_ned)
+                u_enu = self.swap_ned_aviary_and_enu(u_ned)
                 quat_rotation_enu = Rotation.from_quat(sensors.imu_orientation, scalar_first=False)
                 u_flu = quat_rotation_enu.inv().apply(u_enu) 
 
@@ -366,7 +318,7 @@ class SimRun:
                 # Shortest angular error in degrees: (target - current + 180) % 360 - 180
                 e_yaw_deg = (yaw_target_deg - current_yaw_deg + 180.0) % 360.0 - 180.0
                 
-                yaw_rate_cmd = self.K_yaw * e_yaw_deg
+                yaw_rate_cmd = self.K_P_yaw * e_yaw_deg
 
                 # drone.step_with_acceleration(
                 #     ax=u_flu[0],
@@ -377,10 +329,10 @@ class SimRun:
                 # )
 
                 drone.step_with_acceleration(
-                    ax=8,
-                    ay=0,
-                    az=0,
-                    yaw_rate=0,
+                    ax=u_flu[0],
+                    ay=u_flu[1],
+                    az=u_flu[2],
+                    yaw_rate=yaw_rate_cmd,
                     count=steps_per_tick
                 )
 

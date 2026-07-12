@@ -18,7 +18,7 @@ aviary_rise_node:
     k_2: 0.11
     k_3: 2.4
     k_rise: 0.5
-    K_yaw: 1.0
+    K_P_yaw: 0.35
     o_act_func: tanh
     q_e: 1.0
     r_u: 0.2
@@ -30,7 +30,7 @@ aviary_rise_node:
     safe_z_min_m_ned: -6.5
     save_data: false
     shortcut_act_func: swish
-    sim_time_s: 2.0
+    sim_time_s: 5.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
     traj1_center_z_m_ned: -0.75
@@ -42,14 +42,12 @@ aviary_rise_node:
     traj2_petal_radius_m: 2.5
     traj2_target_speed_mps: 1.0
     w_fail: 1000.0
-    xy_rand_range: 1.0    # +/- meters variation for takeoff X and Y
-    z_rand_range: 0.25    # +/- meters variation for hover_start_z
+    xy_rand_range_m: 1.0    # +/- meters variation for takeoff X and Y
+    z_rand_range_m: 0.25    # +/- meters variation for hover_start_z
     mpc_acc_hor_max_mps2: 6.0
     mpc_acc_vert_max_mps2: 3.0
-    num_eval_seeds: 3 # For mini-batches in the optimization
+    num_eval_seeds: 3 # For mini-batches in run_optimization.py
     base_seed: 42
-    
-    # Dynamic paths configuration to avoid hardcoding in Python scripts:
     db_path: "sqlite:///output/optimization.db"
     robustness_output_path: "output/robustness_results.csv"
     best_gains_path: "conf/best_gains.yaml"
