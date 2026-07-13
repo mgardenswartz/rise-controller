@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-TRIALS_PHASE_1=500
+TRIALS_PHASE_1=500 # takes about 50 minutes
 TRIALS_PHASE_2=750
 TRIALS_PHASE_3=500
 PATIENCE=200

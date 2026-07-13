@@ -83,20 +83,20 @@ def run_stage_1a(trial: optuna.Trial) -> float:
     param_dict = {
         'controller_type': 'baseline',
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
-        'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
-        'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
         'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
+    param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
+    param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 8.0)
     return evaluate_minibatch(param_dict)
 
 def run_stage_1b(trial: optuna.Trial) -> float:
     param_dict = {
         'controller_type': 'baseline',
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
-        'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
-        'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
         'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
+    param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
+    param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 8.0)
     return evaluate_minibatch(param_dict)
 
 def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
@@ -115,9 +115,9 @@ def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
         'num_blocks': trial.suggest_categorical("num_blocks", [4, 6, 8]),
         'k_0': trial.suggest_categorical("k_0", [2, 4, 8]),
         'k_i': trial.suggest_categorical("k_i", [2, 4, 8]),
-        'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12]),
-        'gamma': trial.suggest_float("gamma", 0.1, 20.0, log=True),
-        'sigma_mod': trial.suggest_float("sigma_mod", 0.5, 5.0, log=True),
+        'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12, 16]),
+        'gamma': trial.suggest_float("gamma", 0.1, 30.0, log=True),
+        'sigma_mod': trial.suggest_float("sigma_mod", 0.01, 5.0, log=True),
         **best_1b_params
     }
     return evaluate_minibatch(param_dict)
@@ -138,9 +138,9 @@ def run_stage_2b(trial: optuna.Trial, db_dir: str) -> float:
         'num_blocks': trial.suggest_categorical("num_blocks", [4, 6, 8]),
         'k_0': trial.suggest_categorical("k_0", [2, 4, 8]),
         'k_i': trial.suggest_categorical("k_i", [2, 4, 8]),
-        'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12]),
-        'gamma': trial.suggest_float("gamma", 0.1, 20.0, log=True),
-        'sigma_mod': trial.suggest_float("sigma_mod", 0.5, 5.0, log=True),
+        'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12, 16]),
+        'gamma': trial.suggest_float("gamma", 0.1, 30.0, log=True),
+        'sigma_mod': trial.suggest_float("sigma_mod", 0.01, 5.0, log=True),
         **best_1b_params
     }
     return evaluate_minibatch(param_dict)
