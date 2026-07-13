@@ -39,6 +39,7 @@ ON PERSONAL LAPTOP:
 python3 generate_hardware_params.py --controller_type baseline --desired_trajectory 1 --out baseline_params.yaml
 python3 generate_hardware_params.py --controller_type developed --desired_trajectory 1 --out developed_params.yaml
 python3 generate_hardware_params.py --controller_type noresnet --desired_trajectory 1 --out noresnet_params.yaml
+python3 generate_hardware_params.py --controller_type supertwisting --desired_trajectory 1 --out st_params.yaml
 
 adb push ~/voxl-px4-sitl/ros2_ws/src/aviary_rise_controller/. /home/root/humble_ws/src/aviary_rise_controller/
 adb push ~/voxl-px4-sitl/noresnet_params.yaml /home/root/humble_ws/src/aviary_rise_controller/param/noresnet_params.yaml

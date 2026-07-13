@@ -4,7 +4,8 @@ aviary_rise_node:
     controller_type: baseline
     d_in: 15
     d_out: 3
-    desired_trajectory: 1
+    desired_trajectory: 2
+    gamma: 10.0
     h_act_func: swish
     h_method: xavier
     hover_start_z_m_ned_aviary: -0.75

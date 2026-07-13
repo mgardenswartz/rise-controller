@@ -23,12 +23,23 @@ def main():
     
     param_dict['is_gazebo'] = False
     param_dict['save_data'] = True
-    param_dict['mpc_acc_vert_max'] = 26.0
-    param_dict['theta_bar'] = 1e3
+    param_dict['mpc_acc_vert_max'] = 6.0 #26.0
+    param_dict['theta_bar'] = 1e6
     param_dict['odom_timeout_sec'] = 2.0
-    param_dict['init_z'] = -1.5
+    param_dict['init_z'] = -0.75
     param_dict['vehicle_name'] = 'sentinel5'
-        
+
+    # TEMP
+    param_dict['k_1'] = 0.72
+    param_dict['k_2'] = 0.11
+    param_dict['k_3'] = 2.4
+    param_dict['k_rise'] = 0.5
+    param_dict['traj1_period'] = 30.0
+    param_dict['traj1_z_amp'] = 0.25
+    param_dict['traj2_target_speed'] = 1.5
+
+    # Don't forget about sigma_mod.
+
     params = {
         'aviary_rise_node': {
             'ros__parameters': param_dict

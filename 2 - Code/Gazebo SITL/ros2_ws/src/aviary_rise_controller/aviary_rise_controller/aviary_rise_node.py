@@ -544,10 +544,7 @@ class AviaryRiseNode(Node):
                 if self.init_wait_start == 0.0:
                     self.init_wait_start = current_timestamp_s
                 
-                if not self.in_offboard_mode: # haven't started or 
-                    if int(current_timestamp_s * 10) % 20 == 0:
-                        self.get_logger().info(f"[DEBUG] ticks={self.ticks_without_odom}, current_ts={current_timestamp_s:.2f}, init_wait={self.init_wait_start:.2f}, last_cmd={self.last_auto_cmd_time:.2f}")
-
+                if not self.in_offboard_mode: # haven't started or Joe dropped me out of off-board
                     self.get_logger().info("Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
                     self.publish_offboard_heartbeat()
                     self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0)
@@ -560,11 +557,6 @@ class AviaryRiseNode(Node):
                             if not self.is_armed:
                                 self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 0.0)
                             self.last_auto_cmd_time = current_timestamp_s
-
-                    # Timeout check
-                    if current_timestamp_s - self.init_wait_start > self.offboard_timeout_sec:
-                        self.get_logger().fatal(f"OFFBOARD TIMEOUT: Failed to engage offboard mode within {self.offboard_timeout_sec}s. Triggering Failsafe.")
-                        self.trigger_failsafe_land()
                     return
 
                 if self.in_offboard_mode and self.is_armed:
