@@ -176,7 +176,7 @@ class SimRun:
                 yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
 
                 if self.check_boundary_escape(q_ned=q_ned):
-                    print(f"Got too close to a wall! Position: {q_ned}. Exiting.")
+                    print(f"[!] Got too close to a wall! Position: {q_ned}. Exiting.")
                     if flight_mode == 'TRAJECTORY':
                         self.cost_J += self.w_fail * ((self.sim_length_s - traj_t) ** 2)
                     else:

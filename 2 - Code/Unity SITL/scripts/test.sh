@@ -26,13 +26,13 @@ mkdir -p $DB_DIR
 echo "[*] Skipping Stage 1A (No Wind) for this test."
 
 echo "[*] Running Stage 1B (RISE With Wind)"
-python scripts/run_optimization.py --stage 1B --num_trials $TRIALS_PHASE_1 --db sqlite:///$DB_DIR/stage_1B.db
+python scripts/run_optimization.py --stage 1B --num_trials $TRIALS_PHASE_1 --db_dir $DB_DIR
 
 echo "[*] Running Stage 2 (Neural Network Adaptation)"
-python scripts/run_optimization.py --stage 2 --num_trials $TRIALS_PHASE_2 --db sqlite:///$DB_DIR/stage_2.db
+python scripts/run_optimization.py --stage 2 --num_trials $TRIALS_PHASE_2 --db_dir $DB_DIR
 
 echo "[*] Running Stage 3 (Super-Twisting Baseline)"
-python scripts/run_optimization.py --stage 3 --num_trials $TRIALS_PHASE_3 --db sqlite:///$DB_DIR/stage_3.db
+python scripts/run_optimization.py --stage 3 --num_trials $TRIALS_PHASE_3 --db_dir $DB_DIR
 
 echo "=========================================="
 echo " Extracting Best Gains..."

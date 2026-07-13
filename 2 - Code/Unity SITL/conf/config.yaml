@@ -48,7 +48,7 @@ aviary_rise_node:
     z_rand_range_m: 0.0    # +/- variation for hover_start_z in mini-batches
     mpc_acc_hor_max_mps2: 6.0
     mpc_acc_vert_max_mps2: 3.0
-    num_eval_seeds: 3 # For mini-batches in run_optimization.py
+    num_eval_seeds: 4 # For mini-batches in run_optimization.py
     base_seed: 42
     db_path: "sqlite:///output/optimization.db"
     robustness_output_path: "output/robustness_results.csv"
