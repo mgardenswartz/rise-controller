@@ -82,12 +82,12 @@ class SimRun:
         
         self.traj_gen = TrajectoryGenerator(self.config)
         
-        if self.controller_type == "baseline":
+        if self.controller_type == "resnet":
             self.config['d_in'] = 12
-        elif self.controller_type == "developed":
+        elif self.controller_type == "integrated_resnet":
             self.config['d_in'] = 15
             
-        if self.controller_type in ["baseline", "developed"]:
+        if self.controller_type in ["resnet", "integrated_resnet"]:
             self.setup_neural_network()
 
     def setup_neural_network(self) -> None:
@@ -240,11 +240,11 @@ class SimRun:
 
                 # --- CONTROL LAW EVALUATION ---
                 match self.controller_type:
-                    case "noresnet":
+                    case "baseline":
                         current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary))
                         u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         
-                    case "baseline":
+                    case "resnet":
                         x_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary)))
                         self.theta_hat, phi_out = self.compiled_update_step(
                             self.theta_hat, x_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
@@ -254,7 +254,7 @@ class SimRun:
                         current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary))
                         u_provisional = u_nn + (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         
-                    case "developed":
+                    case "integrated_resnet":
                         u_last = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         kappa_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary, u_last)))
                         self.theta_hat, phi_out = self.compiled_update_step(

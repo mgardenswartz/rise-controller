@@ -29,7 +29,7 @@ def main() -> None:
     rise_params = get_best_params("stage_1B_study", "stage_1B.db")
     if rise_params:
         best_gains['BEST_RISE'] = {
-            'controller_type': 'noresnet',
+            'controller_type': 'baseline',
             **rise_params
         }
 
@@ -44,21 +44,24 @@ def main() -> None:
             'k_3': st_params.get('k_st_3', 1.0)
         }
         
-    # Load Stage 2 for Neural Network
-    nn_params = get_best_params("stage_2_study", "stage_2.db")
+    # Load Stage 2A for Neural Network Baseline
+    nn_params = get_best_params("stage_2A_study", "stage_2A.db")
     if nn_params and rise_params:
-        # NN Feedforward uses same NN params but controller_type 'baseline'
+        # NN Feedforward uses NN params with controller_type 'baseline'
         best_gains['BEST_NN'] = {
-            'controller_type': 'baseline',
+            'controller_type': 'resnet',
             **rise_params,
             **nn_params
         }
         
-        # INN Integrated uses same NN params but controller_type 'developed'
+    # Load Stage 2B for Integrated Neural Network
+    inn_params = get_best_params("stage_2B_study", "stage_2B.db")
+    if inn_params and rise_params:
+        # INN uses INN params with controller_type 'developed'
         best_gains['BEST_INN'] = {
-            'controller_type': 'developed',
+            'controller_type': 'integrated_resnet',
             **rise_params,
-            **nn_params
+            **inn_params
         }
 
     os.makedirs(os.path.dirname(best_gains_path), exist_ok=True)

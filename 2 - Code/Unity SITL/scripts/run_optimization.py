@@ -81,7 +81,7 @@ def evaluate_minibatch(param_dict: dict[str, Any]) -> float:
 
 def run_stage_1a(trial: optuna.Trial) -> float:
     param_dict = {
-        'controller_type': 'noresnet',
+        'controller_type': 'baseline',
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
         'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
@@ -91,7 +91,7 @@ def run_stage_1a(trial: optuna.Trial) -> float:
 
 def run_stage_1b(trial: optuna.Trial) -> float:
     param_dict = {
-        'controller_type': 'noresnet',
+        'controller_type': 'baseline',
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
         'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
@@ -99,7 +99,7 @@ def run_stage_1b(trial: optuna.Trial) -> float:
     }
     return evaluate_minibatch(param_dict)
 
-def run_stage_2(trial: optuna.Trial, db_dir: str) -> float:
+def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
     # Fetch best gains from Stage 1B to evaluate the NN on top of the best robust baseline
     stage_1b_db = f"sqlite:///{os.path.join(db_dir, 'stage_1B.db')}"
     try:
@@ -110,13 +110,36 @@ def run_stage_2(trial: optuna.Trial, db_dir: str) -> float:
         best_1b_params = {}
 
     param_dict = {
-        'controller_type': 'baseline', # Stage 2 tunes the Neural Network
+        'controller_type': 'resnet', # Stage 2A tunes the Neural Network
         'initial_weight_scale_factor': 0.1, 
         'num_blocks': trial.suggest_categorical("num_blocks", [4, 6, 8]),
         'k_0': trial.suggest_categorical("k_0", [2, 4, 8]),
         'k_i': trial.suggest_categorical("k_i", [2, 4, 8]),
         'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12]),
-        'gamma': trial.suggest_float("gamma", 0.1, 10.0, log=True),
+        'gamma': trial.suggest_float("gamma", 0.1, 20.0, log=True),
+        'sigma_mod': trial.suggest_float("sigma_mod", 0.5, 5.0, log=True),
+        **best_1b_params
+    }
+    return evaluate_minibatch(param_dict)
+
+def run_stage_2b(trial: optuna.Trial, db_dir: str) -> float:
+    # Fetch best gains from Stage 1B to evaluate the INN on top of the best robust baseline
+    stage_1b_db = f"sqlite:///{os.path.join(db_dir, 'stage_1B.db')}"
+    try:
+        study_1b = optuna.load_study(study_name="stage_1B_study", storage=stage_1b_db)
+        best_1b_params = study_1b.best_params
+    except Exception as e:
+        print(f"Warning: Could not load stage_1B.db to seed stage 2! Falling back to config.yaml. Error: {e}")
+        best_1b_params = {}
+
+    param_dict = {
+        'controller_type': 'integrated_resnet', # Stage 2B tunes the Integrated Neural Network (INN)
+        'initial_weight_scale_factor': 0.1, 
+        'num_blocks': trial.suggest_categorical("num_blocks", [4, 6, 8]),
+        'k_0': trial.suggest_categorical("k_0", [2, 4, 8]),
+        'k_i': trial.suggest_categorical("k_i", [2, 4, 8]),
+        'hidden_width': trial.suggest_categorical("hidden_width", [4, 8, 12]),
+        'gamma': trial.suggest_float("gamma", 0.1, 20.0, log=True),
         'sigma_mod': trial.suggest_float("sigma_mod", 0.5, 5.0, log=True),
         **best_1b_params
     }
@@ -134,7 +157,7 @@ def run_stage_3(trial: optuna.Trial) -> float:
 if __name__ == "__main__":
     import os
     parser = argparse.ArgumentParser(description="Optuna Orchestrator for Quadcopter Adaptive Control")
-    parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2', '3', 'LHS'], help="Optimization stage to run.")
+    parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2A', '2B', '3', 'LHS'], help="Optimization stage to run.")
     parser.add_argument("--num_trials", type=int, required=True, help="Number of trials.")
     parser.add_argument("--db_dir", type=str, required=True, help="Directory for Optuna databases (e.g. output/traj1).")
     parser.add_argument("--patience", type=int, required=True, help="Number of trials to wait for improvement before stopping early. 0 to disable.")
@@ -164,18 +187,31 @@ if __name__ == "__main__":
         study.optimize(run_stage_1a, n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '1B':
         study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '2':
+    elif args.stage == '2A':
         stage_1b_db = f"sqlite:///{os.path.join(args.db_dir, 'stage_1B.db')}"
         try:
             study_1b = optuna.load_study(study_name="stage_1B_study", storage=stage_1b_db)
             print("\n=========================================================================")
-            print(" [Sanity Check] Stage 1B Best Gains injected into Stage 2:")
+            print(" [Sanity Check] Stage 1B Best Gains injected into Stage 2A:")
             for k, v in study_1b.best_params.items():
                 print(f"    {k}: {v}")
             print("=========================================================================\n")
         except Exception:
             print("\n[!] Could not load Stage 1B gains for sanity check print.\n")
             
-        study.optimize(lambda t: run_stage_2(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
+        study.optimize(lambda t: run_stage_2a(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
+    elif args.stage == '2B':
+        stage_1b_db = f"sqlite:///{os.path.join(args.db_dir, 'stage_1B.db')}"
+        try:
+            study_1b = optuna.load_study(study_name="stage_1B_study", storage=stage_1b_db)
+            print("\n=========================================================================")
+            print(" [Sanity Check] Stage 1B Best Gains injected into Stage 2B:")
+            for k, v in study_1b.best_params.items():
+                print(f"    {k}: {v}")
+            print("=========================================================================\n")
+        except Exception:
+            print("\n[!] Could not load Stage 1B gains for sanity check print.\n")
+            
+        study.optimize(lambda t: run_stage_2b(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '3':
         study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=callbacks)

@@ -23,4 +23,4 @@ Every flight simulation (`SimRun`) operates in two phases:
 2. **Target Tracking**: Once within `init_tol` of the hover point, the target begins moving along the desired trajectory (Figure-8 or 4-Petal Rose). The controller attempts to track the target while subject to dynamic limits and anti-windup clamping. The evaluation metric (ITAE cost) is only integrated during this phase.
 
 ## Neural Network Adaptation
-For the `baseline` (Feedforward NN) and `developed` (Integrated NN) controllers, the weights $\hat{\theta}$ are updated in real-time according to a Lyapunov-derived adaptation law. To ensure stability, the `discrete_projection` algorithm strictly confines the weights to a predefined hypersphere ($\bar{\theta}$), preventing unbounded growth.
+For the `resnet` (Feedforward NN) and `integrated_resnet` (Integrated NN) controllers, the weights $\hat{\theta}$ are updated in real-time according to a Lyapunov-derived adaptation law. To ensure stability, the `discrete_projection` algorithm strictly confines the weights to a predefined hypersphere ($\bar{\theta}$), preventing unbounded growth.

@@ -8,7 +8,7 @@ from src.run_sim import SimRun
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run a single debug flight with best gains.")
     parser.add_argument("--controller_type", type=str, required=True, 
-                        choices=["noresnet", "baseline", "developed", "supertwisting"],
+                        choices=["baseline", "resnet", "integrated_resnet", "supertwisting"],
                         help="The type of controller to run.")
     parser.add_argument("--config", type=str, default="conf/config.yaml", 
                         help="Path to the base config.yaml")
@@ -29,10 +29,10 @@ def main() -> None:
             
         # Map controller_type to the corresponding BEST_* key
         mapping = {
-            "noresnet": "BEST_RISE",
+            "baseline": "BEST_RISE",
             "supertwisting": "BEST_ST",
-            "baseline": "BEST_NN",
-            "developed": "BEST_INN"
+            "resnet": "BEST_NN",
+            "integrated_resnet": "BEST_INN"
         }
         
         target_key = mapping[args.controller_type]
