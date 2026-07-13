@@ -34,7 +34,7 @@ aviary_rise_node:
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
     traj1_center_z_m_ned_aviary: -0.75
-    traj1_period_s: 15.0 # edited
+    traj1_period_s: 12.0 # edited
     traj1_x_amp_m_ned_aviary: 1.5
     traj1_y_amp_m_ned_aviary: 3.0
     traj1_z_amp_m_ned_aviary: 0.25
