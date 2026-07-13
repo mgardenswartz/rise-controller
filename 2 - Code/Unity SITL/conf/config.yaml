@@ -6,6 +6,7 @@ aviary_rise_node:
     d_out: 3
     desired_trajectory: 2
     h_act_func: swish
+    h_method: xavier
     hover_start_z_m_ned_aviary: -0.75
     initial_weight_scale_factor: 0.1
     init_tol_m: 0.2
@@ -20,6 +21,7 @@ aviary_rise_node:
     k_rise: 0.5
     K_P_yaw: 2.0
     o_act_func: tanh
+    o_method: he
     q_e: 1.0
     r_u: 0.2
     safe_x_min_m_ned_aviary: -5.0

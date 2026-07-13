@@ -94,22 +94,26 @@ class SimRun:
         self.theta_bar = self.config['theta_bar']
         self.sigma_mod = self.config['sigma_mod']
         if 'initial_weights' in self.config:
-            init_w = self.config['initial_weights']
+            init_w = jnp.array(self.config['initial_weights'])
+            init_scale = self.config['initial_weight_scale_factor']
+            self.theta_hat = init_w * init_scale
         else:
-            from jax_resnet import get_total_parameters
-            n_params = get_total_parameters(
-                d_in=self.config['d_in'],
-                hidden_width=self.config['hidden_width'],
-                d_out=self.config['d_out'],
-                b=self.config['num_blocks'],
-                k_0=self.config['k_0'],
-                k_i=self.config['k_i']
+            from jax_resnet import init_resnet_weights
+            key = jax.random.PRNGKey(self.config.get('base_seed', 42))
+            init_scale = self.config['initial_weight_scale_factor']
+            self.theta_hat = init_scale * init_resnet_weights(
+                key,
+                self.config['d_in'],
+                self.config['hidden_width'],
+                self.config['d_out'],
+                self.config['num_blocks'],
+                self.config['k_0'],
+                self.config['k_i'],
+                self.config['h_method'],
+                self.config['o_method']
             )
-            init_w = [0.0] * n_params
 
-        self.gamma_diag = jnp.ones(len(init_w)) * self.config['gamma']
-        init_scale = self.config['initial_weight_scale_factor']
-        self.theta_hat = jnp.array(init_w) * init_scale
+        self.gamma_diag = jnp.ones(len(self.theta_hat)) * self.config['gamma']
         
         self.bound_resnet = jax.jit(jax.tree_util.Partial( # type: ignore
             resnet_network,
