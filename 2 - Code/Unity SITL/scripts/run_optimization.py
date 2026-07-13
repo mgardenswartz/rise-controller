@@ -21,9 +21,9 @@ def evaluate_minibatch(param_dict: dict[str, Any]) -> float:
         np.random.seed(base_seed + i)
         
         batch_params = param_dict.copy()
-        batch_params['init_x'] = base_config['init_x'] + np.random.uniform(-xy_range, xy_range)
-        batch_params['init_y'] = base_config['init_y'] + np.random.uniform(-xy_range, xy_range)
-        batch_params['hover_start_z'] = base_config['hover_start_z'] + np.random.uniform(-z_range, z_range)
+        batch_params['init_x_m_ned_aviary'] = base_config['init_x_m_ned_aviary'] + np.random.uniform(-xy_range, xy_range)
+        batch_params['init_y_m_ned_aviary'] = base_config['init_y_m_ned_aviary'] + np.random.uniform(-xy_range, xy_range)
+        batch_params['hover_start_z_m_ned_aviary'] = base_config['hover_start_z_m_ned_aviary'] + np.random.uniform(-z_range, z_range)
         
         sim = SimRun(batch_params, yaml_config_path="conf/config.yaml")
         cost = sim.run()

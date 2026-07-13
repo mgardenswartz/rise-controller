@@ -48,7 +48,7 @@ def main() -> None:
     
     try:
         cost = sim.run()
-        print(f"\n[*] Flight Complete! Final ITAE Cost: {cost:.4f}")
+        print(f"\n[*] Flight Complete! Final Cost: {cost:.4f}")
     except Exception as e:
         print(f"\n[!] Flight failed with error: {e}")
 

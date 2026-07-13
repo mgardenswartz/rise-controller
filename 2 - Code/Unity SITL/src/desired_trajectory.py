@@ -3,11 +3,11 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.integrate import solve_ivp
 import math
-from typing import Tuple
+from typing import Tuple, Any
 from functools import partial
 
 class TrajectoryGenerator:
-    def __init__(self, config: dict):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.desired_traj = config['desired_trajectory']
         
         # Traj 1 params
@@ -31,21 +31,21 @@ class TrajectoryGenerator:
         _ = self._get_traj1_jax(0.0)
         _ = self._get_traj2_jax(0.0)
 
-    def _precompute_phases(self):
+    def _precompute_phases(self) -> None:
         """Numerically integrates the 1D phase variables once during initialization."""
         # Trajectory 1: Integrate d(tau)/dt
         w = (2.0 * math.pi) / self.traj1_period
-        def dtau_dt(t, tau):
-            return self.traj1_warp_c * (1.0 - self.traj1_alpha * math.sin(w * tau[0])**2)
+        def dtau_dt(t: float, tau: np.ndarray) -> float:
+            return self.traj1_warp_c * (1.0 - self.traj1_alpha * math.sin(w * tau[0])**2) # type: ignore
         
         sol1 = solve_ivp(dtau_dt, [0, self.max_sim_time], [0.0], max_step=0.01)
         self.t_grid_1 = jnp.array(sol1.t)
         self.tau_grid = jnp.array(sol1.y[0])
 
         # Trajectory 2: Integrate d(theta)/dt
-        def dtheta_dt(t, theta):
+        def dtheta_dt(t: float, theta: np.ndarray) -> float:
             f_theta = 1.0 + 3.0 * math.sin(2.0 * theta[0])**2
-            return self.traj2_v / (self.traj2_A * math.sqrt(f_theta))
+            return self.traj2_v / (self.traj2_A * math.sqrt(f_theta)) # type: ignore
         
         sol2 = solve_ivp(dtheta_dt, [0, self.max_sim_time], [0.0], max_step=0.01)
         self.t_grid_2 = jnp.array(sol2.t)
@@ -63,7 +63,7 @@ class TrajectoryGenerator:
         tau_dot = self.traj1_warp_c * (1.0 - self.traj1_alpha * (jnp.sin(w * tau)**2))
         tau_ddot = -2.0 * self.traj1_warp_c * self.traj1_alpha * w * jnp.sin(w * tau) * jnp.cos(w * tau) * tau_dot
 
-        def pos_fn(tau_val: float) -> jax.Array:
+        def pos_fn(tau_val: jax.Array) -> jax.Array:
             return jnp.array([
                 self.traj1_x_amp * jnp.sin(wx * tau_val),
                 self.traj1_y_amp * jnp.sin(wy * tau_val),
@@ -90,7 +90,7 @@ class TrajectoryGenerator:
         sin_4theta = jnp.sin(4.0 * theta)
         theta_ddot = - (3.0 * (self.traj2_v**2) * sin_4theta) / ((self.traj2_A**2) * (f_theta**2))
         
-        def pos_fn(th: float) -> jax.Array:
+        def pos_fn(th: jax.Array) -> jax.Array:
             r = self.traj2_A * jnp.cos(2.0 * th)
             return jnp.array([
                 r * jnp.cos(th),

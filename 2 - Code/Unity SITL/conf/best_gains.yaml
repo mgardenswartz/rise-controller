@@ -1,42 +1,35 @@
-BEST_RISE:
-  controller_type: noresnet
-  k_1: 0.72
-  k_2: 0.11
-  k_3: 2.4
-  k_rise: 0.5
-
-BEST_ST:
-  controller_type: supertwisting
-  k_1: 2.1467
-  k_2: 1.0971
-  k_3: 0.06267
-
-BEST_NN:
-  controller_type: baseline
-  # Inherited from RISE
-  k_1: 0.72
-  k_2: 0.11
-  k_3: 2.4
-  k_rise: 0.5
-  # NN specific parameters
-  num_blocks: 8
-  k_0: 2
-  k_i: 2
-  hidden_width: 4
-  gamma: 0.3849012074610113
-  sigma_mod: 0.6522018776022119
-
 BEST_INN:
   controller_type: developed
-  # Inherited from RISE
-  k_1: 0.72
-  k_2: 0.11
-  k_3: 2.4
-  k_rise: 0.5
-  # INN specific parameters
-  num_blocks: 8
-  k_0: 4
-  k_i: 4
-  hidden_width: 8
-  gamma: 6.279702110164697
-  sigma_mod: 3.927479881666684
+  gamma: 2.4655867801761713
+  hidden_width: 12
+  k_0: 2
+  k_1: 1.0190034590029435
+  k_2: 3.9077644581156763
+  k_3: 0.3010316170195184
+  k_i: 2
+  k_rise: 0.017751701742946945
+  num_blocks: 6
+  sigma_mod: 0.8209491404179076
+BEST_NN:
+  controller_type: baseline
+  gamma: 2.4655867801761713
+  hidden_width: 12
+  k_0: 2
+  k_1: 1.0190034590029435
+  k_2: 3.9077644581156763
+  k_3: 0.3010316170195184
+  k_i: 2
+  k_rise: 0.017751701742946945
+  num_blocks: 6
+  sigma_mod: 0.8209491404179076
+BEST_RISE:
+  controller_type: noresnet
+  k_1: 1.0190034590029435
+  k_2: 3.9077644581156763
+  k_3: 0.3010316170195184
+  k_rise: 0.017751701742946945
+BEST_ST:
+  controller_type: supertwisting
+  k_1: 0.013589258792815749
+  k_2: 0.0050571223051142965
+  k_3: 0.006892601785744075

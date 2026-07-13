@@ -96,9 +96,9 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
     with open(config_path, 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
         
-    base_x = base_config.get('init_x', 0.70)
-    base_y = base_config.get('init_y', -2.37)
-    base_z = base_config.get('hover_start_z', -1.5)
+    base_x = base_config.get('init_x_m_ned_aviary', 0.70)
+    base_y = base_config.get('init_y_m_ned_aviary', -2.37)
+    base_z = base_config.get('hover_start_z_m_ned_aviary', -1.5)
     
     xy_range = 1.5 # +/- meters
     z_range = 0.5  # +/- meters
@@ -117,9 +117,9 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
         
         for name, params in controllers:
             trial_params = params.copy()
-            trial_params['init_x'] = trial_x
-            trial_params['init_y'] = trial_y
-            trial_params['hover_start_z'] = trial_z
+            trial_params['init_x_m_ned_aviary'] = trial_x
+            trial_params['init_y_m_ned_aviary'] = trial_y
+            trial_params['hover_start_z_m_ned_aviary'] = trial_z
             
             sim = SimRun(trial_params, yaml_config_path=config_path)
             cost = sim.run()

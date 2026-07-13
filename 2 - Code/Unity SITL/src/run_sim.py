@@ -1,9 +1,12 @@
 import math
-import time
 import numpy as np
 import yaml
 from typing import Any, Tuple
 from scipy.spatial.transform import Rotation
+import time
+import os
+import csv
+from datetime import datetime
 
 import jax
 import jax.numpy as jnp
@@ -67,6 +70,15 @@ class SimRun:
         self.integral_control_term = np.zeros(3, dtype=np.float64)
         self.last_control_integrand = np.zeros(3, dtype=np.float64)
         self.is_saturated = False
+        self.sim_speed = self.config['sim_speed']
+        
+        self.time_history: list[float] = []
+        self.error_norm_history: list[float] = []
+        self.weight_history: list[list[float]] = []
+        self.q_history: list[list[float]] = []
+        self.qd_history: list[list[float]] = []
+        self.u_history: list[list[float]] = []
+        self.e_history: list[list[float]] = []
         
         self.traj_gen = TrajectoryGenerator(self.config)
         
@@ -132,8 +144,9 @@ class SimRun:
     def run(self) -> float:
         """Executes the simulation loop and returns the cost."""
         with QuadSim() as sim:
+            sim.pause()
             status = sim.get_status()
-            steps_per_tick = max(1, round((1.0 / self.control_frequency_hz) / status.fixed_dt))
+            steps_per_tick = max(1, round((self.control_period_s) / status.fixed_dt))
             
             drone = sim.drone()
             init_position_enu = self.swap_ned_aviary_and_enu(self.init_ned)
@@ -152,6 +165,8 @@ class SimRun:
             takeoff_steps = 0
             max_takeoff_steps = round(self.control_frequency_hz * self.takeoff_timeout_s)
             
+            wall_start = time.perf_counter()
+            
             while traj_t < self.sim_length_s:
                 sensors = drone.get_sensors()
 
@@ -169,6 +184,7 @@ class SimRun:
                     break
         
                 # State machine
+                current_t_for_cost = traj_t
                 match flight_mode:
                     case 'TAKEOFF':
                         takeoff_steps += 1
@@ -178,6 +194,7 @@ class SimRun:
                         dist = np.linalg.norm(q_ned - qd_ned_aviary)
                         if dist <= self.init_tol_m:
                             flight_mode = 'TRAJECTORY'
+                            sim_start_time_perf = time.perf_counter()
                             print("Starting desired trajectory now.")
                         elif takeoff_steps > max_takeoff_steps:
                             print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
@@ -186,13 +203,6 @@ class SimRun:
                     
                     case 'TRAJECTORY':
                         qd_ned_aviary, qd_dot_ned_aviary, _ = self.traj_gen.get_desired_state(traj_t)
-                        
-                        # Accumulate Cost
-                        current_cost_integrand = np.linalg.norm(q_ned - qd_ned_aviary)**2
-                        if step > 0:
-                            self.cost_J += (self.control_period_s / 2.0) * (current_cost_integrand + self.last_cost_integrand)
-                        self.last_cost_integrand = current_cost_integrand
-                        
                         traj_t = self.control_period_s * step
                     case _:
                         raise ValueError(f'Invalid flight_mode selected: {flight_mode}.')
@@ -304,11 +314,33 @@ class SimRun:
                 quat_rotation_enu = Rotation.from_quat(sensors.imu_orientation, scalar_first=False)
                 u_flu_mps2 = quat_rotation_enu.inv().apply(u_enu_mps2) 
 
+                if flight_mode == 'TRAJECTORY':
+                    # New cost function integrand: J = int( q_e * t * ||e(t)||^2 + r_u * ||u(t)||^2 ) dt
+                    current_cost_integrand = (self.q_e * current_t_for_cost * (np.linalg.norm(e_ned_aviary)**2)) + \
+                                             (self.r_u * (np.linalg.norm(u_clamped_ned_aviary)**2))
+                    self.cost_J += (self.control_period_s / 2.0) * (current_cost_integrand + self.last_cost_integrand)
+                    self.last_cost_integrand = current_cost_integrand
+
                 # P Controller for yaw (with wrap-around fix)
                 # Shortest angular error in degrees: (target - current + 180) % 360 - 180
                 e_yaw_deg = (self.yaw_des_deg - yaw_enu + 180.0) % 360.0 - 180.0
                 yaw_rate_cmd = -self.K_P_yaw * e_yaw_deg
                 
+                # --- DATA COLLECTION ---
+                if flight_mode == 'TRAJECTORY':
+                    sim_time_current = step * self.control_period_s
+                    self.time_history.append(sim_time_current)
+                    self.error_norm_history.append(float(np.linalg.norm(e_ned_aviary)))
+                    self.q_history.append(q_ned.tolist())
+                    self.qd_history.append(qd_ned_aviary.tolist())
+                    self.u_history.append(u_clamped_ned_aviary.tolist())
+                    self.e_history.append(e_ned_aviary.tolist())
+                    
+                    if hasattr(self, 'theta_hat'):
+                        self.weight_history.append(np.array(self.theta_hat).tolist())
+                    else:
+                        self.weight_history.append([])
+
                 drone.step_with_acceleration(
                     ax=u_flu_mps2[0],
                     ay=u_flu_mps2[1],
@@ -318,6 +350,64 @@ class SimRun:
                 )
 
                 step += 1
+                sim_time = step * self.control_period_s
+                
+                if self.sim_speed > 0.0:
+                    target_wall_time = sim_time / self.sim_speed
+                    sleep_time = target_wall_time - (time.perf_counter() - wall_start)
+                    if sleep_time > 0.0:
+                        time.sleep(sleep_time)
+            
+            sim_stop_time_perf = time.perf_counter()
+            sim_run_time_realworld = sim_stop_time_perf - sim_start_time_perf
+            print(f"[*] Simulation took {round(sim_run_time_realworld, 1)} real seconds for {self.sim_length_s} simulated seconds. Scale: {round(self.sim_length_s / sim_run_time_realworld , 1)}. Specified speed was {self.sim_speed}.")
+
+            # --- COMPUTE RMS ---
+            if len(self.e_history) > 0:
+                e_arr = np.array(self.e_history)
+                u_arr = np.array(self.u_history)
+                
+                e_rms = float(np.sqrt(np.mean(np.sum(e_arr**2, axis=1))))
+                u_rms = float(np.sqrt(np.mean(np.sum(u_arr**2, axis=1))))
+                
+                print(f"Tracking error RMS (e_RMS): {e_rms:.4f} m")
+                print(f"Control effort RMS (u_RMS): {u_rms:.4f} m/s^2")
+
+            # --- SAVE DATA ---
+            if self.config.get('save_data', False):
+                traj_num = self.config.get('desired_trajectory', 1)
+                controller = self.controller_type
+                
+                output_dir = os.path.join("output", f"traj{traj_num}", controller)
+                os.makedirs(output_dir, exist_ok=True)
+                
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                csv_path = os.path.join(output_dir, f"{timestamp}.csv")
+                
+                with open(csv_path, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    
+                    header = ['time', 'error_norm', 'q_x', 'q_y', 'q_z', 'qd_x', 'qd_y', 'qd_z', 'u_x', 'u_y', 'u_z', 'e_x', 'e_y', 'e_z']
+                    if len(self.weight_history) > 0 and len(self.weight_history[0]) > 0:
+                        num_weights = len(self.weight_history[0])
+                        header.extend([f"w_{i}" for i in range(num_weights)])
+                    
+                    writer.writerow(header)
+                    
+                    for i in range(len(self.time_history)):
+                        row = [
+                            self.time_history[i],
+                            self.error_norm_history[i],
+                            *self.q_history[i],
+                            *self.qd_history[i],
+                            *self.u_history[i],
+                            *self.e_history[i]
+                        ]
+                        if len(self.weight_history[i]) > 0:
+                            row.extend(self.weight_history[i])
+                        writer.writerow(row)
+                        
+                print(f"Saved data to {csv_path}")
 
             sim.pause()
             return self.cost_J
