@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "setinel-sitl"
 version = "0.1.0"
-description = "Sentintel SITL for RISE controller testing"
+description = "Sentintel SITL for RISE controller testing that connects to Unity"
 authors = [
     { name = "Max Gardenswartz", email = "mgardenswartz@ufl.edu" }
 ]
@@ -25,20 +25,6 @@ dependencies = [
 cuda12 = ["jax[cuda12]"]
 cuda13 = ["jax[cuda13]"]
 
-dev = [
-    "pytest",
-    "ruff",
-    "mypy"
-]
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
-
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-
-[tool.mypy]
-strict = true
-ignore_missing_imports = true

@@ -10,10 +10,9 @@ def main() -> None:
     parser.add_argument("--config", type=str, required=True, help="Path to config.yaml")
     args = parser.parse_args()
 
-    with open(args.config, 'r') as f:
-        full_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
+
         
-    best_gains_path = full_config.get('best_gains_path', 'conf/best_gains.yaml')
+    best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     best_gains: Dict[str, Dict[str, Any]] = {}
     
     def get_best_params(study_name: str, db_file: str) -> Dict[str, Any]:

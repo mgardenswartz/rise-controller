@@ -82,15 +82,34 @@ class SimRun:
         
         self.traj_gen = TrajectoryGenerator(self.config)
         
+        if self.controller_type == "baseline":
+            self.config['d_in'] = 12
+        elif self.controller_type == "developed":
+            self.config['d_in'] = 15
+            
         if self.controller_type in ["baseline", "developed"]:
             self.setup_neural_network()
 
     def setup_neural_network(self) -> None:
         self.theta_bar = self.config['theta_bar']
         self.sigma_mod = self.config['sigma_mod']
-        self.gamma_diag = jnp.ones(len(self.config['initial_weights'])) * self.config['gamma']
+        if 'initial_weights' in self.config:
+            init_w = self.config['initial_weights']
+        else:
+            from jax_resnet import get_total_parameters
+            n_params = get_total_parameters(
+                d_in=self.config['d_in'],
+                hidden_width=self.config['hidden_width'],
+                d_out=self.config['d_out'],
+                b=self.config['num_blocks'],
+                k_0=self.config['k_0'],
+                k_i=self.config['k_i']
+            )
+            init_w = [0.0] * n_params
+
+        self.gamma_diag = jnp.ones(len(init_w)) * self.config['gamma']
         init_scale = self.config['initial_weight_scale_factor']
-        self.theta_hat = jnp.array(self.config['initial_weights']) * init_scale
+        self.theta_hat = jnp.array(init_w) * init_scale
         
         self.bound_resnet = jax.jit(jax.tree_util.Partial( # type: ignore
             resnet_network,
@@ -227,9 +246,9 @@ class SimRun:
                             self.theta_hat, x_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
                         )
                         phi_val = np.array(phi_out)
-                        u_nn = self.theta_hat.T @ phi_val
-                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) - u_nn
-                        u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+                        u_nn = phi_val
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary))
+                        u_provisional = u_nn + (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         
                     case "developed":
                         u_last = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
@@ -238,8 +257,8 @@ class SimRun:
                             self.theta_hat, kappa_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
                         )
                         phi_val = np.array(phi_out)
-                        u_nn = self.theta_hat.T @ phi_val
-                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) - u_nn
+                        u_nn = phi_val
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) + u_nn
                         u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
 
                     case "supertwisting":

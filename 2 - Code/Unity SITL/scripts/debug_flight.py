@@ -12,13 +12,13 @@ def main() -> None:
                         help="The type of controller to run.")
     parser.add_argument("--config", type=str, default="conf/config.yaml", 
                         help="Path to the base config.yaml")
+    parser.add_argument("--db_dir", type=str, required=True, 
+                        help="Directory containing the best_gains.yaml file (e.g. output/traj1).")
     args = parser.parse_args()
 
-    # Load base config to find best_gains.yaml
-    with open(args.config, 'r') as f:
-        full_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
+
         
-    best_gains_path = full_config.get('best_gains_path', 'conf/best_gains.yaml')
+    best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     
     if not os.path.exists(best_gains_path):
         print(f"[!] {best_gains_path} not found. Running with base config.yaml parameters instead.")

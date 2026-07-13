@@ -26,6 +26,29 @@ class ETACallback:
                   f"Avg time/trial: {avg_time_per_trial:.1f}s. Estimated time remaining: {eta_str}\n")
 
 
+class EarlyStoppingCallback:
+    def __init__(self, patience: int):
+        self.patience = patience
+
+    def __call__(self, study: optuna.Study, trial: optuna.trial.FrozenTrial) -> None:
+        if self.patience <= 0:
+            return
+            
+        try:
+            best_trial = study.best_trial
+            # If the current trial number is X, and the best trial was found at X - patience, stop!
+            if trial.number - best_trial.number >= self.patience:
+                print("\n=========================================================================")
+                print(f" [Early Stopping] No improvement in the last {self.patience} trials!")
+                print(f" Best trial was #{best_trial.number} with cost {best_trial.value:.4f}.")
+                print(" Exiting study prematurely.")
+                print("=========================================================================\n")
+                study.stop()
+        except ValueError:
+            # Raised if no trial has completed yet
+            pass
+
+
 def evaluate_minibatch(param_dict: dict[str, Any]) -> float:
     """Runs a mini-batch of robust domain randomizations and returns the worst-case cost."""
     with open("conf/config.yaml", 'r') as f:
@@ -62,7 +85,7 @@ def run_stage_1a(trial: optuna.Trial) -> float:
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
         'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
-        'k_rise': trial.suggest_float("k_rise", 0.01, 5.0, log=True)
+        'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
     return evaluate_minibatch(param_dict)
 
@@ -72,7 +95,7 @@ def run_stage_1b(trial: optuna.Trial) -> float:
         'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_2': trial.suggest_float("k_2", 0.01, 8.0, log=True),
         'k_3': trial.suggest_float("k_3", 0.01, 8.0, log=True),
-        'k_rise': trial.suggest_float("k_rise", 0.01, 5.0, log=True)
+        'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
     return evaluate_minibatch(param_dict)
 
@@ -114,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2', '3', 'LHS'], help="Optimization stage to run.")
     parser.add_argument("--num_trials", type=int, required=True, help="Number of trials.")
     parser.add_argument("--db_dir", type=str, required=True, help="Directory for Optuna databases (e.g. output/traj1).")
+    parser.add_argument("--patience", type=int, required=True, help="Number of trials to wait for improvement before stopping early. 0 to disable.")
     args = parser.parse_args()
 
     # Construct the file path and SQLite URL
@@ -132,11 +156,14 @@ if __name__ == "__main__":
     study = optuna.create_study(study_name=study_name, storage=db_url, load_if_exists=True, direction="minimize")
 
     eta_callback = ETACallback(args.num_trials)
+    early_stop_callback = EarlyStoppingCallback(args.patience)
+    from typing import Callable
+    callbacks: list[Callable[[optuna.Study, optuna.trial.FrozenTrial], None]] = [eta_callback, early_stop_callback]
 
     if args.stage == '1A':
-        study.optimize(run_stage_1a, n_trials=args.num_trials, callbacks=[eta_callback])
+        study.optimize(run_stage_1a, n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '1B':
-        study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=[eta_callback])
+        study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '2':
         stage_1b_db = f"sqlite:///{os.path.join(args.db_dir, 'stage_1B.db')}"
         try:
@@ -149,6 +176,6 @@ if __name__ == "__main__":
         except Exception:
             print("\n[!] Could not load Stage 1B gains for sanity check print.\n")
             
-        study.optimize(lambda t: run_stage_2(t, args.db_dir), n_trials=args.num_trials, callbacks=[eta_callback])
+        study.optimize(lambda t: run_stage_2(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '3':
-        study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=[eta_callback])
+        study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=callbacks)

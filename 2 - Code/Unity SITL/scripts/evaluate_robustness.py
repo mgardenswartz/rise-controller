@@ -100,8 +100,8 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
     base_y = base_config.get('init_y_m_ned_aviary', -2.37)
     base_z = base_config.get('hover_start_z_m_ned_aviary', -1.5)
     
-    xy_range = 1.5 # +/- meters
-    z_range = 0.5  # +/- meters
+    xy_range = base_config.get('xy_rand_range_m', 1.0)
+    z_range = base_config.get('z_rand_range_m', 0.0)
     
     results: Dict[str, List[float]] = {name: [] for name, _ in controllers}
     
@@ -136,13 +136,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Monte Carlo Robustness Sweep & Statistics")
     parser.add_argument("--num_trials", type=int, required=True, help="Number of Monte Carlo trials to run.")
     parser.add_argument("--config", type=str, required=True, help="Path to config.yaml")
+    parser.add_argument("--db_dir", type=str, required=True, help="Directory containing best_gains.yaml")
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
         full_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
         
-    best_gains_path = full_config.get('best_gains_path', 'conf/best_gains.yaml')
-    robustness_output_path = full_config.get('robustness_output_path', 'output/robustness_results.csv')
+    best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
+    robustness_output_path = os.path.join(args.db_dir, "robustness_results.csv")
     
     if not os.path.exists(best_gains_path):
         raise FileNotFoundError(f"Best gains file not found at {best_gains_path}. Please run extract_gains.py first.")
