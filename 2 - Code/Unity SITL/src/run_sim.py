@@ -9,9 +9,9 @@ import jax
 import jax.numpy as jnp
 
 from src.proj import discrete_projection
-from src.desired_trajectory import traj1_spatial_derivs, traj2_spatial_derivs
 from jax_resnet import resnet_network
 from quadsim import QuadSim
+from src.desired_trajectory import TrajectoryGenerator
 
 jax.config.update("jax_platform_name", "cpu") # type: ignore
 jax.config.update("jax_enable_x64", True) # type: ignore
@@ -27,22 +27,20 @@ class SimRun:
         
         self.control_frequency_hz = self.config['control_frequency_hz']
         self.control_period_s = 1.0 / self.control_frequency_hz
-        self.sim_time_s = self.config['sim_time_s']
+        self.sim_length_s = self.config['sim_length_s']
         self.controller_type = self.config['controller_type']
         self.desired_traj = self.config['desired_trajectory']
         
         self.acc_hor_max_mps2 = self.config['mpc_acc_hor_max_mps2']
         self.acc_vert_max_mps2 = self.config['mpc_acc_vert_max_mps2']
-        self.safe_x_min_m_ned_aviary = self.config['safe_x_min_m_ned']
-        self.safe_x_max_m_ned_aviary = self.config['safe_x_max_m_ned']
-        self.safe_y_min_m_ned_aviary = self.config['safe_y_min_m_ned']
-        self.safe_y_max_m_ned_aviary = self.config['safe_y_max_m_ned']
-        self.safe_z_max_m_ned_aviary = self.config['safe_z_max_m_ned']
-        self.safe_z_min_m_ned_aviary = self.config['safe_z_min_m_ned']
+        self.safe_x_min_m_ned_aviary_aviary = self.config['safe_x_min_m_ned_aviary']
+        self.safe_x_max_m_ned_aviary_aviary = self.config['safe_x_max_m_ned_aviary']
+        self.safe_y_min_m_ned_aviary_aviary = self.config['safe_y_min_m_ned_aviary']
+        self.safe_y_max_m_ned_aviary_aviary = self.config['safe_y_max_m_ned_aviary']
+        self.safe_z_max_m_ned_aviary_aviary = self.config['safe_z_max_m_ned_aviary']
+        self.safe_z_min_m_ned_aviary_aviary = self.config['safe_z_min_m_ned_aviary']
         self.w_fail = self.config['w_fail']
-        
-        self.target_z_m_ned = self.config['traj1_center_z_m_ned'] if self.desired_traj == 1 else self.config['traj2_center_z_m_ned']
-        self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.config['traj1_alpha_warp']) if self.config['traj1_alpha_warp'] < 1.0 else 1.0
+        self.takeoff_timeout_s = self.config['takeoff_timeout_s']
         
         self.k_1 = self.config['k_1']
         self.k_2 = self.config['k_2']
@@ -55,19 +53,22 @@ class SimRun:
         self.r_u = self.config['r_u']
         self.K_P_yaw = self.config['K_P_yaw']
 
-        self.init_x_ned = self.config['init_x_m_ned']
-        self.init_y_ned = self.config['init_y_m_ned']
-        self.init_z_ned = self.config['init_z_m_ned']
+        self.init_x_ned = self.config['init_x_m_ned_aviary']
+        self.init_y_ned = self.config['init_y_m_ned_aviary']
+        self.init_z_ned = self.config['init_z_m_ned_aviary']
         self.init_ned = np.array([self.init_x_ned, self.init_y_ned, self.init_z_ned], dtype=np.float64)
-        self.hover_start_z_m_ned = self.config['hover_start_z_m_ned']
+        self.hover_start_z_m_ned_aviary = self.config['hover_start_z_m_ned_aviary']
         self.init_tol_m = self.config['init_tol_m']
         self.yaw_des_deg = self.config['yaw_des_deg']
         self.init_yaw_deg = self.config['init_yaw_deg']
         
         self.cost_J = 0.0
         self.last_cost_integrand = 0.0
-        self.integral_term = np.zeros(3, dtype=np.float64)
-        self.last_integrand = np.zeros(3, dtype=np.float64)
+        self.integral_control_term = np.zeros(3, dtype=np.float64)
+        self.last_control_integrand = np.zeros(3, dtype=np.float64)
+        self.is_saturated = False
+        
+        self.traj_gen = TrajectoryGenerator(self.config)
         
         if self.controller_type in ["baseline", "developed"]:
             self.setup_neural_network()
@@ -117,47 +118,14 @@ class SimRun:
         """
         Maps NED to ENU.
         ENU: (X, Y, Z)
-        NED: (Y, )
+        NED_Aviary: (X, -Y, -Z)
         """
         return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
 
-    def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        # TODO: Fix repeated use of [''] in favor of a self dot attributes. And, move get_desired_state to src/desired_trajectory.py. The only logic here should be calling a get_traj1 or get_traj2 function based on self.desired_traj
-        # Write get_traj1 and get_traj2 to take in all the params they need like traj1_alpha_warp, but maybe consider mirroring the Jax ResNet code and creating a "bound" object in init. Whatever makes the most sense design-wise.
-        if self.desired_traj == 1:
-            w = (2.0 * math.pi) / self.config['traj1_period_s']
-            tau_dot = self.traj1_warp_c * (1.0 - self.config['traj1_alpha_warp'] * (math.sin(w * t)**2))
-            tau_ddot = -self.traj1_warp_c * self.config['traj1_alpha_warp'] * w * math.sin(2.0 * w * t) * tau_dot
-            
-            pos_jnp, dp_dtau, d2p_dtau2 = traj1_spatial_derivs(
-                t, self.target_z_m_ned, self.config['traj1_period_s'], 
-                self.config['traj1_x_amp_m_ned'], self.config['traj1_y_amp_m_ned'], self.config['traj1_z_amp_m_ned']
-            )
-            
-            qd = np.array(pos_jnp, dtype=np.float64)
-            qd_dot = np.array(dp_dtau, dtype=np.float64) * tau_dot
-            qd_ddot = (np.array(d2p_dtau2, dtype=np.float64) * (tau_dot**2)) + (np.array(dp_dtau, dtype=np.float64) * tau_ddot)
-            
-        else:
-            theta = (self.config['traj2_target_speed_mps'] / self.config['traj2_petal_radius_m']) * t # Simplified integration for example
-            f_theta = 1.0 + 3.0 * (math.sin(2.0 * theta)**2)
-            theta_dot = self.config['traj2_target_speed_mps'] / (self.config['traj2_petal_radius_m'] * math.sqrt(f_theta))
-            
-            sin_4theta = math.sin(4.0 * theta)
-            theta_ddot = - (3.0 * (self.config['traj2_target_speed_mps']**2) * sin_4theta) / ((self.config['traj2_petal_radius_m']**2) * (f_theta**2))
-            
-            pos_jnp, dp_dth, d2p_dth2 = traj2_spatial_derivs(theta, self.target_z_m_ned, self.config['traj2_petal_radius_m'])
-            
-            qd = np.array(pos_jnp, dtype=np.float64)
-            qd_dot = np.array(dp_dth, dtype=np.float64) * theta_dot
-            qd_ddot = (np.array(d2p_dth2, dtype=np.float64) * (theta_dot**2)) + (np.array(dp_dth, dtype=np.float64) * theta_ddot)
-
-        return qd, qd_dot, qd_ddot
-
     def check_boundary_escape(self, q_ned: np.ndarray) -> bool:
-        if not (self.safe_x_min_m_ned_aviary <= q_ned[0] <= self.safe_x_max_m_ned_aviary) or \
-        not (self.safe_y_min_m_ned_aviary <= q_ned[1] <= self.safe_y_max_m_ned_aviary) or \
-        not (self.safe_z_min_m_ned_aviary <= q_ned[2] <= self.safe_z_max_m_ned_aviary):
+        if not (self.safe_x_min_m_ned_aviary_aviary <= q_ned[0] <= self.safe_x_max_m_ned_aviary_aviary) or \
+        not (self.safe_y_min_m_ned_aviary_aviary <= q_ned[1] <= self.safe_y_max_m_ned_aviary_aviary) or \
+        not (self.safe_z_min_m_ned_aviary_aviary <= q_ned[2] <= self.safe_z_max_m_ned_aviary_aviary):
             return True
         return False
 
@@ -178,160 +146,173 @@ class SimRun:
                 qz=math.sin(math.radians(self.init_yaw_deg / 2)),
                 qw=math.cos(math.radians(self.init_yaw_deg / 2))
             )
-            
-            takeoff_complete = False
+            flight_mode = 'TAKEOFF'
             step = 0
             traj_t = 0.0
-            total_steps = round(self.control_frequency_hz * self.sim_time_s)
-            while step < total_steps: 
-                print(f"step: {step}")
+            takeoff_steps = 0
+            max_takeoff_steps = round(self.control_frequency_hz * self.takeoff_timeout_s)
+            
+            while traj_t < self.sim_length_s:
                 sensors = drone.get_sensors()
 
                 # Read sensors
                 q_ned = self.swap_ned_aviary_and_enu(sensors.gps_position) # GPS is ENU
                 q_dot_ned = self.swap_ned_aviary_and_enu(sensors.velocity_enu) # Velocity is ENU
-                
                 yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
 
                 if self.check_boundary_escape(q_ned=q_ned):
-                    print(f"Hit a wall! Position: {q_ned}. Exiting.")
-                    if takeoff_complete:
-                        self.cost_J += self.w_fail * ((self.sim_time_s - traj_t) ** 2)
+                    print(f"Got too close to a wall! Position: {q_ned}. Exiting.")
+                    if flight_mode == 'TRAJECTORY':
+                        self.cost_J += self.w_fail * ((self.sim_length_s - traj_t) ** 2)
                     else:
                         self.cost_J = 1e6
                     break
         
-                # --- STATE MACHINE: Takeoff vs Trajectory ---
-                qd_ned = np.array([0.0, 0.0, self.init_z_ned], dtype=np.float64)
-                qd_dot_ned = np.zeros(3, dtype=np.float64)
-                e_ned = qd_ned - q_ned
-                e_dot_ned = qd_dot_ned - q_dot_ned
-                #     e_dot = qd_dot - q_dot_ned
+                # State machine
+                match flight_mode:
+                    case 'TAKEOFF':
+                        takeoff_steps += 1
+                        qd_ned_aviary = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_m_ned_aviary], dtype=np.float64)
+                        qd_dot_ned_aviary = np.zeros(3, dtype=np.float64)
+                        
+                        dist = np.linalg.norm(q_ned - qd_ned_aviary)
+                        if dist <= self.init_tol_m:
+                            flight_mode = 'TRAJECTORY'
+                            print("Starting desired trajectory now.")
+                        elif takeoff_steps > max_takeoff_steps:
+                            print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
+                            self.cost_J = 1e6
+                            break
                     
-                    # if np.linalg.norm(e) <= self.config['init_tol']:
-                    #     is_takeoff = False
-                    #     # Reset memory integrals so they don't unwind from the takeoff effort
-                    #     self.integral_term = np.zeros(3, dtype=np.float64)
-                    #     self.last_integrand = np.zeros(3, dtype=np.float64)
-                    #     self.st_integral = np.zeros(3, dtype=np.float64)
-                # else:
-                #     traj_t += self.dt
+                    case 'TRAJECTORY':
+                        qd_ned_aviary, qd_dot_ned_aviary, _ = self.traj_gen.get_desired_state(traj_t)
+                        
+                        # Accumulate Cost
+                        current_cost_integrand = np.linalg.norm(q_ned - qd_ned_aviary)**2
+                        if step > 0:
+                            self.cost_J += (self.control_period_s / 2.0) * (current_cost_integrand + self.last_cost_integrand)
+                        self.last_cost_integrand = current_cost_integrand
+                        
+                        traj_t = self.control_period_s * step
+                    case _:
+                        raise ValueError(f'Invalid flight_mode selected: {flight_mode}.')
 
-                    # # TEMPORARY
-                    # qd = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_ned], dtype=np.float64)
-                    # qd_dot = np.zeros(3, dtype=np.float64)
-                    # qd, qd_dot, _ = self.get_desired_state(traj_t)
-                    # e = qd - q
-                    # e_dot = qd_dot - q_dot_ned
+                # --- TRACKING ERROR COMPUTATION (in NED_aviary frame) ---
+                e_ned_aviary = qd_ned_aviary - q_ned
+                e_dot_ned_aviary = qd_dot_ned_aviary - q_dot_ned
+                r1_ned_aviary = e_dot_ned_aviary + (self.k_1 * e_ned_aviary)
                 
-                r1_ned = e_dot_ned + (self.k_1 * e_ned)
+                u_provisional = np.zeros(3, dtype=np.float64)
+                current_control_integrand = np.zeros(3, dtype=np.float64)
+
+                # --- CONTROL LAW EVALUATION ---
+                match self.controller_type:
+                    case "noresnet":
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary))
+                        u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+                        
+                    case "baseline":
+                        x_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary)))
+                        self.theta_hat, phi_out = self.compiled_update_step(
+                            self.theta_hat, x_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                        )
+                        phi_val = np.array(phi_out)
+                        u_nn = self.theta_hat.T @ phi_val
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) - u_nn
+                        u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+                        
+                    case "developed":
+                        u_last = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+                        kappa_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary, u_last)))
+                        self.theta_hat, phi_out = self.compiled_update_step(
+                            self.theta_hat, kappa_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                        )
+                        phi_val = np.array(phi_out)
+                        u_nn = self.theta_hat.T @ phi_val
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) - u_nn
+                        u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+
+                    case "supertwisting":
+                        norm_r1 = np.linalg.norm(r1_ned_aviary)
+                        sgn_r1 = np.sign(r1_ned_aviary)
+                        current_control_integrand = sgn_r1
+                        proposed_integral = self.integral_control_term + (sgn_r1 * self.control_period_s)
+                        u_provisional = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * proposed_integral + self.k_1 * e_dot_ned_aviary
+
+                    case _:
+                        raise ValueError(f"Unknown controller type {self.controller_type}")
+                        
+                # --- SATURATION & ANTI-WINDUP ---
+                self.is_saturated = False
                 
-                u = np.zeros(3, dtype=np.float64)
-                phi_val = np.zeros(3, dtype=np.float64)
+                # 1. Create a mask to track which specific axes should freeze integration
+                freeze_integrator = np.array([False, False, False])
                 
-                # # --- CONTROL LAW EVALUATION ---
-                if self.controller_type == "noresnet":
-                    current_integrand = self.K_I * e_ned + (self.K_RISE * np.sign(r1_ned))
-                    #delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
-                    self.last_integrand = current_integrand
-                    u_unclamped = (self.K_P * e_ned) + (self.K_D * e_dot_ned) + self.integral_term
+                u_xy = u_provisional[0:2]
+                norm_uxy = float(np.linalg.norm(u_xy))
+                if norm_uxy > self.acc_hor_max_mps2:
+                    self.is_saturated = True
+                    if np.dot(e_ned_aviary[0:2], u_xy) > 0.0:
+                        freeze_integrator[0:2] = True
+                        
+                if abs(u_provisional[2]) > self.acc_vert_max_mps2:
+                    self.is_saturated = True
+                    if np.sign(e_ned_aviary[2]) == np.sign(u_provisional[2]):
+                        freeze_integrator[2] = True
+
+                # 2. Integrate properly, strictly freezing the update on saturated axes
+                if self.controller_type != "supertwisting":
+                    # Trapezoidal update for linear/NN controllers
+                    integral_update = (self.control_period_s / 2.0) * (current_control_integrand + self.last_control_integrand)
                 else:
-                    raise ValueError
-                    
-                # elif self.controller_type == "baseline":
-                #     x_vec = jnp.array(np.concatenate((q, q_dot_ned, qd, qd_dot)))
-                #     self.theta_hat, phi_out = self.compiled_update_step(
-                #         self.theta_hat, x_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
-                #     )
-                #     phi_val = np.array(phi_out, dtype=np.float64)
-                #     current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                #     delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
-                #     self.last_integrand = current_integrand
-                #     u_unclamped = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                    
-                # elif self.controller_type == "developed":
-                #     u_last = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                #     kappa_vec = jnp.array(np.concatenate((q, q_dot_ned, qd, qd_dot, u_last)))
-                #     self.theta_hat, phi_out = self.compiled_update_step(
-                #         self.theta_hat, kappa_vec, jnp.array(r1), self.dt, self.theta_bar, self.gamma_diag, self.sigma_mod, False
-                #     )
-                #     phi_val = np.array(phi_out, dtype=np.float64)
-                #     current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
-                #     delta_int = (self.dt / 2.0) * (current_integrand + self.last_integrand)
-                #     self.last_integrand = current_integrand
-                #     u_unclamped = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                    
-                # elif self.controller_type == "supertwisting":
-                #     norm_r1 = np.linalg.norm(r1)
-                #     sgn_r1 = np.sign(r1)
-                #     # NOTE: ST integral is not conditionally clamped in standard literature, 
-                #     # but bounds can be added if it winds up.
-                #     self.integral_term += sgn_r1 * self.dt
-                #     u_unclamped = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.integral_term + self.k_1 * e_dot
+                    # Euler update for the supertwisting sliding mode controller
+                    integral_update = current_control_integrand * self.control_period_s
+                
+                # Apply the boolean clamping mask to freeze saturated axes
+                integral_update[freeze_integrator] = 0.0
+                
+                # Commit the actual clamped integral update
+                self.integral_control_term += integral_update
+                self.last_control_integrand = current_control_integrand
+                
+                # Recalculate unclamped control using the strictly clamped integral term
+                if self.controller_type != "supertwisting":
+                    u_unclamped_ned_aviary = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
+                else:
+                    # Recalculate ST control using the globally available r1_ned_aviary
+                    u_unclamped_ned_aviary = (self.k_2 * np.sqrt(np.linalg.norm(r1_ned_aviary)) * np.sign(r1_ned_aviary)) + (self.k_3 * self.integral_control_term) + (self.k_1 * e_dot_ned_aviary)
 
-                # # --- SATURATION & ANTI-WINDUP ---
-                # u = np.copy(u_unclamped)
-                # freeze_int_xy = False
-                # freeze_int_z = False
+                # Final control action clipping
+                u_clamped_ned_aviary = np.copy(u_unclamped_ned_aviary)
+                u_xy_final = u_clamped_ned_aviary[0:2]
+                norm_uxy_final = float(np.linalg.norm(u_xy_final))
+                if norm_uxy_final > self.acc_hor_max_mps2:
+                    u_clamped_ned_aviary[0:2] = u_xy_final * (self.acc_hor_max_mps2 / norm_uxy_final)
+                
+                if abs(u_clamped_ned_aviary[2]) > self.acc_vert_max_mps2:
+                    u_clamped_ned_aviary[2] = self.acc_vert_max_mps2 * np.sign(u_clamped_ned_aviary[2])
 
-                # u_xy = u[0:2]
-                # norm_uxy = float(np.linalg.norm(u_xy))
-                # if norm_uxy > self.acc_hor_max:
-                #     u[0:2] = u_xy * (self.acc_hor_max / norm_uxy)
-                #     if np.dot(e[0:2], u[0:2]) > 0.0:
-                #         freeze_int_xy = True
-                        
-                # if abs(u[2]) > self.acc_vert_max:
-                #     u[2] = self.acc_vert_max * np.sign(u[2])
-                #     if np.sign(e[2]) == np.sign(u[2]):
-                #         freeze_int_z = True
 
-                # # Apply integrations based on freeze flags (for continuous controllers)
-                # if self.controller_type != "supertwisting":
-                #     if not freeze_int_xy:
-                #         self.integral_term[0:2] += delta_int[0:2]
-                #     if not freeze_int_z:
-                #         self.integral_term[2] += delta_int[2]
-
-                # # --- COST INTEGRATION (Only if Tracking) ---
-                # if not is_takeoff:
-                #     norm_e = float(np.linalg.norm(e))
-                #     norm_u = float(np.linalg.norm(u))
-                #     current_cost_integrand = (traj_t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
-                    
-                #     if traj_t == self.dt: # First timestep of trajectory
-                #         self.last_cost_integrand = current_cost_integrand
-                        
-                #     self.cost_J += (self.dt / 2.0) * (current_cost_integrand + self.last_cost_integrand)
-                #     self.last_cost_integrand = current_cost_integrand
-
-                u_ned = u_unclamped
-                #print(f"u_ned {u_ned}")
-
-                u_enu = self.swap_ned_aviary_and_enu(u_ned)
+                # --- CONTROL ACTION TRANSFORMS ---
+                # 1. Start with clamped control output in NED_aviary frame
+                # 2. Transform NED_aviary back to World ENU frame
+                u_enu_mps2 = self.swap_ned_aviary_and_enu(u_clamped_ned_aviary)
+                
+                # 3. Transform World ENU into Body FLU frame
+                # sensors.imu_orientation is the (Body FLU -> World ENU) active rotation quaternion.
+                # Left-multiplying a World ENU vector by the inverse of this quaternion yields the Body FLU vector.
                 quat_rotation_enu = Rotation.from_quat(sensors.imu_orientation, scalar_first=False)
-                u_flu = quat_rotation_enu.inv().apply(u_enu) 
+                u_flu_mps2 = quat_rotation_enu.inv().apply(u_enu_mps2) 
 
                 # P Controller for yaw (with wrap-around fix)
-                yaw_target_deg = 0.0
-                current_yaw_deg = yaw_enu
                 # Shortest angular error in degrees: (target - current + 180) % 360 - 180
-                e_yaw_deg = (yaw_target_deg - current_yaw_deg + 180.0) % 360.0 - 180.0
+                e_yaw_deg = (self.yaw_des_deg - yaw_enu + 180.0) % 360.0 - 180.0
+                yaw_rate_cmd = -self.K_P_yaw * e_yaw_deg
                 
-                yaw_rate_cmd = self.K_P_yaw * e_yaw_deg
-
-                # drone.step_with_acceleration(
-                #     ax=u_flu[0],
-                #     ay=u_flu[1],
-                #     az=u_flu[2],
-                #     yaw_rate=yaw_rate_cmd,
-                #     count=steps_per_tick
-                # )
-
                 drone.step_with_acceleration(
-                    ax=u_flu[0],
-                    ay=u_flu[1],
-                    az=u_flu[2],
+                    ax=u_flu_mps2[0],
+                    ay=u_flu_mps2[1],
+                    az=u_flu_mps2[2],
                     yaw_rate=yaw_rate_cmd,
                     count=steps_per_tick
                 )
