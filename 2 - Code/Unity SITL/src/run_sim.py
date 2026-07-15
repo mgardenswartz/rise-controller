@@ -235,7 +235,7 @@ class SimRun:
                             break
                     
                     case 'TRAJECTORY':
-                        qd_ned_aviary, qd_dot_ned_aviary, _ = self.traj_gen.get_desired_state(traj_t)
+                        qd_ned_aviary, qd_dot_ned_aviary, qd_ddot_ned_aviary = self.traj_gen.get_desired_state(traj_t)
                         traj_t = self.control_period_s * step
                     case _:
                         raise ValueError(f'Invalid flight_mode selected: {flight_mode}.')
@@ -280,7 +280,7 @@ class SimRun:
                         sgn_r1 = np.sign(r1_ned_aviary)
                         current_control_integrand = sgn_r1
                         proposed_integral = self.integral_control_term + (sgn_r1 * self.control_period_s)
-                        u_provisional = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * proposed_integral + self.k_1 * e_dot_ned_aviary
+                        u_provisional = qd_ddot_ned_aviary + self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * proposed_integral + self.k_1 * e_dot_ned_aviary
 
                     case _:
                         raise ValueError(f"Unknown controller type {self.controller_type}")

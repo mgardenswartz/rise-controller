@@ -5,7 +5,7 @@ TRIALS_PHASE_1=50 #500 # takes about 50 minutes
 TRIALS_PHASE_2=50 #750
 TRIALS_PHASE_3=50 #500
 PATIENCE=0
-TRAJ_NUM=2
+TRAJ_NUM=1
 DB_DIR="output/traj${TRAJ_NUM}"
 
 echo "=========================================="
@@ -26,6 +26,8 @@ read -p "Press Enter to continue once Unity is running..."
 
 # Comment out any lines below to skip a specific stage
 # ~/Desktop/aviary_0.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
+# ~/Desktop/aviary_1.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
+# ~/Desktop/aviary_2.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
 
 # echo "[*] Running Stage 1A (RISE No Wind - Ensure wind is OFF in Unity/config)"
 # python scripts/optimization.py --stage 1A --num_trials $TRIALS_PHASE_1 --db_dir $DB_DIR --patience $PATIENCE
