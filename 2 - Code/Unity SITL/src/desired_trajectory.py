@@ -24,7 +24,7 @@ class TrajectoryGenerator:
         self.traj2_A = config['traj2_petal_radius_m']
         self.traj2_v = config['traj2_target_speed_mps']
 
-        self.max_sim_time = config['sim_length_s'] +5
+        self.max_sim_time = config['sim_length_s'] + 5.0
         self._precompute_phases()
 
         # Warmup JIT functions
@@ -38,7 +38,9 @@ class TrajectoryGenerator:
         def dtau_dt(t: float, tau: np.ndarray) -> float:
             return self.traj1_warp_c * (1.0 - self.traj1_alpha * math.sin(w * tau[0])**2) # type: ignore
         
-        sol1 = solve_ivp(dtau_dt, [0, self.max_sim_time], [0.0], max_step=0.01)
+        # If starting 1/4 period ahead, the initial phase tau is exactly T/4
+        initial_tau_1 = self.traj1_period / 4.0 if self.desired_traj == 1 else 0.0
+        sol1 = solve_ivp(dtau_dt, [0, self.max_sim_time], [initial_tau_1], max_step=0.01)
         self.t_grid_1 = jnp.array(sol1.t)
         self.tau_grid = jnp.array(sol1.y[0])
 

@@ -62,14 +62,22 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
     costs = []
     e_rmses = []
     u_rmses = []
+    base_desired_traj = base_config.get('desired_trajectory', 1)
+    if base_desired_traj == 1:
+        base_x = base_config.get('traj1_init_x_m_ned_aviary', 1.22)
+        base_y = base_config.get('traj1_init_y_m_ned_aviary', 3.87)
+    else:
+        base_x = base_config.get('traj2_init_x_m_ned_aviary', 0.70)
+        base_y = base_config.get('traj2_init_y_m_ned_aviary', -2.37)
+
     print(f"\n[Mini-Batch] Evaluating {num_seeds} randomized initial conditions:")
     for i in range(num_seeds):
         # Deterministic perturbation based on seed index
         np.random.seed(base_seed + i)
         
         batch_params = param_dict.copy()
-        batch_params['init_x_m_ned_aviary'] = base_config['init_x_m_ned_aviary'] + np.random.uniform(-xy_range, xy_range)
-        batch_params['init_y_m_ned_aviary'] = base_config['init_y_m_ned_aviary'] + np.random.uniform(-xy_range, xy_range)
+        batch_params['init_x_m_ned_aviary'] = base_x + np.random.uniform(-xy_range, xy_range)
+        batch_params['init_y_m_ned_aviary'] = base_y + np.random.uniform(-xy_range, xy_range)
         batch_params['hover_start_z_m_ned_aviary'] = base_config['hover_start_z_m_ned_aviary'] + np.random.uniform(-z_range, z_range)
         
         sim = SimRun(batch_params, yaml_config_path="conf/config.yaml")

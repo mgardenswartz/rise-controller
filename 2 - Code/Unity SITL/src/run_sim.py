@@ -62,8 +62,12 @@ class SimRun:
         self.r_u = self.config['r_u']
         self.K_P_yaw = self.config['K_P_yaw']
 
-        self.init_x_ned = self.config['init_x_m_ned_aviary']
-        self.init_y_ned = self.config['init_y_m_ned_aviary']
+        if self.desired_traj == 1:
+            self.init_x_ned = self.config.get('init_x_m_ned_aviary', self.config.get('traj1_init_x_m_ned_aviary', 1.22))
+            self.init_y_ned = self.config.get('init_y_m_ned_aviary', self.config.get('traj1_init_y_m_ned_aviary', 3.87))
+        else:
+            self.init_x_ned = self.config.get('init_x_m_ned_aviary', self.config.get('traj2_init_x_m_ned_aviary', 0.70))
+            self.init_y_ned = self.config.get('init_y_m_ned_aviary', self.config.get('traj2_init_y_m_ned_aviary', -2.37))
         self.init_z_ned = self.config['init_z_m_ned_aviary']
         self.init_ned = np.array([self.init_x_ned, self.init_y_ned, self.init_z_ned], dtype=np.float64)
         self.hover_start_z_m_ned_aviary = self.config['hover_start_z_m_ned_aviary']

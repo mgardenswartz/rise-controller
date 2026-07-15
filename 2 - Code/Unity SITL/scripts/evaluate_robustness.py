@@ -81,8 +81,13 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
     with open(config_path, 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
         
-    base_x = base_config.get('init_x_m_ned_aviary', 0.70)
-    base_y = base_config.get('init_y_m_ned_aviary', -2.37)
+    base_desired_traj = base_config.get('desired_trajectory', 1)
+    if base_desired_traj == 1:
+        base_x = base_config.get('traj1_init_x_m_ned_aviary', 1.22)
+        base_y = base_config.get('traj1_init_y_m_ned_aviary', 3.87)
+    else:
+        base_x = base_config.get('traj2_init_x_m_ned_aviary', 0.70)
+        base_y = base_config.get('traj2_init_y_m_ned_aviary', -2.37)
     base_z = base_config.get('hover_start_z_m_ned_aviary', -1.5)
     
     xy_range = base_config.get('xy_rand_range_m', 1.0)

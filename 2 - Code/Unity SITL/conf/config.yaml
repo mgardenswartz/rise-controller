@@ -11,8 +11,10 @@ aviary_rise_node:
     hover_start_z_m_ned_aviary: -0.75
     initial_weight_scale_factor: 0.2
     init_tol_m: 0.2
-    init_x_m_ned_aviary: 0.70
-    init_y_m_ned_aviary: -2.37
+    traj1_init_x_m_ned_aviary: 1.22
+    traj1_init_y_m_ned_aviary: 3.87
+    traj2_init_x_m_ned_aviary: 0.70
+    traj2_init_y_m_ned_aviary: -2.37
     init_z_m_ned_aviary: -0.75
     init_yaw_deg: 0.0
     yaw_des_deg: 0.0
