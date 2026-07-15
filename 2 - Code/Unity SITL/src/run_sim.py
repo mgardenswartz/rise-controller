@@ -49,9 +49,14 @@ class SimRun:
         self.k_1 = self.config['k_1']
         self.k_2 = self.config['k_2']
         self.k_3 = self.config['k_3']
-        self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
-        self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
-        self.K_D = self.k_1 + self.k_2 + self.k_3
+        if self.controller_type == "pid":
+            self.K_P = self.config.get("K_P", 0.0)
+            self.K_I = self.config.get("K_I", 0.0)
+            self.K_D = self.config.get("K_D", 0.0)
+        else:
+            self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
+            self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
+            self.K_D = self.k_1 + self.k_2 + self.k_3
         self.K_RISE = self.config['k_rise']
         self.q_e = self.config['q_e']
         self.r_u = self.config['r_u']
@@ -241,8 +246,8 @@ class SimRun:
 
                 # --- CONTROL LAW EVALUATION ---
                 match self.controller_type:
-                    case "baseline":
-                        current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary))
+                    case "baseline" | "baseline_no_wind" | "pid":
+                        current_control_integrand = self.K_I * e_ned_aviary + (self.controller_type in ["baseline", "baseline_no_wind"]) * (self.K_RISE * np.sign(r1_ned_aviary))
                         u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         
                     case "resnet":

@@ -90,7 +90,7 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
 def run_stage_1a(trial: optuna.Trial) -> float:
     param_dict = {
         'controller_type': 'baseline',
-        'k_1': trial.suggest_float("k_1", 0.01, 0.5, log=True),
+        'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
     param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
@@ -100,7 +100,7 @@ def run_stage_1a(trial: optuna.Trial) -> float:
 def run_stage_1b(trial: optuna.Trial) -> float:
     param_dict = {
         'controller_type': 'baseline',
-        'k_1': trial.suggest_float("k_1", 0.01, 0.5, log=True),
+        'k_1': trial.suggest_float("k_1", 0.01, 2.0, log=True),
         'k_rise': trial.suggest_float("k_rise", 0.01, 8.0, log=True)
     }
     param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
@@ -182,10 +182,24 @@ def run_stage_3(trial: optuna.Trial) -> float:
     }
     return evaluate_minibatch(trial, param_dict)
 
+def run_stage_4(trial: optuna.Trial) -> float:
+    param_dict = {
+        'controller_type': 'pid',
+        'K_P': trial.suggest_float("K_P", 0.01, 50.0, log=True),
+        'K_I': trial.suggest_float("K_I", 0.01, 50.0, log=True),
+        'K_D': trial.suggest_float("K_D", 0.01, 50.0, log=True),
+        # Need dummy values for these so sim initialization doesn't fail
+        'k_1': 0.0,
+        'k_2': 0.0,
+        'k_3': 0.0,
+        'k_rise': 0.0,
+    }
+    return evaluate_minibatch(trial, param_dict)
+
 if __name__ == "__main__":
     import os
     parser = argparse.ArgumentParser(description="Optuna Orchestrator for Quadcopter Adaptive Control")
-    parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2A', '2B', '3', 'LHS'], help="Optimization stage to run.")
+    parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2A', '2B', '3', '4', 'LHS'], help="Optimization stage to run.")
     parser.add_argument("--num_trials", type=int, required=True, help="Number of trials.")
     parser.add_argument("--db_dir", type=str, required=True, help="Directory for Optuna databases (e.g. output/traj1).")
     parser.add_argument("--patience", type=int, required=True, help="Number of trials to wait for improvement before stopping early. 0 to disable.")
@@ -251,3 +265,5 @@ if __name__ == "__main__":
         study.optimize(lambda t: run_stage_2b(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
     elif args.stage == '3':
         study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=callbacks)
+    elif args.stage == '4':
+        study.optimize(run_stage_4, n_trials=args.num_trials, callbacks=callbacks)

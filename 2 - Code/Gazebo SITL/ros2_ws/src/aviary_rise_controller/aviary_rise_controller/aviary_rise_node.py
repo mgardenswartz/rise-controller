@@ -207,6 +207,7 @@ class AviaryRiseNode(Node):
         if self.controller_type == "pid":
             self.declare_parameter('K_P', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
             self.declare_parameter('K_I', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+            self.declare_parameter('K_D', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         else:
             self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
             self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
@@ -643,7 +644,7 @@ class AviaryRiseNode(Node):
                 
                 match self.controller_type:
                     case "baseline" | "pid":
-                        current_integrand = (self.K_I * e) + (self.controller_type == "pid") * (self.K_RISE * np.sign(r1))
+                        current_integrand = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
                         delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
                         if not self.freeze_int_xy:
                             self.integral_term[0:2] += delta_int[0:2]

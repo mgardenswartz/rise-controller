@@ -45,6 +45,9 @@ python scripts/optimization.py --stage 2B --num_trials $TRIALS_PHASE_2 --db_dir 
 echo "[*] Running Stage 3 (Super-Twisting Baseline)"
 python scripts/optimization.py --stage 3 --num_trials $TRIALS_PHASE_3 --db_dir $DB_DIR --patience $PATIENCE
 
+echo "[*] Running Stage 4 (PID Controller Baseline)"
+python scripts/optimization.py --stage 4 --num_trials $TRIALS_PHASE_1 --db_dir $DB_DIR --patience $PATIENCE
+
 echo "=========================================="
 echo " Extracting Best Gains..."
 echo "=========================================="

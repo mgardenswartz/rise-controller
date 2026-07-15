@@ -58,6 +58,14 @@ def main() -> None:
             'k_2': st_params.get('k_st_2', 1.0),
             'k_3': st_params.get('k_st_3', 1.0)
         }
+
+    # Load Stage 4 for PID
+    pid_params = get_best_params("stage_4_study", "stage_4.db")
+    if pid_params:
+        best_gains['BEST_PID'] = {
+            'controller_type': 'pid',
+            **pid_params
+        }
         
     with open(args.config, 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']

@@ -26,7 +26,7 @@ def check_normality_and_compare(df: pd.DataFrame, metric: str) -> None:
     print("==================================================")
     
     inn_col = f'INN_Integrated_{metric}'
-    baselines = [f'NN_Feedforward_{metric}', f'RISE_{metric}', f'SuperTwisting_{metric}']
+    baselines = [f'NN_Feedforward_{metric}', f'RISE_{metric}', f'SuperTwisting_{metric}', f'PID_{metric}']
     
     for base in baselines:
         if base not in df.columns or inn_col not in df.columns:
@@ -148,6 +148,8 @@ if __name__ == "__main__":
         controllers.append(("RISE", best_gains['BEST_RISE']))
     if 'BEST_ST' in best_gains:
         controllers.append(("SuperTwisting", best_gains['BEST_ST']))
+    if 'BEST_PID' in best_gains:
+        controllers.append(("PID", best_gains['BEST_PID']))
     if 'BEST_NN' in best_gains:
         controllers.append(("NN_Feedforward", best_gains['BEST_NN']))
     if 'BEST_INN' in best_gains:
