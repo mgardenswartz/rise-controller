@@ -7,7 +7,7 @@ from src.run_sim import SimRun
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run a single debug flight with best gains.")
-    parser.add_argument("--controller_type", type=str, required=True, 
+    parser.add_argument("--controller_type", type=str, required=True,
                         choices=["baseline", "resnet", "integrated_resnet", "supertwisting"],
                         help="The type of controller to run.")
     parser.add_argument("--config", type=str, default="conf/config.yaml", 
@@ -15,8 +15,6 @@ def main() -> None:
     parser.add_argument("--db_dir", type=str, required=True, 
                         help="Directory containing the best_gains.yaml file (e.g. output/traj1).")
     args = parser.parse_args()
-
-
         
     best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     
@@ -47,8 +45,8 @@ def main() -> None:
     sim = SimRun(params, yaml_config_path=args.config)
     
     try:
-        cost = sim.run()
-        print(f"\n[*] Flight Complete! Final Cost: {cost:.4f}")
+        cost, e_rms, u_rms = sim.run()
+        print(f"\n[*] Flight Complete! Final Cost: {cost:.4f} | E_RMS {e_rms} | u_RMS {u_rms}")
     except Exception as e:
         print(f"\n[!] Flight failed with error: {e}")
 

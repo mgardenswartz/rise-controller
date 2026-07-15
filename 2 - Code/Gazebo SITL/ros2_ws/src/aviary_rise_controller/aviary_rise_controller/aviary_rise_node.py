@@ -20,7 +20,7 @@ from px4_msgs.msg import VehicleOdometry
 import jax
 import jax.numpy as jnp
 jax.config.update("jax_platform_name", "cpu")
-jax.config.update("jax_enable_x64", True) # Force 64-bit precision uniformly
+jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network
@@ -204,9 +204,14 @@ class AviaryRiseNode(Node):
         self.k_1 = self.get_parameter('k_1').value
         self.k_2 = self.get_parameter('k_2').value
         self.k_3 = self.get_parameter('k_3').value
-        self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
-        self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
-        self.K_D = self.k_1 + self.k_2 + self.k_3
+        if self.controller_type == "pid":
+            self.declare_parameter('K_P', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+            self.declare_parameter('K_I', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        else:
+            self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
+            self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
+            self.K_D = self.k_1 + self.k_2 + self.k_3    
+
         self.K_RISE = self.get_parameter('k_rise').value
         self.q_e = self.get_parameter('q_e').value
         self.r_u = self.get_parameter('r_u').value
@@ -283,7 +288,7 @@ class AviaryRiseNode(Node):
         self.control_period = 1 / control_frequency
         self.control_timer = self.create_timer(self.control_period, self.control_timer_callback)
 
-        if self.controller_type in ["baseline", "developed"]:
+        if self.controller_type in ["resnet", "integrated_resnet"]:
             self.d_in = self.get_parameter('d_in').value
             self.sigma_mod = self.get_parameter('sigma_mod').value
             self.theta_bar = self.get_parameter('theta_bar').value
@@ -373,7 +378,7 @@ class AviaryRiseNode(Node):
         # At boot, we always use the tick counter
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout * self.watchdog_freq):
-                self.get_logger().fatal("NO ODOMETRY AT BOOT! KILLING NODE.")
+                self.get_logger().fatal("NO ODOMETRY AT BOOT! EXITING NODE.")
                 os._exit(1)
         else:
             if self.is_gazebo:
@@ -435,12 +440,14 @@ class AviaryRiseNode(Node):
         base_dir = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
         os.makedirs(base_dir, exist_ok=True)
         
-        csv_filename = os.path.join(base_dir, f"trial_cost_{int(self.cost_J)}.csv")
+        existing_files = [f for f in os.listdir(base_dir) if os.path.isfile(os.path.join(base_dir, f))]
+        iterable = len(existing_files) + 1
+        csv_filename = os.path.join(base_dir, f"run_{iterable}.csv")
         try:
             with open(csv_filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
                 headers = ["Time_s", "Error_Norm_m", "x", "y", "z", "xd", "yd", "zd"]
-                if self.controller_type in ["baseline", "developed"] and self.weight_history:
+                if self.controller_type in ["resnet", "integrated_resnet"] and self.weight_history:
                     num_weights = len(self.weight_history[0])
                     headers += [f"W{i}" for i in range(num_weights)]
                 writer.writerow(headers)
@@ -450,7 +457,7 @@ class AviaryRiseNode(Node):
                         self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
                         self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
                     ]
-                    if self.controller_type in ["baseline", "developed"] and self.weight_history:
+                    if self.controller_type in ["resnet", "integrated_resnet"] and self.weight_history:
                         row += self.weight_history[i]
                     writer.writerow(row)
             self.get_logger().info(f"Telemetry saved to {csv_filename}")
@@ -465,19 +472,19 @@ class AviaryRiseNode(Node):
             self.get_logger().error("GAZEBO FAILSAFE TRIGGERED. EXITING SIM.")
             os._exit(1)
         else:
-            self.get_logger().error("SAFETY BOUNDARY BREACHED. EMERGENCY LANDING.")
+            self.get_logger().error("LANDING!")
             self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
             self.experiment_state = ExperimentState.STATE_FAILSAFE
 
     def check_safety_boundary(self, q: np.ndarray) -> bool:
         if not (-self.safe_x_max <= q[0] <= self.safe_x_max):
-            self.get_logger().error(f"X BOUNDARY BREACH: {q[0]} not in [{-self.safe_x_max}, {self.safe_x_max}]")
+            self.get_logger().fatal(f"X BOUNDARY BREACH: {q[0]} not in [{-self.safe_x_max}, {self.safe_x_max}]")
             return True 
         if not (-self.safe_y_max <= q[1] <= self.safe_y_max):
-            self.get_logger().error(f"Y BOUNDARY BREACH: {q[1]} not in [{-self.safe_y_max}, {self.safe_y_max}]")
+            self.get_logger().fatal(f"Y BOUNDARY BREACH: {q[1]} not in [{-self.safe_y_max}, {self.safe_y_max}]")
             return True 
         if not (self.safe_z_min <= q[2] <= self.safe_z_max):
-            self.get_logger().error(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min}, {self.safe_z_max}]")
+            self.get_logger().fatal(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min}, {self.safe_z_max}]")
             return True 
         return False
 
@@ -635,8 +642,8 @@ class AviaryRiseNode(Node):
                 phi_val = np.zeros(self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
-                    case "noresnet":
-                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                    case "baseline" | "pid":
+                        current_integrand = (self.K_I * e) + (self.controller_type == "pid") * (self.K_RISE * np.sign(r1))
                         delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
                         if not self.freeze_int_xy:
                             self.integral_term[0:2] += delta_int[0:2]
@@ -645,7 +652,7 @@ class AviaryRiseNode(Node):
                         self.last_integrand = current_integrand
                         u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
-                    case "baseline":
+                    case "resnet":
                         if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ: 
                             x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
                             
@@ -656,7 +663,7 @@ class AviaryRiseNode(Node):
                             self.theta_hat.block_until_ready()
                             t_end_jax = time.perf_counter()
                             jax_dt = t_end_jax - t_start_jax
-                            if jax_dt > 0.05:
+                            if jax_dt > self.control_period:
                                 self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(phi_out, dtype=np.float64)
@@ -670,7 +677,7 @@ class AviaryRiseNode(Node):
                         self.last_integrand = current_integrand
                         u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                         
-                    case "developed":
+                    case "integrated_resnet":
                         if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                             u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
                             kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
@@ -682,8 +689,8 @@ class AviaryRiseNode(Node):
                             self.theta_hat.block_until_ready()
                             t_end_jax = time.perf_counter()
                             jax_dt = t_end_jax - t_start_jax
-                            if jax_dt > 0.05:
-                                self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
+                            if jax_dt > self.control_period:
+                                self.get_logger().warn(f"[CRITICAL] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(phi_out, dtype=np.float64)
                         
@@ -710,7 +717,7 @@ class AviaryRiseNode(Node):
                 self.q_history.append(q.tolist())
                 self.qd_history.append(qd.tolist())
 
-                if self.controller_type in ["baseline", "developed"]:
+                if self.controller_type in ["resnet", "integrated_resnet"]:
                     self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
 
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
@@ -761,9 +768,9 @@ class AviaryRiseNode(Node):
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.t_f:
                     rms_error = math.sqrt(self.error_sq_integral / self.t_f) if self.t_f > 0 else 0.0
                     rms_u = math.sqrt(self.u_sq_integral / self.t_f) if self.t_f > 0 else 0.0
-                    self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.4f}")
+                    self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.2f}")
                     self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
-                    self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.4f}")
+                    self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.3f}")
                     self.trigger_failsafe_land()
 
 def main(args=None):

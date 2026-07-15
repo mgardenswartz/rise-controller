@@ -14,6 +14,7 @@ import jax.numpy as jnp
 from src.proj import discrete_projection
 from jax_resnet import resnet_network
 from quadsim import QuadSim
+from jax_resnet import init_resnet_weights
 from src.desired_trajectory import TrajectoryGenerator
 
 jax.config.update("jax_platform_name", "cpu") # type: ignore
@@ -93,27 +94,22 @@ class SimRun:
     def setup_neural_network(self) -> None:
         self.theta_bar = self.config['theta_bar']
         self.sigma_mod = self.config['sigma_mod']
-        if 'initial_weights' in self.config:
-            init_w = jnp.array(self.config['initial_weights'])
-            init_scale = self.config['initial_weight_scale_factor']
-            self.theta_hat = init_w * init_scale
-        else:
-            from jax_resnet import init_resnet_weights
-            key = jax.random.PRNGKey(self.config.get('base_seed', 42))
-            init_scale = self.config['initial_weight_scale_factor']
-            self.theta_hat = init_scale * init_resnet_weights(
-                key,
-                self.config['d_in'],
-                self.config['hidden_width'],
-                self.config['d_out'],
-                self.config['num_blocks'],
-                self.config['k_0'],
-                self.config['k_i'],
-                self.config['h_method'],
-                self.config['o_method']
-            )
 
-        self.gamma_diag = jnp.ones(len(self.theta_hat)) * self.config['gamma']
+        key = jax.random.PRNGKey(self.config['base_seed'])
+        init_scale = self.config['initial_weight_scale_factor']
+        self.theta_hat = init_scale * init_resnet_weights(
+            key=key,
+            d_in=self.config['d_in'],
+            hidden_width=self.config['hidden_width'],
+            d_out=self.config['d_out'],
+            b=self.config['num_blocks'],
+            k_0=self.config['k_0'],
+            k_i=self.config['k_i'],
+            h_method=self.config['h_method'],
+            o_method=self.config['o_method']
+        )
+
+        self.gamma_diag = jnp.ones(len(self.theta_hat)) * self.config['gamma'] 
         
         self.bound_resnet = jax.jit(jax.tree_util.Partial( # type: ignore
             resnet_network,
@@ -130,11 +126,16 @@ class SimRun:
         
         @jax.jit
         def compiled_update_step(
-            theta_hat: jax.Array, x_vec: jax.Array, r1_vec: jax.Array,
-            dt: float, theta_bar: float, gamma_diag: jax.Array,
-            s_mod: float, saturated: bool
+            theta_hat: jax.Array,
+            x_vec: jax.Array,
+            r1_vec: jax.Array,
+            dt: float,
+            theta_bar: float,
+            gamma_diag: jax.Array,
+            s_mod: float,
+            saturated: bool
         ) -> Tuple[jax.Array, Any]:
-            phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), theta_hat)
+            phi_val, vjp_fn = jax.vjp(lambda theta: self.bound_resnet(theta, x_vec), theta_hat)
             grad_term = vjp_fn(r1_vec)[0]
             theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
             theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma_diag)
@@ -157,14 +158,14 @@ class SimRun:
         """
         return np.array([vec[0], -vec[1], -vec[2]], dtype=np.float64)
 
-    def check_boundary_escape(self, q_ned: np.ndarray) -> bool:
-        if not (self.safe_x_min_m_ned_aviary_aviary <= q_ned[0] <= self.safe_x_max_m_ned_aviary_aviary) or \
-        not (self.safe_y_min_m_ned_aviary_aviary <= q_ned[1] <= self.safe_y_max_m_ned_aviary_aviary) or \
-        not (self.safe_z_min_m_ned_aviary_aviary <= q_ned[2] <= self.safe_z_max_m_ned_aviary_aviary):
+    def check_boundary_escape(self, q_ned_aviary: np.ndarray) -> bool:
+        if not (self.safe_x_min_m_ned_aviary_aviary <= q_ned_aviary[0] <= self.safe_x_max_m_ned_aviary_aviary) or \
+        not (self.safe_y_min_m_ned_aviary_aviary <= q_ned_aviary[1] <= self.safe_y_max_m_ned_aviary_aviary) or \
+        not (self.safe_z_min_m_ned_aviary_aviary <= q_ned_aviary[2] <= self.safe_z_max_m_ned_aviary_aviary):
             return True
         return False
 
-    def run(self) -> float:
+    def run(self) -> tuple[float, float, float]:
         """Executes the simulation loop and returns the cost."""
         with QuadSim() as sim:
             sim.pause()
@@ -198,7 +199,7 @@ class SimRun:
                 q_dot_ned = self.swap_ned_aviary_and_enu(sensors.velocity_enu) # Velocity is ENU
                 yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
 
-                if self.check_boundary_escape(q_ned=q_ned):
+                if self.check_boundary_escape(q_ned_aviary=q_ned):
                     print(f"[!] Got too close to a wall! Position: {q_ned}. Exiting.")
                     if flight_mode == 'TRAJECTORY':
                         self.cost_J += self.w_fail * ((self.sim_length_s - traj_t) ** 2)
@@ -386,6 +387,8 @@ class SimRun:
             print(f"[*] Simulation took {round(sim_run_time_realworld, 1)} real seconds for {self.sim_length_s} simulated seconds. Scale: {round(self.sim_length_s / sim_run_time_realworld , 1)}. Specified speed was {self.sim_speed}.")
 
             # --- COMPUTE RMS ---
+            e_rms = 0.0
+            u_rms = 0.0
             if len(self.e_history) > 0:
                 e_arr = np.array(self.e_history)
                 u_arr = np.array(self.u_history)
@@ -433,4 +436,4 @@ class SimRun:
                 print(f"Saved data to {csv_path}")
 
             sim.pause()
-            return self.cost_J
+            return self.cost_J, e_rms, u_rms

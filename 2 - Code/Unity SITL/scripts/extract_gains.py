@@ -10,22 +10,37 @@ def main() -> None:
     parser.add_argument("--config", type=str, required=True, help="Path to config.yaml")
     args = parser.parse_args()
 
-
-        
     best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     best_gains: Dict[str, Dict[str, Any]] = {}
     
     def get_best_params(study_name: str, db_file: str) -> Dict[str, Any]:
-        db_path = f"sqlite:///{os.path.join(args.db_dir, db_file)}"
+        full_path = os.path.join(args.db_dir, db_file)
+        if not os.path.exists(full_path):
+            print(f"Warning: Database file {db_file} does not exist. Skipping.")
+            return {}
+        
+        db_path = f"sqlite:///{full_path}"
         try:
             study = optuna.load_study(study_name=study_name, storage=db_path)
-            print(f"Loaded best params for {study_name} from {db_file}: Cost = {study.best_value:.4f}")
+            e_rms = study.best_trial.user_attrs.get('e_RMS', 'N/A')
+            u_rms = study.best_trial.user_attrs.get('u_RMS', 'N/A')
+            e_str = f"{e_rms:.4f}" if isinstance(e_rms, float) else e_rms
+            u_str = f"{u_rms:.4f}" if isinstance(u_rms, float) else u_rms
+            print(f"Loaded best params for {study_name} from {db_file}: Cost = {study.best_value:.4f} | e_RMS = {e_str} | u_RMS = {u_str}")
             return dict(study.best_params)
         except Exception as e:
             print(f"Warning: Could not load study {study_name} from {db_file}: {e}")
             return {}
+    
+    # Load 1A for RISE
+    rise_params_no_wind = get_best_params("stage_1A_study", "stage_1A.db")
+    if rise_params_no_wind:
+        best_gains['BEST_RISE_NO_WIND'] = {
+            'controller_type': 'baseline_no_wind',
+            **rise_params_no_wind
+        }
 
-    # Load 1B for RISE (assumed robust baseline)
+    # Load 1B for RISE
     rise_params = get_best_params("stage_1B_study", "stage_1B.db")
     if rise_params:
         best_gains['BEST_RISE'] = {
@@ -38,29 +53,41 @@ def main() -> None:
     if st_params:
         best_gains['BEST_ST'] = {
             'controller_type': 'supertwisting',
-            # Map k_st_1 to k_1, etc. as defined in run_optimization.py
+            # Map k_st_1 to k_1, etc. as defined in optimization.py
             'k_1': st_params.get('k_st_1', 1.0),
             'k_2': st_params.get('k_st_2', 1.0),
             'k_3': st_params.get('k_st_3', 1.0)
         }
         
+    with open(args.config, 'r') as f:
+        base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
+    base_stage = base_config.get('stage2_base_gains', '1B')
+    stage2_base_params = rise_params_no_wind if base_stage == '1A' else rise_params
+
+    fixed_arch = {
+        'num_blocks': 6,
+        'k_0': 2,
+        'k_i': 2,
+        'hidden_width': 16,
+    }
+
     # Load Stage 2A for Neural Network Baseline
     nn_params = get_best_params("stage_2A_study", "stage_2A.db")
-    if nn_params and rise_params:
-        # NN Feedforward uses NN params with controller_type 'baseline'
+    if nn_params and stage2_base_params:
         best_gains['BEST_NN'] = {
             'controller_type': 'resnet',
-            **rise_params,
+            **stage2_base_params,
+            **fixed_arch,
             **nn_params
         }
         
     # Load Stage 2B for Integrated Neural Network
     inn_params = get_best_params("stage_2B_study", "stage_2B.db")
-    if inn_params and rise_params:
-        # INN uses INN params with controller_type 'developed'
+    if inn_params and stage2_base_params:
         best_gains['BEST_INN'] = {
             'controller_type': 'integrated_resnet',
-            **rise_params,
+            **stage2_base_params,
+            **fixed_arch,
             **inn_params
         }
 

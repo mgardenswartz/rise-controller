@@ -8,17 +8,17 @@ This document explains the purpose, inputs, and outputs of the executable script
 **Purpose**: An automated bash script that executes the complete optimization pipeline across all stages.
 **Usage**: `./scripts/run_all.sh`
 **Details**:
-- Calls `run_optimization.py` sequentially for Stages 1A, 1B, 2, and 3.
+- Calls `optimization.py` sequentially for Stages 1A, 1B, 2, and 3.
 - Calls `extract_gains.py` at the end to compile the optimal parameters.
 - Outputs all SQLite database tracking to `output/optimization.db`.
 
 ---
 
-## 2. `run_optimization.py`
+## 2. `optimization.py`
 **Purpose**: Uses Optuna to tune hyperparameter gains and neural network architectures using mini-batch domain randomization.
 **Usage**: 
 ```bash
-python scripts/run_optimization.py --stage <1A|1B|2|3> --num_trials <N> --db <sqlite_url>
+python scripts/optimization.py --stage <1A|1B|2|3> --num_trials <N> --db <sqlite_url>
 ```
 **Details**:
 - **Stage 1A**: Tunes baseline RISE controller (No Wind).
