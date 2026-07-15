@@ -5,6 +5,20 @@ from scipy import stats
 import yaml
 from typing import Any, Tuple, List, Dict
 import os
+import sys
+
+class Logger(object):
+    def __init__(self, filename):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
 
 from src.run_sim import SimRun
 
@@ -139,8 +153,6 @@ if __name__ == "__main__":
         full_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
         
     best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
-    robustness_output_path = os.path.join(args.db_dir, "robustness_results.csv")
-    
     if not os.path.exists(best_gains_path):
         raise FileNotFoundError(f"Best gains file not found at {best_gains_path}. Please run extract_gains.py first.")
         
@@ -162,6 +174,13 @@ if __name__ == "__main__":
         
     if not controllers:
         raise ValueError("No controllers found in best_gains.yaml")
+
+    robustness_output_path = os.path.join(args.db_dir, f"robustness_sweep_{len(controllers)}_controllers.csv")
+    summary_output_path = os.path.join(args.db_dir, f"robustness_sweep_{len(controllers)}_controllers_summary.md")
+    
+    # Redirect stdout to capture prints
+    sys.stdout = Logger(summary_output_path)
+    print(f"# Robustness Evaluation Summary\n")
 
     df_results = run_robustness_sweep(
         n_trials=args.num_trials, 

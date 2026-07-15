@@ -276,6 +276,7 @@ class AviaryRiseNode(Node):
         self.u_sq_integral = 0.0
         self.last_u_sq = 0.0
         self.time_history = []
+        self.control_output_norm_history = []
         self.error_norm_history = []
         self.weight_history = []
         self.q_history = []
@@ -447,14 +448,14 @@ class AviaryRiseNode(Node):
         try:
             with open(csv_filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                headers = ["Time_s", "Error_Norm_m", "x", "y", "z", "xd", "yd", "zd"]
+                headers = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
                 if self.controller_type in ["resnet", "integrated_resnet"] and self.weight_history:
                     num_weights = len(self.weight_history[0])
                     headers += [f"W{i}" for i in range(num_weights)]
                 writer.writerow(headers)
                 for i in range(len(self.time_history)):
                     row = [
-                        self.time_history[i], self.error_norm_history[i],
+                        self.time_history[i], self.error_norm_history[i], self.control_output_norm_history[i],
                         self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
                         self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
                     ]
@@ -634,7 +635,7 @@ class AviaryRiseNode(Node):
                     self.trigger_failsafe_land()
                     return
 
-                qd, qd_dot, _ = self.get_desired_state(t)
+                qd, qd_dot, qd_ddot = self.get_desired_state(t)
                 e = qd - q
                 e_dot = qd_dot - q_dot
                 r1 = e_dot + (self.k_1 * e)
@@ -708,13 +709,14 @@ class AviaryRiseNode(Node):
                         norm_r1 = np.linalg.norm(r1)
                         sgn_r1 = np.sign(r1)
                         self.st_integral += sgn_r1 * dt
-                        u = self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
+                        u = qd_ddot + self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
         
                 norm_e = float(np.linalg.norm(e))
                 norm_u = float(np.linalg.norm(u))
                 
                 self.time_history.append(t)
                 self.error_norm_history.append(norm_e)
+                self.control_output_norm_history.append(norm_u)
                 self.q_history.append(q.tolist())
                 self.qd_history.append(qd.tolist())
 

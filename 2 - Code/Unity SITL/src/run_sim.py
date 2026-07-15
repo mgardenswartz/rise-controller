@@ -223,6 +223,7 @@ class SimRun:
                         takeoff_steps += 1
                         qd_ned_aviary = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_m_ned_aviary], dtype=np.float64)
                         qd_dot_ned_aviary = np.zeros(3, dtype=np.float64)
+                        qd_ddot_ned_aviary = np.zeros(3, dtype=np.float64)
                         
                         dist = np.linalg.norm(q_ned - qd_ned_aviary)
                         if dist <= self.init_tol_m:

@@ -5,7 +5,7 @@ TRIALS_PHASE_1=50 #500 # takes about 50 minutes
 TRIALS_PHASE_2=50 #750
 TRIALS_PHASE_3=50 #500
 PATIENCE=0
-TRAJ_NUM=1
+TRAJ_NUM=2
 DB_DIR="output/traj${TRAJ_NUM}"
 
 echo "=========================================="
