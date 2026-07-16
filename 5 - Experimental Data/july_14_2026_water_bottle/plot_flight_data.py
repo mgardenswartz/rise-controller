@@ -42,7 +42,18 @@ def main():
         exy = df['Error_Norm_m'] if 'Error_Norm_m' in df.columns else np.zeros(len(df))
         ez_abs = df['Error_Norm_m'] if 'Error_Norm_m' in df.columns else np.zeros(len(df))
 
-    rms_error = np.sqrt(np.mean(e_3d**2))
+    # ---------------------------------------------------------
+    # RMS Calculation via Trapezoidal Integration
+    # ---------------------------------------------------------
+    time_s = df['Time_s'].values
+    error_sq = e_3d.values**2 if hasattr(e_3d, 'values') else e_3d**2
+    
+    # Integrate E(t) over time
+    error_sq_integral = np.trapezoid(error_sq, x=time_s)
+    
+    # Divide by total elapsed time to get the mean, then square root
+    total_time = time_s[-1] - time_s[0] 
+    rms_error = np.sqrt(error_sq_integral / total_time) if total_time > 0 else 0.0
 
     # Identify weight and control signals
     weight_cols = [col for col in df.columns if col.startswith('W')]

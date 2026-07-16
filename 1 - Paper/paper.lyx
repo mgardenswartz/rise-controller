@@ -5247,12 +5247,16 @@ nolink "false"
 \begin_inset Formula $F$
 \end_inset
 
- can be any sufficiently smooth (e.g.,
+ can be any sufficiently smooth function (e.g.,
  of class 
 \begin_inset Formula $\mathcal{C}^{1}$
 \end_inset
 
-) function,
+ 
+\color blue
+as needed in this work
+\color inherit
+) ,
  (ii) 
 \begin_inset Formula $F$
 \end_inset
@@ -5457,7 +5461,7 @@ nolink "false"
 
 
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Recall
@@ -5851,7 +5855,7 @@ nolink "false"
 
 .
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Subsubsection*
 BOUNDING LEMMA 2.1
@@ -8976,6 +8980,10 @@ nolink "false"
 
 .
  Since 
+\color blue
+the structure of
+\color inherit
+ 
 \begin_inset Formula $\beta$
 \end_inset
 
@@ -9454,6 +9462,10 @@ Simulations
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 An integral of time-weighted square-error cost function was used to penalize later tracking errors more than transient ones:
 \begin_inset Formula 
 \[
@@ -9492,6 +9504,11 @@ where
 
  if it does not escape).
  The integral was evaluated using the trapezoidal rule.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -9969,7 +9986,7 @@ We assume no knowledge of
 .
 \begin_inset Formula 
 \begin{align*}
-u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega\left(t\right)-k_{\text{ST},1}\dot{e}\\
+u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\omega\left(t\right)+k_{\text{ST},1}\dot{e}\\
 \dot{\omega} & =-k_{\text{ST},3}\text{sgn}\left(r_{1}\right)
 \end{align*}
 
@@ -9992,8 +10009,8 @@ Choose
 .
 \begin_inset Formula 
 \begin{align*}
-u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\left(\cancelto{0}{\omega\left(t_{0}\right)}-k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau\right)-k_{\text{ST},1}\dot{e}\\
- & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau-k_{\text{ST},1}\dot{e}
+u\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)-\left(\cancelto{0}{\omega\left(t_{0}\right)}-k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau\right)+k_{\text{ST},1}\dot{e}\\
+ & =k_{\text{ST},2}\left\Vert r_{1}\right\Vert ^{1/2}\text{sgn}\left(r_{1}\right)+k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau+k_{\text{ST},1}\dot{e}
 \end{align*}
 
 \end_inset
@@ -10117,7 +10134,7 @@ INN
 \begin_inset Formula 
 \begin{align*}
 u_{\text{INN}}\left(t\right) & \triangleq u_{\text{PID}}\left(t\right)+u_{\text{RISE}}\left(t\right)+\intop^{t}_{t_{0}}\left(\Phi\left(\kappa\left(\tau\right),\hat{\theta}\left(\tau\right)\right)\right)d\tau,\\
-\dot{\widehat{\theta}}\left(t\right) & =\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}\right)^{\top}r_{1}\left(t\right)-\sigma_{\text{mod}}\widehat{\theta}\left(t\right)\right),
+\dot{\widehat{\theta}}\left(t\right) & =\text{sat}\left(\text{proj}_{\mho}\left(\Gamma\left(\left.\frac{\partial\Phi}{\partial\theta}\right|_{\left(\kappa\left(t\right),\hat{\theta}\left(t\right)\right)}\right)^{\top}r_{1}\left(t\right)-\sigma_{\text{mod}}\widehat{\theta}\left(t\right)\right)\right),
 \end{align*}
 
 \end_inset
@@ -10134,7 +10151,7 @@ ST
 \begin_inset Formula 
 \begin{align*}
 u_{\text{ST}}\left(t\right) & =k_{\text{ST},2}\left\Vert r_{1}\left(t\right)\right\Vert ^{1/2}\text{sgn}\left(r_{1}\left(t\right)\right)+k_{\text{ST},1}\dot{e}\left(t\right)\\
- & +k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau,
+ & +k_{\text{ST},3}\intop^{t}_{t_{0}}\text{sgn}\left(r_{1}\left(\tau\right)\right)d\tau{\color{red}+\ddot{q}_{\text{d}}\left(t\right)},
 \end{align*}
 
 \end_inset
@@ -10404,7 +10421,48 @@ For each controller and each desired trajectory,
 \end_layout
 
 \begin_layout Standard
-The update law was chosen...
+If the Lyapunov candidate were instead selected to be 
+\begin_inset Formula $V$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since the update law is motivated by a Lyapunov stability analysis rather than the formulation of a cost function to minimize,
+ for example,
+ approximation accuracy over 
+\begin_inset Formula $\Omega$
+\end_inset
+
+,
+ pre-training is not required.
+ Consequently,
+ 
+\end_layout
+
+\begin_layout Standard
+A conservative 
+\begin_inset Formula $\overline{\varepsilon}_{\text{d}}$
+\end_inset
+
+ could still be chosen based on the 
+\begin_inset Formula $\overline{\theta}$
+\end_inset
+
+ selected and architecture size 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Patil.Fallin.ea2025"
+literal "false"
+
+\end_inset
+
+.
+ It is emphasized that since the developed conditions are sufficient,
+ no effort will be made to verify them.
+ Although,
+ they can be verified.
 \end_layout
 
 \begin_layout Standard
