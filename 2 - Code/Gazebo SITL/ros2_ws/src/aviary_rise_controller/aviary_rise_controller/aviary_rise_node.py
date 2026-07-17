@@ -80,7 +80,6 @@ def traj1_spatial_derivs(
     def pos_fn(t):
         w = (2.0 * jnp.pi) / traj1_period
         wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
-        # Keeping your exact original orientation mappings
         return jnp.array([
             traj1_x_amp * jnp.sin(wx * t),
             traj1_y_amp * jnp.sin(wy * t),

@@ -25,6 +25,7 @@ python scripts/optimization.py --stage <1A|1B|2|3> --num_trials <N> --db <sqlite
 - **Stage 1B**: Tunes baseline RISE controller (With Wind).
 - **Stage 2**: Tunes Neural Network architecture (size, learning rate, leakage).
 - **Stage 3**: Tunes Super-Twisting baseline.
+- **Stage 4**: Tunes a PID baseline.
 - **Output**: Writes trials to the specified Optuna SQLite database. Can be interrupted and safely resumed.
 
 ---
