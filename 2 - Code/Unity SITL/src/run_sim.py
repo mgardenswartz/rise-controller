@@ -62,12 +62,8 @@ class SimRun:
         self.r_u = self.config['r_u']
         self.K_P_yaw = self.config['K_P_yaw']
 
-        if self.desired_traj == 1:
-            self.init_x_ned = self.config.get('init_x_m_ned_aviary', self.config.get('traj1_init_x_m_ned_aviary', 1.22))
-            self.init_y_ned = self.config.get('init_y_m_ned_aviary', self.config.get('traj1_init_y_m_ned_aviary', 3.87))
-        else:
-            self.init_x_ned = self.config.get('init_x_m_ned_aviary', self.config.get('traj2_init_x_m_ned_aviary', 0.70))
-            self.init_y_ned = self.config.get('init_y_m_ned_aviary', self.config.get('traj2_init_y_m_ned_aviary', -2.37))
+        self.init_x_ned = self.config[f'traj{self.desired_traj}_init_x_m_ned_aviary']
+        self.init_y_ned = self.config[f'traj{self.desired_traj}_init_y_m_ned_aviary']
         self.init_z_ned = self.config['init_z_m_ned_aviary']
         self.init_ned = np.array([self.init_x_ned, self.init_y_ned, self.init_z_ned], dtype=np.float64)
         self.hover_start_z_m_ned_aviary = self.config['hover_start_z_m_ned_aviary']
@@ -118,7 +114,7 @@ class SimRun:
             o_method=self.config['o_method']
         )
 
-        self.gamma_diag = jnp.ones(len(self.theta_hat)) * self.config['gamma'] 
+        self.gamma = jnp.ones(len(self.theta_hat)) * self.config['gamma'] 
         
         self.bound_resnet = jax.jit(jax.tree_util.Partial( # type: ignore
             resnet_network,
@@ -140,14 +136,14 @@ class SimRun:
             r1_vec: jax.Array,
             dt: float,
             theta_bar: float,
-            gamma_diag: jax.Array,
+            gamma: jax.Array,
             s_mod: float,
             saturated: bool
         ) -> Tuple[jax.Array, Any]:
             phi_val, vjp_fn = jax.vjp(lambda theta: self.bound_resnet(theta, x_vec), theta_hat)
             grad_term = vjp_fn(r1_vec)[0]
             theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
-            theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma_diag)
+            theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma)
             final_theta = jax.lax.select(saturated, theta_hat, theta_next)
             return final_theta, phi_val
 
@@ -155,7 +151,7 @@ class SimRun:
         
         dummy_x = jnp.zeros(self.config['d_in'])
         dummy_r1 = jnp.zeros(self.config['d_out'])
-        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period_s, self.theta_bar, self.gamma, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
 
     @staticmethod
@@ -258,7 +254,7 @@ class SimRun:
                     case "resnet":
                         x_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary)))
                         self.theta_hat, phi_out = self.compiled_update_step(
-                            self.theta_hat, x_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                            self.theta_hat, x_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma, self.sigma_mod, self.is_saturated
                         )
                         phi_val = np.array(phi_out)
                         u_nn = phi_val
@@ -269,7 +265,7 @@ class SimRun:
                         u_last = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
                         kappa_vec = jnp.array(np.concatenate((q_ned, q_dot_ned, qd_ned_aviary, qd_dot_ned_aviary, u_last)))
                         self.theta_hat, phi_out = self.compiled_update_step(
-                            self.theta_hat, kappa_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                            self.theta_hat, kappa_vec, jnp.array(r1_ned_aviary), self.control_period_s, self.theta_bar, self.gamma, self.sigma_mod, self.is_saturated
                         )
                         phi_val = np.array(phi_out)
                         u_nn = phi_val
@@ -410,8 +406,8 @@ class SimRun:
                 print(f"Control effort RMS (u_RMS): {u_rms:.4f} m/s^2")
 
             # --- SAVE DATA ---
-            if self.config.get('save_data', False):
-                traj_num = self.config.get('desired_trajectory', 1)
+            if self.config['save_data']:
+                traj_num = self.config['desired_trajectory']
                 controller = self.controller_type
                 
                 output_dir = os.path.join("output", f"traj{traj_num}", controller)

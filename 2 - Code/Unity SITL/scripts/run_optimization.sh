@@ -6,7 +6,7 @@ TRIALS_PHASE_1=50
 TRIALS_PHASE_2=50
 TRIALS_PHASE_3=50
 PATIENCE=0
-TRAJ_NUM=1
+TRAJ_NUM=2
 DB_DIR="output/traj${TRAJ_NUM}"
 
 echo "=========================================="
