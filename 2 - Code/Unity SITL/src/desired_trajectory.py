@@ -24,7 +24,7 @@ class TrajectoryGenerator:
         self.traj2_A = config['traj2_petal_radius_m']
         self.traj2_v = config['traj2_target_speed_mps']
 
-        self.max_sim_time = config['sim_length_s'] + 5.0
+        self.max_sim_time = config['run_length_s'] + 5.0
         self._precompute_phases()
 
         # Warmup JIT functions

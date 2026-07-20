@@ -72,18 +72,18 @@ def discrete_projection(
 def traj1_spatial_derivs(
     tau: float,
     target_z: float,
-    traj1_period: float,
-    traj1_x_amp: float,
-    traj1_y_amp: float,
-    traj1_z_amp: float
+    traj1_period_s: float,
+    traj1_x_amp_m_ned_aviary: float,
+    traj1_y_amp_m_ned_aviary: float,
+    traj1_z_amp_m_ned_aviary: float
 ) -> jax.Array:
     def pos_fn(t):
-        w = (2.0 * jnp.pi) / traj1_period
+        w = (2.0 * jnp.pi) / traj1_period_s
         wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
         return jnp.array([
-            traj1_x_amp * jnp.sin(wx * t),
-            traj1_y_amp * jnp.sin(wy * t),
-            traj1_z_amp * jnp.sin(wz * t) + target_z
+            traj1_x_amp_m_ned_aviary * jnp.sin(wx * t),
+            traj1_y_amp_m_ned_aviary * jnp.sin(wy * t),
+            traj1_z_amp_m_ned_aviary * jnp.sin(wz * t) + target_z
         ])
     return pos_fn(tau), jax.jacfwd(pos_fn)(tau), jax.jacfwd(jax.jacfwd(pos_fn))(tau)
 
@@ -113,37 +113,39 @@ class AviaryRiseNode(Node):
         self.declare_parameter('desired_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
         
         # Global Limits
-        self.declare_parameter('mpc_acc_hor_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('mpc_acc_vert_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_x_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_y_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_z_max', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_z_min', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('mpc_acc_hor_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('mpc_acc_vert_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_x_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_x_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_y_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_y_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_z_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('safe_z_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('odom_timeout_sec', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('settle_ticks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('init_tol', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('init_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('init_tol_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('init_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('watchdog_freq', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
         # Trajectory 1
-        self.declare_parameter('traj1_period', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_period_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('traj1_alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('traj1_x_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('traj1_y_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('traj1_center_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('traj1_z_amp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_x_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_y_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_center_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj1_z_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
         # Trajectory 2
-        self.declare_parameter('traj2_target_speed', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('traj2_petal_radius', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj2_target_speed_mps', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('traj2_petal_radius_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('traj2_center_z', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
 
         # Node / Controller Base
         self.declare_parameter('vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
         self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter('control_frequency', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('control_frequency_hz', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         self.declare_parameter('save_data', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter('sim_time', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter('run_length_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
         
         # Gains & Cost weights
         self.declare_parameter('k_1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
@@ -174,31 +176,33 @@ class AviaryRiseNode(Node):
         self.vehicle_name = self.get_parameter('vehicle_name').value
         self.controller_type = self.get_parameter('controller_type').value
         self.save_data = self.get_parameter('save_data').value
-        self.t_f = self.get_parameter('sim_time').value
+        self.t_f = self.get_parameter('run_length_s').value
         
-        self.acc_hor_max = self.get_parameter('mpc_acc_hor_max').value
-        self.acc_vert_max = self.get_parameter('mpc_acc_vert_max').value
-        self.safe_x_max = self.get_parameter('safe_x_max').value
-        self.safe_y_max = self.get_parameter('safe_y_max').value
-        self.safe_z_max = self.get_parameter('safe_z_max').value
-        self.safe_z_min = self.get_parameter('safe_z_min').value
+        self.acc_hor_max = self.get_parameter('mpc_acc_hor_max_mps2').value
+        self.acc_vert_max = self.get_parameter('mpc_acc_vert_max_mps2').value
+        self.safe_x_min = self.get_parameter('safe_x_min_m_ned_aviary').value
+        self.safe_x_max = self.get_parameter('safe_x_max_m_ned_aviary').value
+        self.safe_y_min = self.get_parameter('safe_y_min_m_ned_aviary').value
+        self.safe_y_max = self.get_parameter('safe_y_max_m_ned_aviary').value
+        self.safe_z_min = self.get_parameter('safe_z_min_m_ned_aviary').value
+        self.safe_z_max = self.get_parameter('safe_z_max_m_ned_aviary').value
         self.odom_timeout = self.get_parameter('odom_timeout_sec').value
         
         # New Takeoff Parameters
-        self.init_z = self.get_parameter('init_z').value
-        self.init_tol = self.get_parameter('init_tol').value
+        self.init_z_m_ned_aviary = self.get_parameter('init_z_m_ned_aviary').value
+        self.init_tol_m = self.get_parameter('init_tol_m').value
         self.watchdog_freq = self.get_parameter('watchdog_freq').value
 
-        self.target_z = self.get_parameter('traj1_center_z').value if self.desired_trajectory == 1 else self.get_parameter('traj2_center_z').value
-        self.traj1_period = self.get_parameter('traj1_period').value
+        self.target_z = self.get_parameter('traj1_center_z_m_ned_aviary').value if self.desired_trajectory == 1 else self.get_parameter('traj2_center_z').value
+        self.traj1_period_s = self.get_parameter('traj1_period_s').value
         self.traj1_alpha_warp = self.get_parameter('traj1_alpha_warp').value
-        self.traj1_x_amp = self.get_parameter('traj1_x_amp').value
-        self.traj1_y_amp = self.get_parameter('traj1_y_amp').value
-        self.traj1_z_amp = self.get_parameter('traj1_z_amp').value
+        self.traj1_x_amp_m_ned_aviary = self.get_parameter('traj1_x_amp_m_ned_aviary').value
+        self.traj1_y_amp_m_ned_aviary = self.get_parameter('traj1_y_amp_m_ned_aviary').value
+        self.traj1_z_amp_m_ned_aviary = self.get_parameter('traj1_z_amp_m_ned_aviary').value
         self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.traj1_alpha_warp) if self.traj1_alpha_warp < 1.0 else 1.0
         
-        self.traj2_v0 = self.get_parameter('traj2_target_speed').value
-        self.traj2_A = self.get_parameter('traj2_petal_radius').value
+        self.traj2_v0 = self.get_parameter('traj2_target_speed_mps').value
+        self.traj2_A = self.get_parameter('traj2_petal_radius_m').value
 
         self.k_1 = self.get_parameter('k_1').value
         self.k_2 = self.get_parameter('k_2').value
@@ -285,8 +289,8 @@ class AviaryRiseNode(Node):
         self.init_wait_start = 0.0
         self.last_auto_cmd_time = 0.0
 
-        control_frequency = self.get_parameter('control_frequency').value
-        self.control_period = 1 / control_frequency
+        control_frequency_hz = self.get_parameter('control_frequency_hz').value
+        self.control_period = 1 / control_frequency_hz
         self.control_timer = self.create_timer(self.control_period, self.control_timer_callback)
 
         if self.controller_type in ["resnet", "integrated_resnet"]:
@@ -336,7 +340,7 @@ class AviaryRiseNode(Node):
         self.theta_hat.block_until_ready()
         
         # 2. Warmup Spatial Derivatives (Prevents JIT latency spike on first trajectory tick)
-        _ = traj1_spatial_derivs(0.0, self.target_z, self.traj1_period, self.traj1_x_amp, self.traj1_y_amp, self.traj1_z_amp)
+        _ = traj1_spatial_derivs(0.0, self.target_z, self.traj1_period_s, self.traj1_x_amp_m_ned_aviary, self.traj1_y_amp_m_ned_aviary, self.traj1_z_amp_m_ned_aviary)
         _ = traj2_spatial_derivs(0.0, self.target_z, self.traj2_A)
         
         start_time = time.perf_counter()
@@ -478,10 +482,10 @@ class AviaryRiseNode(Node):
             self.experiment_state = ExperimentState.STATE_FAILSAFE
 
     def check_safety_boundary(self, q: np.ndarray) -> bool:
-        if not (-self.safe_x_max <= q[0] <= self.safe_x_max):
+        if not (self.safe_x_min <= q[0] <= self.safe_x_max):
             self.get_logger().fatal(f"X BOUNDARY BREACH: {q[0]} not in [{-self.safe_x_max}, {self.safe_x_max}]")
             return True 
-        if not (-self.safe_y_max <= q[1] <= self.safe_y_max):
+        if not (self.safe_y_min <= q[1] <= self.safe_y_max):
             self.get_logger().fatal(f"Y BOUNDARY BREACH: {q[1]} not in [{-self.safe_y_max}, {self.safe_y_max}]")
             return True 
         if not (self.safe_z_min <= q[2] <= self.safe_z_max):
@@ -493,7 +497,7 @@ class AviaryRiseNode(Node):
     def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.experiment_state == ExperimentState.STATE_TAKEOFF:
             # During takeoff, hold exactly above where it initialized
-            return (np.array([self.start_x, self.start_y, self.init_z], dtype=np.float64), 
+            return (np.array([self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64), 
                     np.zeros(3, dtype=np.float64), np.zeros(3, dtype=np.float64))
             
         dt = t - self.last_traj_time
@@ -501,14 +505,14 @@ class AviaryRiseNode(Node):
         if dt < 0: dt = 0.0
 
         if self.desired_trajectory == 1:
-            w = (2.0 * math.pi) / self.traj1_period
+            w = (2.0 * math.pi) / self.traj1_period_s
             tau_dot = self.traj1_warp_c * (1.0 - self.traj1_alpha_warp * (math.sin(w * self.tau)**2))
             tau_ddot = -self.traj1_warp_c * self.traj1_alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
             
             self.tau += tau_dot * dt
             
             pos_jnp, dp_dtau, d2p_dtau2 = traj1_spatial_derivs(
-                self.tau, self.target_z, self.traj1_period, self.traj1_x_amp, self.traj1_y_amp, self.traj1_z_amp
+                self.tau, self.target_z, self.traj1_period_s, self.traj1_x_amp_m_ned_aviary, self.traj1_y_amp_m_ned_aviary, self.traj1_z_amp_m_ned_aviary
             )
             
             qd = np.array(pos_jnp, dtype=np.float64)
@@ -568,7 +572,7 @@ class AviaryRiseNode(Node):
                     return
 
                 if self.in_offboard_mode and self.is_armed:
-                    self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z}.")
+                    self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
                     self.integral_term = np.zeros(self.d_out, dtype=np.float64)
                     self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
                     self.st_integral = np.zeros(self.d_out, dtype=np.float64)
@@ -609,8 +613,8 @@ class AviaryRiseNode(Node):
                 # Check transitions before updating the clock if in TAKEOFF
                 q = np.array(self.latest_odom.position, dtype=np.float64)
                 if self.experiment_state == ExperimentState.STATE_TAKEOFF:
-                    e_takeoff = np.array([self.start_x, self.start_y, self.init_z], dtype=np.float64) - q
-                    if np.linalg.norm(e_takeoff) <= self.init_tol:
+                    e_takeoff = np.array([self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
+                    if np.linalg.norm(e_takeoff) <= self.init_tol_m:
                         self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
                         # Reset t_0 so the trajectory clock starts at exactly 0.0 now
                         self.t_0 = current_timestamp_s

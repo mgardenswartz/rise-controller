@@ -31,7 +31,7 @@ class SimRun:
         
         self.control_frequency_hz = self.config['control_frequency_hz']
         self.control_period_s = 1.0 / self.control_frequency_hz
-        self.sim_length_s = self.config['sim_length_s']
+        self.run_length_s = self.config['run_length_s']
         self.controller_type = self.config['controller_type']
         self.desired_traj = self.config['desired_trajectory']
         
@@ -200,7 +200,7 @@ class SimRun:
             
             wall_start = time.perf_counter()
             
-            while traj_t < self.sim_length_s:
+            while traj_t < self.run_length_s:
                 sensors = drone.get_sensors()
 
                 # Read sensors
@@ -211,7 +211,7 @@ class SimRun:
                 if self.check_boundary_escape(q_ned_aviary=q_ned):
                     print(f"[!] Got too close to a wall! Position: {q_ned}. Exiting.")
                     if flight_mode == 'TRAJECTORY':
-                        self.cost_J += self.w_fail * ((self.sim_length_s - traj_t) ** 2)
+                        self.cost_J += self.w_fail * ((self.run_length_s - traj_t) ** 2)
                     else:
                         self.cost_J = 1e6
                     break
@@ -394,7 +394,7 @@ class SimRun:
             
             sim_stop_time_perf = time.perf_counter()
             sim_run_time_realworld = sim_stop_time_perf - sim_start_time_perf
-            print(f"[*] Simulation took {round(sim_run_time_realworld, 1)} real seconds for {self.sim_length_s} simulated seconds. Scale: {round(self.sim_length_s / sim_run_time_realworld , 1)}. Specified speed was {self.sim_speed}.")
+            print(f"[*] Simulation took {round(sim_run_time_realworld, 1)} real seconds for {self.run_length_s} simulated seconds. Scale: {round(self.run_length_s / sim_run_time_realworld , 1)}. Specified speed was {self.sim_speed}.")
 
             # --- COMPUTE RMS ---
             e_rms = 0.0
