@@ -50,9 +50,9 @@ class SimRun:
         self.k_2 = self.config['k_2']
         self.k_3 = self.config['k_3']
         if self.controller_type == "pid":
-            self.K_P = self.config.get("K_P", 0.0)
-            self.K_I = self.config.get("K_I", 0.0)
-            self.K_D = self.config.get("K_D", 0.0)
+            self.K_P = self.config["K_P"]
+            self.K_I = self.config["K_I"]
+            self.K_D = self.config["K_D"]
         else:
             self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
             self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1

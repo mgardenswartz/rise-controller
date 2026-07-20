@@ -67,43 +67,6 @@ def discrete_projection(
 
     return jax.lax.cond(is_inside, bypass_projection, apply_projection, None)
 
-
-@jax.jit
-def traj1_spatial_derivs(
-    tau: float,
-    target_z: float,
-    traj1_period_s: float,
-    traj1_x_amp_m_ned_aviary: float,
-    traj1_y_amp_m_ned_aviary: float,
-    traj1_z_amp_m_ned_aviary: float
-) -> jax.Array:
-    def pos_fn(t):
-        w = (2.0 * jnp.pi) / traj1_period_s
-        wx, wy, wz = 2.0 * w, 1.0 * w, 4.0 * w
-        return jnp.array([
-            traj1_x_amp_m_ned_aviary * jnp.sin(wx * t),
-            traj1_y_amp_m_ned_aviary * jnp.sin(wy * t),
-            traj1_z_amp_m_ned_aviary * jnp.sin(wz * t) + target_z
-        ])
-    return pos_fn(tau), jax.jacfwd(pos_fn)(tau), jax.jacfwd(jax.jacfwd(pos_fn))(tau)
-
-
-@jax.jit
-def traj2_spatial_derivs(
-    theta: float,
-    target_z: float,
-    traj2_A: float
-) -> jax.Array:
-    def pos_fn(th):
-        r = traj2_A * jnp.cos(2.0 * th)
-        return jnp.array([
-            r * jnp.cos(th),
-            r * jnp.sin(th),
-            target_z
-        ])
-    return pos_fn(theta), jax.jacfwd(pos_fn)(theta), jax.jacfwd(jax.jacfwd(pos_fn))(theta)
-
-
 class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
@@ -211,6 +174,9 @@ class AviaryRiseNode(Node):
             self.declare_parameter('K_P', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
             self.declare_parameter('K_I', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
             self.declare_parameter('K_D', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+            self.K_P = self.get_parameter('K_P').value
+            self.K_I = self.get_parameter('K_I').value
+            self.K_D = self.get_parameter('K_D').value
         else:
             self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
             self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
@@ -327,7 +293,7 @@ class AviaryRiseNode(Node):
             self.precompile_jax()
 
         self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
-        self.watchdog_timer = self.create_timer(1.0/self.watchdog_freq, self.watchdog_callback)
+        self.watchdog_timer = self.create_timer(1.0/self.watchdog_freq, self.odom_watchdog_callback)
         self.ticks_without_odom = 0
 
     def precompile_jax(self) -> None:
@@ -377,7 +343,7 @@ class AviaryRiseNode(Node):
             self.start_y = float(msg.position[1])
             self.initial_position_locked = True
 
-    def watchdog_callback(self) -> None:
+    def odom_watchdog_callback(self) -> None:
         self.ticks_without_odom += 1
         
         # At boot, we always use the tick counter
@@ -634,7 +600,7 @@ class AviaryRiseNode(Node):
                 if self.check_safety_boundary(q):
                     if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                         self.cost_J += self.w_fail * ((self.t_f - t) ** 2)
-                        self.get_logger().error(f"[RESULT] ITAE_COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
+                        self.get_logger().error(f"[RESULT] COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
                     self.trigger_failsafe_land()
                     return
 
@@ -647,8 +613,8 @@ class AviaryRiseNode(Node):
                 phi_val = np.zeros(self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
-                    case "resnet" | "pid":
-                        current_integrand = (self.K_I * e) + (self.controller_type == "resnet") * (self.K_RISE * np.sign(r1))
+                    case "baseline" | "pid":
+                        current_integrand = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
                         delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
                         if not self.freeze_int_xy:
                             self.integral_term[0:2] += delta_int[0:2]
@@ -774,7 +740,7 @@ class AviaryRiseNode(Node):
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.t_f:
                     rms_error = math.sqrt(self.error_sq_integral / self.t_f) if self.t_f > 0 else 0.0
                     rms_u = math.sqrt(self.u_sq_integral / self.t_f) if self.t_f > 0 else 0.0
-                    self.get_logger().info(f"[RESULT] ITAE_COST = {self.cost_J:.2f}")
+                    self.get_logger().info(f"[RESULT] COST = {self.cost_J:.2f}")
                     self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
                     self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.3f}")
                     self.trigger_failsafe_land()
@@ -784,15 +750,21 @@ def main(args=None):
     node = AviaryRiseNode()
     try:
         rclpy.spin(node)
-    except SystemExit:
-        pass  
+    except (SystemExit, KeyboardInterrupt):
+        pass
     finally:
         try:
+            if node.save_data:
+                node.get_logger().info("Interrupt detected. Attempting to save CSV...")
+                node.log_csv()
+
             if rclpy.ok() and not node.is_gazebo: 
                 node.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-        except Exception: pass 
+        except Exception: 
+            pass
         node.destroy_node()
-        if rclpy.ok(): rclpy.shutdown()
+        if rclpy.ok(): 
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
