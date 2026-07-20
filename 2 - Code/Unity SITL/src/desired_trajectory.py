@@ -117,7 +117,7 @@ class TrajectoryGenerator:
             case 1:
                 pos, vel, acc = self._get_traj1_jax(t)
             case 2:
-                os, vel, acc = self._get_traj2_jax(t)
+                pos, vel, acc = self._get_traj2_jax(t)
             case _:
                 return np.zeros(3), np.zeros(3), np.zeros(3)
             

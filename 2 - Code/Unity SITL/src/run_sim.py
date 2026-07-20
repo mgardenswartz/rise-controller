@@ -136,14 +136,14 @@ class SimRun:
             r1_vec: jax.Array,
             dt: float,
             theta_bar: float,
-            gamma: jax.Array,
+            gamma_diag: jax.Array,
             s_mod: float,
             saturated: bool
         ) -> Tuple[jax.Array, Any]:
             phi_val, vjp_fn = jax.vjp(lambda theta: self.bound_resnet(theta, x_vec), theta_hat)
             grad_term = vjp_fn(r1_vec)[0]
             theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
-            theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma)
+            theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma_diag)
             final_theta = jax.lax.select(saturated, theta_hat, theta_next)
             return final_theta, phi_val
 
