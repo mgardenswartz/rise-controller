@@ -33,6 +33,9 @@ class ExperimentState:
     STATE_PAUSED = 3
     STATE_FAILSAFE = 99
 
+class CriticalHardwareError(Exception):
+    pass
+
 class AviaryRiseNode(Node):
     def __init__(self,):
         super().__init__('aviary_rise_node')
@@ -58,35 +61,9 @@ class AviaryRiseNode(Node):
         self.d_out = self.get_parameter('d_out').value
 
         # Desired Trajectory
+        if self.desired_trajectory not in [1,2]: raise CriticalHardwareError
         self.config = self.get_parameters_by_prefix('')
         self.traj_gen = TrajectoryGenerator(self.config)
-        
-        # # Desired Trajectory
-        # if self.desired_trajectory == 1:
-        #     self.declare_parameter('traj1_period_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj1_alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj1_x_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj1_y_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj1_z_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj1_center_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.traj1_period_s = self.get_parameter('traj1_period_s').value
-        #     self.traj1_alpha_warp = self.get_parameter('traj1_alpha_warp').value
-        #     self.traj1_x_amp_m_ned_aviary = self.get_parameter('traj1_x_amp_m_ned_aviary').value
-        #     self.traj1_y_amp_m_ned_aviary = self.get_parameter('traj1_y_amp_m_ned_aviary').value
-        #     self.traj1_z_amp_m_ned_aviary = self.get_parameter('traj1_z_amp_m_ned_aviary').value
-
-        #     self.traj_z_center_m_ned_aviary = self.get_parameter('traj1_center_z_m_ned_aviary').value # Note the different name
-        #     self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.traj1_alpha_warp) if self.traj1_alpha_warp < 1.0 else 1.0
-        # elif self.desired_trajectory == 2:
-        #     self.declare_parameter('traj2_target_speed_mps', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj2_petal_radius_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.declare_parameter('traj2_center_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        #     self.traj2_target_speed_mps = self.get_parameter('traj2_target_speed_mps').value
-        #     self.traj2_petal_radius_m = self.get_parameter('traj2_petal_radius_m').value
-            
-        #     self.traj_z_center_m_ned_aviary = self.get_parameter('traj2_center_z_m_ned_aviary').value  # Note the different name
-        # else:
-        #     raise ValueError(f"Invalid Desired Trajectory: {self.desired_trajectory}")
         
         # Safety
         self.declare_parameter('mpc_acc_hor_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
@@ -210,11 +187,11 @@ class AviaryRiseNode(Node):
         self.t_0 = 0.0
         self.tau = 0.0
 
-        self.last_t = 0.0 # UNKNOWN
-        self.init_wait_start = 0.0 # UNKNOWN
-        self.last_auto_cmd_time = 0.0 # UNKNOWN
+        self.last_t = 0.0
+        self.init_wait_start = 0.0
+        self.last_auto_cmd_time = 0.0
+        
         self.ticks_without_odom = 0
-
         self.last_traj_time = 0.0 # Trajectory timer value after a pause
         self.current_integral_control_term = np.zeros(self.d_out, dtype=np.float64)
         self.last_control_integrand = np.zeros(self.d_out, dtype=np.float64)
@@ -262,13 +239,8 @@ class AviaryRiseNode(Node):
         dummy_r1 = jnp.zeros(self.d_out)
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
         
-        # 1. Warmup Neural Net Update Mechanics
         self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
         self.theta_hat.block_until_ready()
-        
-        # 2. Warmup Spatial Derivatives (Prevents JIT latency spike on first trajectory tick)
-        _ = traj1_spatial_derivs(0.0, self.traj_z_center_m_ned_aviary, self.traj1_period_s, self.traj1_x_amp_m_ned_aviary, self.traj1_y_amp_m_ned_aviary, self.traj1_z_amp_m_ned_aviary)
-        _ = traj2_spatial_derivs(0.0, self.traj_z_center_m_ned_aviary, self.traj2_petal_radius_m)
         
         start_time = time.perf_counter()
         self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
@@ -278,11 +250,11 @@ class AviaryRiseNode(Node):
         # Reset the weights back to true initial conditions
         self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
         self.theta_hat.block_until_ready()
-        self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
+        self.get_logger().info(f"[JAX] Neural Network Latency: {hot_time*1000:.2f} ms")
         if hot_time > self.control_period:
             self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
             if self.is_gazebo:
-                os._exit(1)
+                rclpy.shutdown()
             else:
                 self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
 
@@ -307,14 +279,12 @@ class AviaryRiseNode(Node):
     def odom_watchdog_callback(self) -> None:
         self.ticks_without_odom += 1
         
-        # At boot, we always use the tick counter
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
                 self.get_logger().fatal("NO ODOMETRY AT BOOT! EXITING NODE.")
                 os._exit(1)
         else:
             if self.is_gazebo:
-                # Use tick counter to survive Docker suspension / macOS sleep
                 if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
                     self.get_logger().fatal("YOUR PC IS RUNNING BEHIND SCHEDULE! EXITING SIM.")
                     self.trigger_failsafe_land()
@@ -360,14 +330,11 @@ class AviaryRiseNode(Node):
         self.trajectory_setpoint_publisher.publish(msg)
 
     def log_csv(self):
-        traj_name = "figure_eight"
-        if self.desired_trajectory == 1:
-            pass
-        elif self.desired_trajectory == 2:
-            traj_name = "rose"
-        else:
-            self.get_logger().fatal("INVALID DESIRED TRAJECTORY SELECTED.")
-            self.trigger_failsafe_land()
+        match self.desired_trajectory:
+            case 1:
+                traj_name = "figure_eight"
+            case 2:
+                traj_name = "rose"
 
         base_dir = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
         os.makedirs(base_dir, exist_ok=True)
@@ -417,7 +384,7 @@ class AviaryRiseNode(Node):
             return True 
         if not (self.safe_z_min_m <= q[2] <= self.safe_z_max_m):
             self.get_logger().fatal(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min_m}, {self.safe_z_max_m}]")
-            return True 
+            return True
         return False
 
 
@@ -711,21 +678,24 @@ def main(args=None):
     node = AviaryRiseNode()
     try:
         rclpy.spin(node)
-    except (SystemExit, KeyboardInterrupt):
+    except (SystemExit, KeyboardInterrupt, CriticalHardwareError):
         pass
     finally:
         try:
             if node.save_data:
-                node.get_logger().info("Interrupt detected. Attempting to save CSV...")
+                node.get_logger().info("Interrupt detected. Attempting to save data to CSV...")
                 node.log_csv()
 
-            if rclpy.ok() and not node.is_gazebo: 
+            if rclpy.ok(): 
                 node.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-        except Exception: 
+        except Exception:
             pass
         node.destroy_node()
         if rclpy.ok(): 
             rclpy.shutdown()
+            print("[INFO] Node safely destroyed.")
+        else:
+            print("[FATAL] Node NOT safely destroyed.")
 
 if __name__ == '__main__':
     main()
