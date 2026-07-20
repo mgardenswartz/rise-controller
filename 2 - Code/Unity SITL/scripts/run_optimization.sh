@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Configuration
-TRIALS_PHASE_1=50 #500 # takes about 50 minutes
-TRIALS_PHASE_2=50 #750
-TRIALS_PHASE_3=50 #500
+# 500 takes about 50 minutes with 4 mini-batches
+TRIALS_PHASE_1=50 
+TRIALS_PHASE_2=50
+TRIALS_PHASE_3=50
 PATIENCE=0
-TRAJ_NUM=2
+TRAJ_NUM=1
 DB_DIR="output/traj${TRAJ_NUM}"
 
 echo "=========================================="

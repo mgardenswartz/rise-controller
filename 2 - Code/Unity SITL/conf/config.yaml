@@ -16,8 +16,8 @@ aviary_rise_node:
     traj2_init_x_m_ned_aviary: 0.70
     traj2_init_y_m_ned_aviary: -2.37
     init_z_m_ned_aviary: -0.75
-    init_yaw_deg: 0.0
-    yaw_des_deg: 0.0
+    init_yaw_deg: 180.0
+    yaw_des_deg: 180.0
     k_1: 0.72
     k_2: 0.11
     k_3: 2.4
@@ -40,12 +40,12 @@ aviary_rise_node:
     sigma_mod: 3.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
-    traj1_center_z_m_ned_aviary: -1.5
-    traj1_period_s: 15.0 # edited
+    traj1_center_z_m_ned_aviary: -1.25
+    traj1_period_s: 30.0
     traj1_x_amp_m_ned_aviary: 1.5
     traj1_y_amp_m_ned_aviary: 3.0
     traj1_z_amp_m_ned_aviary: 0.25
-    traj2_center_z_m_ned_aviary: -1.5
+    traj2_center_z_m_ned_aviary: -1.0
     traj2_petal_radius_m: 2.5
     traj2_target_speed_mps: 1.5
     w_fail: 1000.0
