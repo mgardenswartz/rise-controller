@@ -32,7 +32,6 @@ class ExperimentState:
     STATE_TAKEOFF: int = 1
     STATE_FOLLOW_TRAJ: int = 2
     STATE_PAUSED: int = 3
-    STATE_FAILSAFE: int = 99
 
 class CriticalHardwareError(Exception):
     pass
@@ -308,17 +307,16 @@ class AviaryRiseNode(Node):
         
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
-                raise OdomTimeoutError("NO ODOMETRY AT BOOT! EXITING NODE.")
+                raise OdomTimeoutError("No odometry received at boot.")
         else:
             if self.is_gazebo:
                 if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
-                    raise OdomTimeoutError("YOUR PC IS RUNNING BEHIND SCHEDULE! EXITING SIM.")
+                    raise OdomTimeoutError("Simulation running behind schedule.")
             else:
                 # Use original wall clock logic for real vehicle (sim-to-real)
                 current_time: float = self.get_clock().now().nanoseconds / 1e9
                 if (current_time - self.last_odom_ros_time) > self.odom_timeout_s:
-                    self.trigger_failsafe_land()
-                    raise OdomTimeoutError("ODOM LOST! TRIGGERING FAILSAFE.")
+                    raise OdomTimeoutError("Odometry feed lost during flight.")
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
         self.get_logger().info(msg=f"[DEBUG] Publishing command {command}")
@@ -389,28 +387,14 @@ class AviaryRiseNode(Node):
         except Exception as e:
             self.get_logger().error(msg=f"Failed to write CSV: {e}")
 
-    def trigger_failsafe_land(self) -> None:
-        if self.save_data:
-            self.log_csv()
-
-        if self.is_gazebo:
-            raise FailsafeTriggeredError("GAZEBO FAILSAFE TRIGGERED. EXITING SIM.")
-        else:
-            self.get_logger().error(msg="LANDING!")
-            self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
-            self.experiment_state = ExperimentState.STATE_FAILSAFE
-
-    def check_safety_boundary(self, q: np.ndarray) -> bool:
+    def check_safety_boundary(self, q: np.ndarray) -> Optional[str]:
         if not (self.safe_x_min_m <= q[0] <= self.safe_x_max_m):
-            self.get_logger().fatal(msg=f"X BOUNDARY BREACH: {q[0]} not in [{self.safe_x_min_m}, {self.safe_x_max_m}]")
-            return True 
+            return f"X position {q[0]:.2f} breached bounds [{self.safe_x_min_m}, {self.safe_x_max_m}]."
         if not (self.safe_y_min_m <= q[1] <= self.safe_y_max_m):
-            self.get_logger().fatal(msg=f"Y BOUNDARY BREACH: {q[1]} not in [{self.safe_y_min_m}, {self.safe_y_max_m}]")
-            return True 
+            return f"Y position {q[1]:.2f} breached bounds [{self.safe_y_min_m}, {self.safe_y_max_m}]."
         if not (self.safe_z_min_m <= q[2] <= self.safe_z_max_m):
-            self.get_logger().fatal(msg=f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min_m}, {self.safe_z_max_m}]")
-            return True
-        return False
+            return f"Z position {q[2]:.2f} breached bounds [{self.safe_z_min_m}, {self.safe_z_max_m}]."
+        return None
 
     def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.experiment_state == ExperimentState.STATE_TAKEOFF:
@@ -425,12 +409,6 @@ class AviaryRiseNode(Node):
         current_timestamp_s: float = self.latest_odom.timestamp / 1e6
 
         match self.experiment_state:
-            case ExperimentState.STATE_FAILSAFE:
-                if not self.landing_command_sent:
-                    self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
-                    self.landing_command_sent = True
-                return
-
             case ExperimentState.STATE_INIT:
                 self.landing_command_sent = False
                 self.cost_started = False
@@ -448,9 +426,9 @@ class AviaryRiseNode(Node):
                             if not self.is_armed:
                                 self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
                             self.last_auto_cmd_time = current_timestamp_s
-                return
+                    return
 
-                if self.is_armed:
+                if self.in_offboard_mode and self.is_armed:
                     self.get_logger().info(msg=f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
                     self.current_integral_control_term = np.zeros(shape=self.d_out, dtype=np.float64)
                     self.last_control_integrand = np.zeros(shape=self.d_out, dtype=np.float64)
@@ -474,9 +452,9 @@ class AviaryRiseNode(Node):
 
                 if not self.in_offboard_mode:
                     if self.is_gazebo:
-                        raise FailsafeTriggeredError("PX4 LEFT OFFBOARD MODE IN SITL! FAILING TRIAL.")
+                        raise FailsafeTriggeredError("PX4 left offboard mode during SITL simulation.")
                     else:
-                        self.get_logger().warn(msg="RC Pilot Intervention Detected! Pausing trajectory.", throttle_duration_sec=1.0)
+                        self.get_logger().warn(msg="RC pilot intervention detected. Pausing trajectory.", throttle_duration_sec=1.0)
                         self.pre_pause_state = self.experiment_state
                         self.experiment_state = ExperimentState.STATE_PAUSED
                         self.pause_start_time = current_timestamp_s
@@ -505,12 +483,12 @@ class AviaryRiseNode(Node):
                 
                 q_dot: np.ndarray = np.array(object=self.latest_odom.velocity, dtype=np.float64)
                 
-                if self.check_safety_boundary(q=q):
+                boundary_err: Optional[str] = self.check_safety_boundary(q=q)
+                if boundary_err is not None:
                     if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                         self.cost_J += self.w_fail * ((self.run_length_s - t) ** 2)
-                        self.get_logger().error(msg=f"[RESULT] COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
-                    self.trigger_failsafe_land()
-                    raise BoundaryBreachError(f"Boundary breached at position: {q}")
+                        self.get_logger().info(msg=f"[RESULT] Final Cost = {self.cost_J:.4f} (Boundary Failure)")
+                    raise BoundaryBreachError(boundary_err)
 
                 qd: np.ndarray
                 qd_dot: np.ndarray
@@ -665,44 +643,45 @@ class AviaryRiseNode(Node):
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.run_length_s:
                     rms_error: float = math.sqrt(x=self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
                     rms_u: float = math.sqrt(x=self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
-                    self.get_logger().info(msg=f"[RESULT] COST = {self.cost_J:.2f}")
-                    self.get_logger().info(msg=f"[RESULT] RMS_ERROR = {rms_error:.4f}")
-                    self.get_logger().info(msg=f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.3f}")
-                    self.trigger_failsafe_land()
+                    self.get_logger().info(msg=f"[RESULT] Final Cost = {self.cost_J:.2f}")
+                    self.get_logger().info(msg=f"[RESULT] RMS Error = {rms_error:.4f}")
+                    self.get_logger().info(msg=f"[RESULT] RMS Control Effort = {rms_u:.3f}")
+                    raise SystemExit("Trajectory completed successfully.")
 
 def main(args: Optional[List[str]] = None) -> None:
     rclpy.init(args=args)
     node: AviaryRiseNode = AviaryRiseNode()
     try:
         rclpy.spin(node=node)
-    except (SystemExit, KeyboardInterrupt):
-        pass
+    except SystemExit as e:
+        node.get_logger().info(msg=f"Experiment terminated: {e}")
+    except KeyboardInterrupt:
+        node.get_logger().info(msg="Keyboard interrupt received.")
     except ValueError as e:
-        print(f"[FATAL] ValueError: {e}")
+        node.get_logger().fatal(msg=f"Value error: {e}")
     except CriticalHardwareError as e:
-        print(f"[FATAL] Hardware Error: {e}")
+        node.get_logger().fatal(msg=f"Hardware error: {e}")
     except OdomTimeoutError as e:
-        print(f"[FATAL] Odometry Error: {e}")
+        node.get_logger().fatal(msg=f"Odometry timeout: {e}")
     except FailsafeTriggeredError as e:
-        print(f"[FATAL] Failsafe Triggered: {e}")
+        node.get_logger().fatal(msg=f"Failsafe triggered: {e}")
     except BoundaryBreachError as e:
-        print(f"[FATAL] Boundary Breach: {e}")
+        node.get_logger().fatal(msg=f"Boundary breach: {e}")
     finally:
-        try:
-            if node.save_data:
-                node.get_logger().info(msg="Interrupt detected. Attempting to save data to CSV...")
-                node.log_csv()
+        if node.save_data:
+            node.get_logger().info(msg="Saving telemetry data to CSV...")
+            node.log_csv()
 
-            if rclpy.ok(): 
-                node.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
-        except Exception:
-            pass
+        if rclpy.ok(): 
+            node.get_logger().info(msg="Commanding vehicle to land.")
+            node.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
+            
         node.destroy_node()
         if rclpy.ok(): 
             rclpy.shutdown()
-            print("[INFO] Node safely destroyed.")
+            print("[INFO] Node cleanly destroyed.")
         else:
-            print("[FATAL] Node NOT safely destroyed.")
+            print("[FATAL] Node not cleanly destroyed.")
 
 if __name__ == '__main__':
     main()
