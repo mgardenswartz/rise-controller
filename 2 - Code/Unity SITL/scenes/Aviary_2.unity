@@ -552,11 +552,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8538247500957711054, guid: fe427f0a56dd8a541bec5b30cf9c41d2, type: 3}
       propertyPath: _toggle
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8538247500957711054, guid: fe427f0a56dd8a541bec5b30cf9c41d2, type: 3}
       propertyPath: _windSpeed
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 9054599477834145214, guid: fe427f0a56dd8a541bec5b30cf9c41d2, type: 3}
       propertyPath: m_LocalScale.x
@@ -970,7 +970,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8538247500957711054, guid: fe427f0a56dd8a541bec5b30cf9c41d2, type: 3}
       propertyPath: _windSpeed
-      value: 5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 9054599477834145214, guid: fe427f0a56dd8a541bec5b30cf9c41d2, type: 3}
       propertyPath: m_LocalScale.x
