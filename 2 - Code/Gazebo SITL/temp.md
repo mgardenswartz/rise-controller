@@ -1,3 +1,0 @@
-adb push /Users/max/Documents/GitHub/rise-controller/2\ -\ Code/Gazebo\ SITL/noresnet_params.yaml /home/root/humble_ws/src/aviary_rise_controller/param/noresnet_params.yaml
-adb push /Users/max/Documents/GitHub/rise-controller/2\ -\ Code/Gazebo\ SITL/baseline_params.yaml /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params.yaml
-adb push /Users/max/Documents/GitHub/rise-controller/2\ -\ Code/Gazebo\ SITL/developed_params.yaml /home/root/humble_ws/src/aviary_rise_controller/param/developed_params.yaml

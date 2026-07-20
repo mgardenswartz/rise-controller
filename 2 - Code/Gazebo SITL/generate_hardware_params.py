@@ -13,7 +13,7 @@ from run_best_gains import build_param_dict
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Hardware Param YAML")
-    parser.add_argument("--controller_type", type=str, choices=["noresnet", "baseline", "developed", "supertwisting"], required=True)
+    parser.add_argument("--controller_type", type=str, choices=["baseline", "resnet", "integrated_resnet", "supertwisting"], required=True)
     parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=True)
     parser.add_argument("--out", type=str, default="hardware_params.yaml", help="Output yaml file path")
     args = parser.parse_args()
@@ -30,10 +30,9 @@ def main():
     param_dict['vehicle_name'] = 'sentinel5'
 
     # TEMP
-    param_dict['k_1'] = 0.72
-    param_dict['k_2'] = 0.11
-    param_dict['k_3'] = 2.4
-    param_dict['k_rise'] = 0.5
+    param_dict['K_P'] = 6.64
+    param_dict['K_I'] = 0.58
+    param_dict['K_D'] = 3.51
     param_dict['traj1_period'] = 30.0
     param_dict['traj1_z_amp'] = 0.25
     param_dict['traj2_target_speed'] = 1.5

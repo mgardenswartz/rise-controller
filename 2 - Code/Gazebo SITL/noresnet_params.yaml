@@ -1,7 +1,7 @@
 aviary_rise_node:
   ros__parameters:
     control_frequency: 50.0
-    controller_type: noresnet
+    controller_type: baseline
     d_out: 3
     desired_trajectory: 1
     h_act_func: swish

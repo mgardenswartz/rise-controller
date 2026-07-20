@@ -643,8 +643,8 @@ class AviaryRiseNode(Node):
                 phi_val = np.zeros(self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
-                    case "baseline" | "pid":
-                        current_integrand = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
+                    case "resnet" | "pid":
+                        current_integrand = (self.K_I * e) + (self.controller_type == "resnet") * (self.K_RISE * np.sign(r1))
                         delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
                         if not self.freeze_int_xy:
                             self.integral_term[0:2] += delta_int[0:2]

@@ -35,7 +35,7 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
 
     initial_weight_scale_factor = float('nan')
 
-    if controller_type == "baseline":        
+    if controller_type == "resnet":        
         param_dict['d_in'] = 12
 
         param_dict['num_blocks'] = 6
@@ -45,7 +45,7 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
         param_dict['gamma'] = 10.0
         param_dict['sigma_mod'] = 3.0
         initial_weight_scale_factor = 0.1
-    elif controller_type == "developed":        
+    elif controller_type == "integrated_resnet":        
         param_dict['d_in'] = 15
 
         param_dict['num_blocks'] = 6
@@ -60,7 +60,7 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
         param_dict['k_2'] = FIXED_K_ST_2
         param_dict['k_3'] = FIXED_K_ST_3
    
-    if controller_type in ["developed", "baseline"]:
+    if controller_type in ["integrated_resnet", "resnet"]:
         initial_weights_jax = initial_weight_scale_factor * init_resnet_weights(
             key, param_dict['d_in'], param_dict['hidden_width'],  
             param_dict['d_out'], param_dict['num_blocks'], 
@@ -76,7 +76,7 @@ def main():
     parser.add_argument("--wind", action="store_true")
     args = parser.parse_args()
 
-    controllers = ["noresnet", "baseline", "developed", "supertwisting"]
+    controllers = ["baseline", "resnet", "integrated_resnet", "supertwisting"]
     
     for controller in controllers:
         print(f"\n{'='*60}")

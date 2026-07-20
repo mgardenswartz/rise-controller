@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description="Load an Optuna study from a specif
 parser.add_argument(
     "db_file", 
     type=str,
-    help="The path to the Optuna .db file (e.g., baseline.db)"
+    help="The path to the Optuna .db file (e.g., resnet.db)"
 )
 args = parser.parse_args()
 
@@ -99,7 +99,7 @@ print("-" * len(header_str))
 for i, trial in enumerate(completed_trials[:15]):
     cost = trial.value
     
-    # NN Controller Layout (Formerly baseline/developed)
+    # NN Controller Layout (Formerly resnet/integrated_resnet)
     if use_nn_layout:
         nb = trial.params.get("num_blocks", 0)
         hw = trial.params.get("hidden_width", 0)
@@ -110,7 +110,7 @@ for i, trial in enumerate(completed_trials[:15]):
         ws = trial.params.get("initial_weight_scale_factor", 0)
         row_str = f"{i+1:<6} | {trial.number:<7} | {cost:<9.3g} | {nb:<10} | " \
                   f"{hw:<12} | {k0:<6.3g} | {ki:<6.3g} | {g:<7.3g} | {sm:<9.3g} | {ws:<6.3g}"
-    # Alternate Controller Layout (Formerly noresnet/supertwisting)
+    # Alternate Controller Layout (Formerly baseline/supertwisting)
     else:
         k_1 = trial.params.get('k_1', 0)
         k_2 = trial.params.get('k_2', 0)

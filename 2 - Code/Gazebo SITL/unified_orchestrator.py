@@ -23,10 +23,10 @@ FIXED_X = 0.70
 FIXED_Y = -2.37
 FIXED_Z = -1.5
 
-FIXED_K_1 = 0.72
-FIXED_K_2 = 0.11
-FIXED_K_3 = 2.4
-FIXED_K_RISE = 0.5
+FIXED_K_1 = 1.95
+FIXED_K_2 = 0.37
+FIXED_K_3 = 1.62
+FIXED_K_RISE = 0.23
 
 FIXED_K_ST_1 = 2.0
 FIXED_K_ST_2 = 0.9
@@ -67,12 +67,12 @@ class PatienceCallback:
             study.stop()
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Unified Optuna Orchestrator for Baseline and ResNet Controllers")
+    parser = argparse.ArgumentParser(description="Unified Optuna Orchestrator for Resnet and ResNet Controllers")
     parser.add_argument(
         "--controller_type", 
         type=str, 
         required=True,
-        choices=["baseline", "developed", "noresnet", "supertwisting"],
+        choices=["resnet", "integrated_resnet", "baseline", "supertwisting"],
         help="Specify which controller profile to optimize."
     )
     parser.add_argument(
@@ -270,15 +270,15 @@ def objective(trial: optuna.Trial, controller_type: str, desired_trajectory: int
     param_dict['shortcut_act_func'] = 'swish'
     param_dict['theta_bar'] = 1e6 # Should never come into play
     
-    param_dict['d_in'] = 12 if controller_type == "baseline" else 15
+    param_dict['d_in'] = 12 if controller_type == "resnet" else 15
 
-    if controller_type == "noresnet":
+    if controller_type == "baseline":
         param_dict['k_1'] = trial.suggest_float("k_1", 0.01, 2.0, log=True)
         param_dict['k_2'] = trial.suggest_float("k_2", 0.01, 8.0, log=True)
         param_dict['k_3'] = trial.suggest_float("k_3", param_dict['k_2'], 8.0) 
         param_dict['k_rise'] = trial.suggest_float("k_rise", 0.01, 5.0, log=True)
 
-        print(f"[*] Suggested Baseline Gains -> k_1: {param_dict['k_1']:.2f} | k_2: {param_dict['k_2']:.2f} | k_3: {param_dict['k_3']:.2f} | krise: {param_dict['k_rise']:.6f}")
+        print(f"[*] Suggested Resnet Gains -> k_1: {param_dict['k_1']:.2f} | k_2: {param_dict['k_2']:.2f} | k_3: {param_dict['k_3']:.2f} | krise: {param_dict['k_rise']:.6f}")
 
     elif controller_type == "supertwisting":
         param_dict['k_1'] = trial.suggest_float("k_st_1", 0.001, 5.0, log=True)
