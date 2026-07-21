@@ -266,8 +266,9 @@ class AviaryRiseNode(Node):
         self.ticks_without_odom += 1
         
         if not self.initial_position_locked:
-            if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
-                raise OdomTimeoutError("No odometry received at boot.")
+            max_boot_time_s: float = 30.0 if self.is_gazebo else 5.0
+            if self.ticks_without_odom >= (max_boot_time_s * self.odom_watchdog_freq):
+                raise OdomTimeoutError(f"No odometry received after {max_boot_time_s}s at boot.")
         else:
             if self.is_gazebo:
                 if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
