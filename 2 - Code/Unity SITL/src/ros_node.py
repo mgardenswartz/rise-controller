@@ -203,12 +203,12 @@ class AviaryRiseNode(Node):
 
         self.odom_watchdog_timer = self.create_timer(timer_period_sec=1.0/self.odom_watchdog_freq, callback=self.odom_watchdog_callback)
         
-        self.get_logger().info(msg=f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
+        self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
 
     def precompile_jax(self) -> None:
         dummy_x: jax.Array = jnp.zeros(shape=self.d_in)
         dummy_r1: jax.Array = jnp.zeros(shape=self.d_out)
-        self.get_logger().info(msg="[JAX] Compiling XLA Graph on CPU...")
+        self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
         
         self.theta_hat, _ = self.compiled_update_step(
             theta_hat=self.theta_hat,
@@ -239,9 +239,9 @@ class AviaryRiseNode(Node):
         # Reset the weights back to true initial conditions
         self.theta_hat = jnp.array(object=self.get_parameter(name='initial_weights').value)
         self.theta_hat.block_until_ready()
-        self.get_logger().info(msg=f"[JAX] Neural Network Latency: {hot_time*1000:.2f} ms")
+        self.get_logger().info(f"[JAX] Neural Network Latency: {hot_time*1000:.2f} ms")
         if hot_time > self.control_period:
-            self.get_logger().fatal(msg=f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
+            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
             raise CriticalHardwareError("[JAX] ResNet latency too high for selected control frequency (init).")
 
     def vehicle_status_callback(self, msg: VehicleStatus) -> None:
@@ -284,7 +284,7 @@ class AviaryRiseNode(Node):
         self.st_integral = np.zeros(shape=self.d_out, dtype=np.float64)
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
-        self.get_logger().info(msg=f"[DEBUG] Publishing command {command}")
+        self.get_logger().info(f"[DEBUG] Publishing command {command}")
         msg: VehicleCommand = VehicleCommand()
         msg.timestamp = int(self.latest_odom.timestamp) if self.latest_odom is not None else int(self.get_clock().now().nanoseconds / 1000)
         msg.param1 = float(param1)
@@ -295,7 +295,7 @@ class AviaryRiseNode(Node):
         msg.source_system = 1
         msg.source_component = 1
         msg.from_external = True
-        self.vehicle_command_publisher.publish(msg=msg)
+        self.vehicle_command_publisher.publish(msg)
 
     def publish_offboard_heartbeat(self) -> None:
         msg: OffboardControlMode = OffboardControlMode()
@@ -305,7 +305,7 @@ class AviaryRiseNode(Node):
         msg.acceleration = True
         msg.attitude = False
         msg.body_rate = False
-        self.offboard_control_mode_publisher.publish(msg=msg)
+        self.offboard_control_mode_publisher.publish(msg)
 
     def publish_trajectory_setpoint_acceleration(self, ax: float, ay: float, az: float) -> None:
         msg: TrajectorySetpoint = TrajectorySetpoint()
@@ -315,7 +315,7 @@ class AviaryRiseNode(Node):
         msg.yaw = 0.0  # Command a heading of 0.0 always
         if self.latest_odom is not None:
             msg.timestamp = self.latest_odom.timestamp
-        self.trajectory_setpoint_publisher.publish(msg=msg)
+        self.trajectory_setpoint_publisher.publish(msg)
 
     def log_csv(self) -> None:
         traj_name: str = ""
@@ -348,9 +348,9 @@ class AviaryRiseNode(Node):
                     if self.controller_type in ["resnet", "integrated_resnet"] and self.weight_history:
                         row += self.weight_history[i]
                     writer.writerow(row)
-            self.get_logger().info(msg=f"Telemetry saved to {csv_filename}")
+            self.get_logger().info(f"Telemetry saved to {csv_filename}")
         except Exception as e:
-            self.get_logger().error(msg=f"Failed to write CSV: {e}")
+            self.get_logger().error(f"Failed to write CSV: {e}")
 
     def check_safety_boundary(self, q: np.ndarray) -> Optional[str]:
         if not (self.safe_x_min_m <= q[0] <= self.safe_x_max_m):
@@ -384,7 +384,7 @@ class AviaryRiseNode(Node):
 
                 match self.in_offboard_mode:
                     case False:
-                        self.get_logger().info(msg="Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
+                        self.get_logger().info("Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
 
                         if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
                             self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=6.0)
@@ -394,12 +394,12 @@ class AviaryRiseNode(Node):
                     
                     case True:
                         if self.is_armed:
-                            self.get_logger().info(msg=f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
+                            self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
                             self.reset_integral_terms()
                             self.experiment_state = ExperimentState.STATE_TAKEOFF
                         else:
                             # Still waiting for arming to complete!
-                            self.get_logger().info(msg="Offboard engaged, waiting for vehicle to arm...", throttle_duration_sec=2.0)
+                            self.get_logger().info("Offboard engaged, waiting for vehicle to arm...", throttle_duration_sec=2.0)
                             if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
                                 self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
                                 self.last_auto_cmd_time = current_timestamp_s
@@ -412,9 +412,9 @@ class AviaryRiseNode(Node):
                     time_paused: float = current_timestamp_s - self.pause_start_time
                     self.t_0 += time_paused  
                     self.experiment_state = self.pre_pause_state
-                    self.get_logger().info(msg="Offboard Mode re-engaged! Resuming trajectory seamlessly.")
+                    self.get_logger().info("Offboard Mode re-engaged! Resuming trajectory seamlessly.")
                 else:
-                    self.get_logger().info(msg="Trajectory Paused. Waiting for Pilot to re-engage Offboard...", throttle_duration_sec=2.0)
+                    self.get_logger().info("Trajectory Paused. Waiting for Pilot to re-engage Offboard...", throttle_duration_sec=2.0)
                 return
 
             case ExperimentState.STATE_FOLLOW_TRAJ | ExperimentState.STATE_TAKEOFF:
@@ -424,7 +424,7 @@ class AviaryRiseNode(Node):
                     if self.is_gazebo:
                         raise FailsafeTriggeredError("PX4 left offboard mode during SITL simulation.")
                     else:
-                        self.get_logger().warn(msg="RC pilot intervention detected. Pausing trajectory.", throttle_duration_sec=1.0)
+                        self.get_logger().warn("RC pilot intervention detected. Pausing trajectory.", throttle_duration_sec=1.0)
                         self.pre_pause_state = self.experiment_state
                         self.experiment_state = ExperimentState.STATE_PAUSED
                         self.pause_start_time = current_timestamp_s
@@ -441,7 +441,7 @@ class AviaryRiseNode(Node):
                         # Reset t_0 so the trajectory clock starts at exactly 0.0 now
                         self.t_0 = current_timestamp_s
                         self.last_t = 0.0
-                        self.get_logger().info(msg=f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
+                        self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
 
                 # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
                 # However get_desired_state(t) strictly ignores t during TAKEOFF.
@@ -454,7 +454,7 @@ class AviaryRiseNode(Node):
                 if boundary_err is not None:
                     if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                         self.cost_J += self.w_fail * ((self.run_length_s - t) ** 2)
-                        self.get_logger().info(msg=f"[RESULT] Final Cost = {self.cost_J:.4f} (Boundary Failure)")
+                        self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Boundary Failure)")
                     raise BoundaryBreachError(boundary_err)
 
                 qd: np.ndarray
@@ -498,7 +498,7 @@ class AviaryRiseNode(Node):
                             t_end_jax: float = time.perf_counter()
                             jax_dt: float = t_end_jax - t_start_jax
                             if jax_dt > self.control_period:
-                                self.get_logger().warn(msg=f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
+                                self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
                         
@@ -531,7 +531,7 @@ class AviaryRiseNode(Node):
                             t_end_jax = time.perf_counter()
                             jax_dt = t_end_jax - t_start_jax
                             if jax_dt > self.control_period:
-                                self.get_logger().warn(msg=f"[CRITICAL] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
+                                self.get_logger().warn(f"[CRITICAL] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
                         
@@ -596,23 +596,23 @@ class AviaryRiseNode(Node):
                     self.is_saturated = True
                     if np.dot(a=e[0:2], b=u[0:2]) > 0.0:
                         self.freeze_int_xy = True
-                    self.get_logger().debug(msg=f"[DEBUG] XY SATURATION at t={t:.2f}s!")
+                    self.get_logger().debug(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
                     
                 if abs(u[2]) > self.acc_vert_max_mps2:
                     u[2] = self.acc_vert_max_mps2 * np.sign(x=u[2])
                     self.is_saturated = True
                     if np.sign(x=e[2]) == np.sign(x=u[2]):
                         self.freeze_int_z = True
-                    self.get_logger().debug(msg=f"[DEBUG] Z SATURATION at t={t:.2f}s!")
+                    self.get_logger().debug(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
                 self.publish_trajectory_setpoint_acceleration(ax=u[0], ay=u[1], az=u[2])
                 
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.run_length_s:
                     rms_error: float = math.sqrt(x=self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
                     rms_u: float = math.sqrt(x=self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
-                    self.get_logger().info(msg=f"[RESULT] Final Cost = {self.cost_J:.2f}")
-                    self.get_logger().info(msg=f"[RESULT] RMS Error = {rms_error:.4f}")
-                    self.get_logger().info(msg=f"[RESULT] RMS Control Effort = {rms_u:.3f}")
+                    self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.2f}")
+                    self.get_logger().info(f"[RESULT] RMS Error = {rms_error:.4f}")
+                    self.get_logger().info(f"[RESULT] RMS Control Effort = {rms_u:.3f}")
                     raise SystemExit("Trajectory completed successfully.")
 
 def main(args: Optional[List[str]] = None) -> None:
@@ -621,26 +621,26 @@ def main(args: Optional[List[str]] = None) -> None:
     try:
         rclpy.spin(node=node)
     except SystemExit as e:
-        node.get_logger().info(msg=f"Experiment terminated: {e}")
+        node.get_logger().info(f"Experiment terminated: {e}")
     except KeyboardInterrupt:
-        node.get_logger().info(msg="Keyboard interrupt received.")
+        node.get_logger().info("Keyboard interrupt received.")
     except ValueError as e:
-        node.get_logger().fatal(msg=f"Value error: {e}")
+        node.get_logger().fatal(f"Value error: {e}")
     except CriticalHardwareError as e:
-        node.get_logger().fatal(msg=f"Hardware error: {e}")
+        node.get_logger().fatal(f"Hardware error: {e}")
     except OdomTimeoutError as e:
-        node.get_logger().fatal(msg=f"Odometry timeout: {e}")
+        node.get_logger().fatal(f"Odometry timeout: {e}")
     except FailsafeTriggeredError as e:
-        node.get_logger().fatal(msg=f"Failsafe triggered: {e}")
+        node.get_logger().fatal(f"Failsafe triggered: {e}")
     except BoundaryBreachError as e:
-        node.get_logger().fatal(msg=f"Boundary breach: {e}")
+        node.get_logger().fatal(f"Boundary breach: {e}")
     finally:
         if node.save_data:
-            node.get_logger().info(msg="Saving telemetry data to CSV...")
+            node.get_logger().info("Saving telemetry data to CSV...")
             node.log_csv()
 
         if rclpy.ok(): 
-            node.get_logger().info(msg="Commanding vehicle to land.")
+            node.get_logger().info("Commanding vehicle to land.")
             node.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
             
         node.destroy_node()

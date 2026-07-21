@@ -56,7 +56,7 @@ def main():
     param_dict['mpc_acc_vert_max_mps2'] = 6.0 # updated parameter name
     param_dict['theta_bar'] = 1e6
     param_dict['odom_timeout_s'] = 1.0
-    param_dict['watchdog_freq'] = 10.0
+    param_dict['odom_watchdog_freq'] = 10.0
     param_dict['init_z_m_ned_aviary'] = -0.75 # updated parameter name
     param_dict['vehicle_name'] = 'sentinel5'
 
