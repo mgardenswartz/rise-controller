@@ -53,22 +53,7 @@ class AviaryRiseNode(Node):
             automatically_declare_parameters_from_overrides=True
         )
 
-        BOOL = ParameterDescriptor(type=ParameterType.PARAMETER_BOOL)
-        INT = ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER)
-        STR = ParameterDescriptor(type=ParameterType.PARAMETER_STRING)
-        DOUBLE = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE)
-        DOUBLE_ARRAY = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY)
-
         # Basic Parameters of the Experiment
-        self.declare_parameter(name='is_gazebo', descriptor=BOOL)
-        self.declare_parameter(name='desired_trajectory', descriptor=INT)
-        self.declare_parameter(name='vehicle_name', descriptor=STR)
-        self.declare_parameter(name='controller_type', descriptor=STR)
-        self.declare_parameter(name='control_frequency_hz', descriptor=DOUBLE)
-        self.declare_parameter(name='save_data', descriptor=BOOL)
-        self.declare_parameter(name='run_length_s', descriptor=DOUBLE)
-        self.declare_parameter(name='init_tol_m', descriptor=DOUBLE)
-        self.declare_parameter(name='d_out', descriptor=INT)
         self.is_gazebo: bool = self.get_parameter(name='is_gazebo').value
         self.desired_trajectory: int = self.get_parameter(name='desired_trajectory').value
         self.vehicle_name: str = self.get_parameter(name='vehicle_name').value
@@ -87,17 +72,6 @@ class AviaryRiseNode(Node):
         self.traj_gen: TrajectoryGenerator = TrajectoryGenerator(config=self.config)
         
         # Safety
-        self.declare_parameter(name='mpc_acc_hor_max_mps2', descriptor=DOUBLE)
-        self.declare_parameter(name='mpc_acc_vert_max_mps2', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_x_min_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_x_max_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_y_min_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_y_max_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_z_min_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='safe_z_max_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='odom_timeout_s', descriptor=DOUBLE)
-        self.declare_parameter(name='init_z_m_ned_aviary', descriptor=DOUBLE)
-        self.declare_parameter(name='odom_watchdog_freq', descriptor=DOUBLE)
         self.acc_hor_max_mps2: float = self.get_parameter(name='mpc_acc_hor_max_mps2').value
         self.acc_vert_max_mps2: float = self.get_parameter(name='mpc_acc_vert_max_mps2').value
         self.safe_x_min_m: float = self.get_parameter(name='safe_x_min_m_ned_aviary').value
@@ -111,26 +85,16 @@ class AviaryRiseNode(Node):
         self.odom_watchdog_freq: float = self.get_parameter(name='odom_watchdog_freq').value
         
         # Cost Function
-        self.declare_parameter(name='q_e', descriptor=DOUBLE)
-        self.declare_parameter(name='r_u', descriptor=DOUBLE)
-        self.declare_parameter(name='w_fail', descriptor=DOUBLE)
         self.q_e: float = self.get_parameter(name='q_e').value
         self.r_u: float = self.get_parameter(name='r_u').value
         self.w_fail: float = self.get_parameter(name='w_fail').value
 
         if self.controller_type == "pid":
-            self.declare_parameter(name='K_P', descriptor=DOUBLE)
-            self.declare_parameter(name='K_I', descriptor=DOUBLE)
-            self.declare_parameter(name='K_D', descriptor=DOUBLE)
             self.K_P: float = self.get_parameter(name='K_P').value
             self.K_I: float = self.get_parameter(name='K_I').value
             self.K_D: float = self.get_parameter(name='K_D').value
     
         elif self.controller_type in ['baseline', 'integrated_resnet', 'resnet', 'supertwisting']:
-            self.declare_parameter(name='k_1', descriptor=DOUBLE)
-            self.declare_parameter(name='k_2', descriptor=DOUBLE)
-            self.declare_parameter(name='k_3', descriptor=DOUBLE)
-            self.declare_parameter(name='k_rise', descriptor=DOUBLE)
             self.k_1: float = self.get_parameter(name='k_1').value
             self.k_2: float = self.get_parameter(name='k_2').value
             self.k_3: float = self.get_parameter(name='k_3').value
@@ -140,20 +104,8 @@ class AviaryRiseNode(Node):
             self.K_D: float = self.k_1 + self.k_2 + self.k_3
 
             if self.controller_type in ["resnet", "integrated_resnet"]:
-                self.declare_parameter(name='d_in', descriptor=INT)
-                self.declare_parameter(name='gamma', descriptor=DOUBLE)
-                self.declare_parameter(name='sigma_mod', descriptor=DOUBLE)
-                self.declare_parameter(name='theta_bar', descriptor=DOUBLE)
                 self.d_in: int = self.get_parameter(name='d_in').value
                 
-                self.declare_parameter(name='initial_weights', descriptor=DOUBLE_ARRAY)
-                self.declare_parameter(name='hidden_width', descriptor=INT)
-                self.declare_parameter(name='k_0', descriptor=INT)
-                self.declare_parameter(name='k_i', descriptor=INT)
-                self.declare_parameter(name='num_blocks', descriptor=INT)
-                self.declare_parameter(name='h_act_func', descriptor=STR)
-                self.declare_parameter(name='o_act_func', descriptor=STR)
-                self.declare_parameter(name='shortcut_act_func', descriptor=STR)
                 self.theta_hat: jax.Array = jnp.array(object=self.get_parameter(name='initial_weights').value)
                 
                 self.gamma_diag: jax.Array = jnp.ones(shape=self.theta_hat.shape[0]) * self.get_parameter(name='gamma').value
