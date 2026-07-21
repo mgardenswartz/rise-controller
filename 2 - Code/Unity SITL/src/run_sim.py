@@ -174,6 +174,40 @@ class SimRun:
             return True
         return False
 
+    def step_with_acceleration_ned(self, runner, px4, a_ned: np.ndarray, yaw_ned: float) -> Any:
+        """
+        Sends a raw acceleration setpoint directly to PX4 via MAVLink.
+        This uses PX4's internal acceleration controller, bypassing position and velocity.
+        """
+        import time
+        from pymavlink import mavutil
+        
+        # MAVLink acceleration mask: keep accel + yaw; ignore pos, vel, yaw_rate
+        # IGNORE_POS (1+2+4) + IGNORE_VEL (8+16+32) + IGNORE_YAW_RATE (2048) = 2111
+        _ACCEL_MASK = 2111 
+        
+        with px4._lock:
+            tgt_sys = px4._mav.target_system
+            tgt_comp = px4._mav.target_component
+            t_ms = int(time.time() * 1e3) & 0xFFFFFFFF
+            px4._mav.mav.set_position_target_local_ned_send(
+                t_ms, tgt_sys, tgt_comp, mavutil.mavlink.MAV_FRAME_LOCAL_NED, _ACCEL_MASK,
+                0.0, 0.0, 0.0, # pos
+                0.0, 0.0, 0.0, # vel
+                float(a_ned[0]), float(a_ned[1]), float(a_ned[2]), # accel
+                float(yaw_ned), 0.0 # yaw, yaw_rate
+            )
+            
+        # Lockstep advance physics
+        if runner.offboard_io_yield_s:
+            time.sleep(runner.offboard_io_yield_s)
+            
+        n_hil = runner.hil_per_control
+        for _ in range(n_hil):
+            runner.hil_tick()
+            
+        return runner.sensors
+
     def run(self) -> tuple[float, float, float]:
         """Executes the simulation loop and returns the cost."""
         QUADSIM_HOST = "localhost"
@@ -217,14 +251,16 @@ class SimRun:
         start_y_ned = float(start_ned[1])
         
         takeoff_target_ned = [start_x_ned, start_y_ned, self.hover_start_z_m_ned_aviary]
-        px4.goto_ned(*takeoff_target_ned, yaw_ned=math.radians(self.init_yaw_deg))
+        takeoff_target_enu = self.swap_ned_aviary_and_enu(takeoff_target_ned)
+        
+        px4.goto(*takeoff_target_enu, yaw=math.radians(-self.init_yaw_deg))
         px4.emit_setpoint_now()
         if not (px4.in_offboard() and px4.is_armed()):
             if not runner.engage_offboard(arm=True):
                 raise SystemExit("PX4 refused OFFBOARD/arm")
         
-        print(f"Taking off to {takeoff_target_ned} via PX4...")
-        if not runner.fly_to_ned(*takeoff_target_ned, yaw_ned=math.radians(self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
+        print(f"Taking off to {takeoff_target_enu} (ENU) via PX4...")
+        if not runner.fly_to(*takeoff_target_enu, yaw=math.radians(-self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
             print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
             self.cost_J = 1e6
             return self.cost_J, 0.0, 0.0
@@ -237,9 +273,9 @@ class SimRun:
         try:
             while traj_t < self.run_length_s:
                 # Read sensors from PX4
-                q_ned = px4.state.pos_ned
-                q_dot_ned = px4.state.vel_ned
-                yaw_enu = math.atan2(px4.state.R[1, 0], px4.state.R[0, 0])
+                q_ned = np.array(self.swap_ned_aviary_and_enu(px4.state.pos_enu))
+                q_dot_ned = np.array(self.swap_ned_aviary_and_enu(px4.state.vel_enu))
+                yaw_enu = px4.state.yaw_enu
                 
                 # Check bounds
                 if self.check_boundary_escape(q_ned_aviary=q_ned):
@@ -380,17 +416,19 @@ class SimRun:
                 else:
                     self.weight_history.append([])
     
-                sensors = runner.step_with_acceleration_ned(
-                    accel_north=float(u_clamped_ned_aviary[0]),
-                    accel_east=float(u_clamped_ned_aviary[1]),
-                    accel_down=float(u_clamped_ned_aviary[2]),
+                sensors = self.step_with_acceleration_ned(
+                    runner=runner,
+                    px4=px4,
+                    a_ned=u_clamped_ned_aviary,
                     yaw_ned=yaw_cmd_ned
                 )
                 if sensors is None:
                     break
         finally:
-            runner.stop()
-            sim.close()
+            if px4.is_armed():
+                runner.disarm()
+            runner.close()
+            sim.disconnect()
             
         sim_stop_time_perf = time.perf_counter()
         if 'sim_start_time_perf' in locals():
