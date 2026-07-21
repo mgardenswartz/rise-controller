@@ -131,7 +131,7 @@ class AviaryRiseNode(Node):
                     phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), has_aux=False, *[theta_hat])
                     grad_term = vjp_fn(r1_vec)[0]
                     theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
-                    theta_next = discrete_projection(theta_hat=theta_hat, theta_dot=theta_dot_unprojected, dt=dt, theta_bar=theta_bar, gamma_diag=gamma_diag)
+                    theta_next = discrete_projection(theta_hat=theta_hat, theta_dot_unprojected=theta_dot_unprojected, dt=dt, theta_bar=theta_bar, gamma_diag=gamma_diag)
                     final_theta = jax.lax.select(pred=saturated, on_true=theta_hat, on_false=theta_next)
                     return final_theta, phi_val
                     
