@@ -47,18 +47,28 @@ class BoundaryBreachError(Exception):
 
 class AviaryRiseNode(Node):
     def __init__(self) -> None:
-        super().__init__(node_name='aviary_rise_node')
+        super().__init__(
+            node_name='aviary_rise_node',
+            allow_undeclared_parameters=True,
+            automatically_declare_parameters_from_overrides=True
+        )
+
+        BOOL = ParameterDescriptor(type=ParameterType.PARAMETER_BOOL)
+        INT = ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER)
+        STR = ParameterDescriptor(type=ParameterType.PARAMETER_STRING)
+        DOUBLE = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE)
+        DOUBLE_ARRAY = ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY)
 
         # Basic Parameters of the Experiment
-        self.declare_parameter(name='is_gazebo', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter(name='desired_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter(name='vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter(name='controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter(name='control_frequency_hz', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='save_data', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter(name='run_length_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='init_tol_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='d_out', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
+        self.declare_parameter(name='is_gazebo', descriptor=BOOL)
+        self.declare_parameter(name='desired_trajectory', descriptor=INT)
+        self.declare_parameter(name='vehicle_name', descriptor=STR)
+        self.declare_parameter(name='controller_type', descriptor=STR)
+        self.declare_parameter(name='control_frequency_hz', descriptor=DOUBLE)
+        self.declare_parameter(name='save_data', descriptor=BOOL)
+        self.declare_parameter(name='run_length_s', descriptor=DOUBLE)
+        self.declare_parameter(name='init_tol_m', descriptor=DOUBLE)
+        self.declare_parameter(name='d_out', descriptor=INT)
         self.is_gazebo: bool = self.get_parameter(name='is_gazebo').value
         self.desired_trajectory: int = self.get_parameter(name='desired_trajectory').value
         self.vehicle_name: str = self.get_parameter(name='vehicle_name').value
@@ -77,17 +87,17 @@ class AviaryRiseNode(Node):
         self.traj_gen: TrajectoryGenerator = TrajectoryGenerator(config=self.config)
         
         # Safety
-        self.declare_parameter(name='mpc_acc_hor_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='mpc_acc_vert_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_x_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_x_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_y_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_y_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_z_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='safe_z_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='odom_timeout_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='init_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='odom_watchdog_freq', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter(name='mpc_acc_hor_max_mps2', descriptor=DOUBLE)
+        self.declare_parameter(name='mpc_acc_vert_max_mps2', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_x_min_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_x_max_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_y_min_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_y_max_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_z_min_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='safe_z_max_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='odom_timeout_s', descriptor=DOUBLE)
+        self.declare_parameter(name='init_z_m_ned_aviary', descriptor=DOUBLE)
+        self.declare_parameter(name='odom_watchdog_freq', descriptor=DOUBLE)
         self.acc_hor_max_mps2: float = self.get_parameter(name='mpc_acc_hor_max_mps2').value
         self.acc_vert_max_mps2: float = self.get_parameter(name='mpc_acc_vert_max_mps2').value
         self.safe_x_min_m: float = self.get_parameter(name='safe_x_min_m_ned_aviary').value
@@ -101,26 +111,26 @@ class AviaryRiseNode(Node):
         self.odom_watchdog_freq: float = self.get_parameter(name='odom_watchdog_freq').value
         
         # Cost Function
-        self.declare_parameter(name='q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter(name='w_fail', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+        self.declare_parameter(name='q_e', descriptor=DOUBLE)
+        self.declare_parameter(name='r_u', descriptor=DOUBLE)
+        self.declare_parameter(name='w_fail', descriptor=DOUBLE)
         self.q_e: float = self.get_parameter(name='q_e').value
         self.r_u: float = self.get_parameter(name='r_u').value
         self.w_fail: float = self.get_parameter(name='w_fail').value
 
         if self.controller_type == "pid":
-            self.declare_parameter(name='K_P', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter(name='K_I', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter(name='K_D', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+            self.declare_parameter(name='K_P', descriptor=DOUBLE)
+            self.declare_parameter(name='K_I', descriptor=DOUBLE)
+            self.declare_parameter(name='K_D', descriptor=DOUBLE)
             self.K_P: float = self.get_parameter(name='K_P').value
             self.K_I: float = self.get_parameter(name='K_I').value
             self.K_D: float = self.get_parameter(name='K_D').value
     
         elif self.controller_type in ['baseline', 'integrated_resnet', 'resnet', 'supertwisting']:
-            self.declare_parameter(name='k_1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter(name='k_2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter(name='k_3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter(name='k_rise', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+            self.declare_parameter(name='k_1', descriptor=DOUBLE)
+            self.declare_parameter(name='k_2', descriptor=DOUBLE)
+            self.declare_parameter(name='k_3', descriptor=DOUBLE)
+            self.declare_parameter(name='k_rise', descriptor=DOUBLE)
             self.k_1: float = self.get_parameter(name='k_1').value
             self.k_2: float = self.get_parameter(name='k_2').value
             self.k_3: float = self.get_parameter(name='k_3').value
@@ -130,20 +140,20 @@ class AviaryRiseNode(Node):
             self.K_D: float = self.k_1 + self.k_2 + self.k_3
 
             if self.controller_type in ["resnet", "integrated_resnet"]:
-                self.declare_parameter(name='d_in', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-                self.declare_parameter(name='gamma', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-                self.declare_parameter(name='sigma_mod', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-                self.declare_parameter(name='theta_bar', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
+                self.declare_parameter(name='d_in', descriptor=INT)
+                self.declare_parameter(name='gamma', descriptor=DOUBLE)
+                self.declare_parameter(name='sigma_mod', descriptor=DOUBLE)
+                self.declare_parameter(name='theta_bar', descriptor=DOUBLE)
                 self.d_in: int = self.get_parameter(name='d_in').value
                 
-                self.declare_parameter(name='initial_weights', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY))
-                self.declare_parameter(name='hidden_width', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-                self.declare_parameter(name='k_0', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-                self.declare_parameter(name='k_i', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-                self.declare_parameter(name='num_blocks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-                self.declare_parameter(name='h_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-                self.declare_parameter(name='o_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-                self.declare_parameter(name='shortcut_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))                
+                self.declare_parameter(name='initial_weights', descriptor=DOUBLE_ARRAY)
+                self.declare_parameter(name='hidden_width', descriptor=INT)
+                self.declare_parameter(name='k_0', descriptor=INT)
+                self.declare_parameter(name='k_i', descriptor=INT)
+                self.declare_parameter(name='num_blocks', descriptor=INT)
+                self.declare_parameter(name='h_act_func', descriptor=STR)
+                self.declare_parameter(name='o_act_func', descriptor=STR)
+                self.declare_parameter(name='shortcut_act_func', descriptor=STR)
                 self.theta_hat: jax.Array = jnp.array(object=self.get_parameter(name='initial_weights').value)
                 
                 self.gamma_diag: jax.Array = jnp.ones(shape=self.theta_hat.shape[0]) * self.get_parameter(name='gamma').value
@@ -203,9 +213,7 @@ class AviaryRiseNode(Node):
         self.pre_pause_state: int = ExperimentState.STATE_INIT
         
         self.ticks_without_odom: int = 0
-        self.current_integral_control_term: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
-        self.last_control_integrand: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
-        self.st_integral: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
+        self.reset_integral_terms()
         self.cost_J: float = 0.0
         self.last_cost_integrand: float = 0.0
         self.error_sq_integral: float = 0.0
@@ -318,6 +326,11 @@ class AviaryRiseNode(Node):
                 if (current_time - self.last_odom_ros_time) > self.odom_timeout_s:
                     raise OdomTimeoutError("Odometry feed lost during flight.")
 
+    def reset_integral_terms(self) -> None:
+        self.current_integral_control_term = np.zeros(shape=self.d_out, dtype=np.float64)
+        self.last_control_integrand = np.zeros(shape=self.d_out, dtype=np.float64)
+        self.st_integral = np.zeros(shape=self.d_out, dtype=np.float64)
+
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
         self.get_logger().info(msg=f"[DEBUG] Publishing command {command}")
         msg: VehicleCommand = VehicleCommand()
@@ -412,28 +425,33 @@ class AviaryRiseNode(Node):
             case ExperimentState.STATE_INIT:
                 self.landing_command_sent = False
                 self.cost_started = False
-                
-                if not self.in_offboard_mode: # Haven't started or Joe dropped me out of off-board
-                    self.get_logger().info(msg="Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
-                    self.publish_offboard_heartbeat()
-                    self.publish_trajectory_setpoint_acceleration(ax=0.0, ay=0.0, az=0.0)
-                    
-                    if self.is_gazebo:
-                        # Throttle automatic MAVLink commands to 1 Hz
-                        if current_timestamp_s - self.last_auto_cmd_time > 1.0:
-                            if not self.in_offboard_mode:
-                                self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=6.0) # 6.0 requests offboard
+
+                # Always stream heartbeats and 0-setpoints in INIT so PX4 accepts Offboard mode and doesn't timeout
+                self.publish_offboard_heartbeat()
+                self.publish_trajectory_setpoint_acceleration(ax=0.0, ay=0.0, az=0.0)
+
+                match self.in_offboard_mode:
+                    case False:
+                        self.get_logger().info(msg="Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
+
+                        if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
+                            self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=6.0)
                             if not self.is_armed:
                                 self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
                             self.last_auto_cmd_time = current_timestamp_s
-                    return
+                    
+                    case True:
+                        if self.is_armed:
+                            self.get_logger().info(msg=f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
+                            self.reset_integral_terms()
+                            self.experiment_state = ExperimentState.STATE_TAKEOFF
+                        else:
+                            # Still waiting for arming to complete!
+                            self.get_logger().info(msg="Offboard engaged, waiting for vehicle to arm...", throttle_duration_sec=2.0)
+                            if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
+                                self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
+                                self.last_auto_cmd_time = current_timestamp_s
 
-                if self.in_offboard_mode and self.is_armed:
-                    self.get_logger().info(msg=f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
-                    self.current_integral_control_term = np.zeros(shape=self.d_out, dtype=np.float64)
-                    self.last_control_integrand = np.zeros(shape=self.d_out, dtype=np.float64)
-                    self.st_integral = np.zeros(shape=self.d_out, dtype=np.float64)
-                    self.experiment_state = ExperimentState.STATE_TAKEOFF
 
             case ExperimentState.STATE_PAUSED:
                 if self.in_offboard_mode and self.is_armed:
@@ -459,10 +477,7 @@ class AviaryRiseNode(Node):
                         self.experiment_state = ExperimentState.STATE_PAUSED
                         self.pause_start_time = current_timestamp_s
                         
-                        # Reset memory integrals so they don't explosively un-wind when re-engaged
-                        self.current_integral_control_term = np.zeros(shape=self.d_out, dtype=np.float64)
-                        self.last_control_integrand = np.zeros(shape=self.d_out, dtype=np.float64)
-                        self.st_integral = np.zeros(shape=self.d_out, dtype=np.float64)
+                        self.reset_integral_terms()
                         return
                 
                 # Check transitions before updating the clock if in TAKEOFF
