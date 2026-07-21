@@ -465,7 +465,7 @@ class AviaryRiseNode(Node):
                 qd, qd_dot, qd_ddot = self.get_desired_state(t=t)
                 e: np.ndarray = qd - q
                 e_dot: np.ndarray = qd_dot - q_dot
-                if self.controller_type in ['resnet', 'integrated_resnet', 'baseline']:
+                if self.controller_type in ['resnet', 'integrated_resnet', 'baseline', 'supertwisting']:
                     r1: np.ndarray = e_dot + (self.k_1 * e)
 
                 u: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
