@@ -62,16 +62,13 @@ def main():
         param_dict['desired_trajectory'] = args.desired_trajectory
 
     # Hardware-specific overrides translated from the old script
-    param_dict['is_gazebo'] = False
+    param_dict['is_gazebo'] = args.gazebo
     param_dict['save_data'] = True
     param_dict['mpc_acc_vert_max_mps2'] = 6.0 # updated parameter name
     param_dict['theta_bar'] = 1e6
     param_dict['odom_timeout_s'] = 1.0
     param_dict['odom_watchdog_freq'] = 10.0
-    if args.gazebo:
-        param_dict['vehicle_name'] = 'px4_1'
-    else:
-        param_dict['vehicle_name'] = 'sentinel5'
+    param_dict['vehicle_name'] = 'px4_1' if args.gazebo else 'sentinel5'
 
     # TEMP overrides
     param_dict['traj1_z_amp_m_ned_aviary'] = 0.25
