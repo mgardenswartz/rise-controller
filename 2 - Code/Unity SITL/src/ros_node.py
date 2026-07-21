@@ -59,6 +59,7 @@ class AviaryRiseNode(Node):
         self.vehicle_name: str = self.get_parameter(name='vehicle_name').value
         self.controller_type: str = self.get_parameter(name='controller_type').value
         control_frequency_hz: float = self.get_parameter(name='control_frequency_hz').value
+        self.control_period_s: float = 1.0 / control_frequency_hz
         self.save_data: bool = self.get_parameter(name='save_data').value
         self.run_length_s: float = self.get_parameter(name='run_length_s').value
         self.init_tol_m: float = self.get_parameter(name='init_tol_m').value
@@ -198,8 +199,7 @@ class AviaryRiseNode(Node):
         self.odom_sub = self.create_subscription(
             msg_type=VehicleOdometry, topic=f'/{self.vehicle_name}/fmu/out/vehicle_odometry', callback=self.odom_callback, qos_profile=qos_profile)
         
-        self.control_period: float = 1.0 / control_frequency_hz
-        self.control_timer = self.create_timer(timer_period_sec=self.control_period, callback=self.control_timer_callback)
+        self.control_timer = self.create_timer(timer_period_sec=self.control_period_s, callback=self.control_timer_callback)
 
         self.odom_watchdog_timer = self.create_timer(timer_period_sec=1.0/self.odom_watchdog_freq, callback=self.odom_watchdog_callback)
         
@@ -214,7 +214,7 @@ class AviaryRiseNode(Node):
             theta_hat=self.theta_hat,
             x_vec=dummy_x,
             r1_vec=dummy_r1,
-            dt=self.control_period,
+            dt=self.control_period_s,
             theta_bar=self.theta_bar,
             gamma_diag=self.gamma_diag,
             s_mod=self.sigma_mod,
@@ -227,7 +227,7 @@ class AviaryRiseNode(Node):
             theta_hat=self.theta_hat,
             x_vec=dummy_x,
             r1_vec=dummy_r1,
-            dt=self.control_period,
+            dt=self.control_period_s,
             theta_bar=self.theta_bar,
             gamma_diag=self.gamma_diag,
             s_mod=self.sigma_mod,
@@ -240,8 +240,8 @@ class AviaryRiseNode(Node):
         self.theta_hat = jnp.array(object=self.get_parameter(name='initial_weights').value)
         self.theta_hat.block_until_ready()
         self.get_logger().info(f"[JAX] Neural Network Latency: {hot_time*1000:.2f} ms")
-        if hot_time > self.control_period:
-            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
+        if hot_time > self.control_period_s:
+            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period_s}s limit!")
             raise CriticalHardwareError("[JAX] ResNet latency too high for selected control frequency (init).")
 
     def vehicle_status_callback(self, msg: VehicleStatus) -> None:
@@ -446,7 +446,7 @@ class AviaryRiseNode(Node):
                 # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
                 # However get_desired_state(t) strictly ignores t during TAKEOFF.
                 t: float = current_timestamp_s - self.t_0 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else 0.0
-                dt: float = t - self.last_t if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else self.control_period
+                dt: float = t - self.last_t if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else self.control_period_s
                 
                 q_dot: np.ndarray = np.array(object=self.latest_odom.velocity, dtype=np.float64)
                 
@@ -497,7 +497,7 @@ class AviaryRiseNode(Node):
                             self.theta_hat.block_until_ready()
                             t_end_jax: float = time.perf_counter()
                             jax_dt: float = t_end_jax - t_start_jax
-                            if jax_dt > self.control_period:
+                            if jax_dt > self.control_period_s:
                                 self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
@@ -530,7 +530,7 @@ class AviaryRiseNode(Node):
                             self.theta_hat.block_until_ready()
                             t_end_jax = time.perf_counter()
                             jax_dt = t_end_jax - t_start_jax
-                            if jax_dt > self.control_period:
+                            if jax_dt > self.control_period_s:
                                 self.get_logger().warn(f"[CRITICAL] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
