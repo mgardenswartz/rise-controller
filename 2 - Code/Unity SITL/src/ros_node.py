@@ -113,7 +113,7 @@ class AviaryRiseNode(Node):
                 self.sigma_mod: float = self.get_parameter(name='sigma_mod').value
                 self.theta_bar: float = self.get_parameter(name='theta_bar').value
 
-                self.bound_resnet = jax.jit(fun=partial(
+                self.bound_resnet = jax.jit(partial(
                     resnet_network,
                     d_in=self.d_in,
                     hidden_width=self.get_parameter(name='hidden_width').value,
@@ -128,7 +128,7 @@ class AviaryRiseNode(Node):
             
                 @jax.jit
                 def compiled_update_step(theta_hat: jax.Array, x_vec: jax.Array, r1_vec: jax.Array, dt: float, theta_bar: float, gamma_diag: jax.Array, s_mod: float, saturated: bool) -> Tuple[jax.Array, jax.Array]:
-                    phi_val, vjp_fn = jax.vjp(fun=lambda t: self.bound_resnet(t, x_vec), has_aux=False, *[theta_hat])
+                    phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), has_aux=False, *[theta_hat])
                     grad_term = vjp_fn(r1_vec)[0]
                     theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
                     theta_next = discrete_projection(theta=theta_hat, theta_dot=theta_dot_unprojected, dt=dt, theta_bar=theta_bar, gamma_diag=gamma_diag)
