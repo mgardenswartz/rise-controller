@@ -8,6 +8,16 @@ from jax_resnet import init_resnet_weights
 jax.config.update("jax_platform_name", "cpu")
 jax.config.update("jax_enable_x64", True)
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def main():
     parser = argparse.ArgumentParser(description="Generate Hardware Param YAML")
     parser.add_argument("--best_gains", type=str, required=True, help="Path to best_gains.yaml file")
@@ -15,7 +25,7 @@ def main():
     parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=False, help="Desired trajectory (optional override)")
     parser.add_argument("--config", type=str, default="conf/config.yaml", help="Path to base config.yaml")
     parser.add_argument("--out", type=str, default="hardware_params.yaml", help="Output yaml file path")
-    parser.add_argument("--gazebo", type=bool, required=True, help="Gazebo or real-world experiment?")
+    parser.add_argument("--gazebo", type=str2bool, required=True, help="Gazebo or real-world experiment?")
     args = parser.parse_args()
 
     # Support 'st' alias for 'supertwisting'
