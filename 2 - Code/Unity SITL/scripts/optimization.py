@@ -118,7 +118,7 @@ def run_stage_1b(trial: optuna.Trial) -> float:
 def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
     with open("conf/config.yaml", 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
-    base_stage = base_config.get('stage2_base_gains', '1B')
+    base_stage = base_config['stage2_base_gains']
     
     db_filename = f"stage_{base_stage}.db"
     study_name = f"stage_{base_stage}_study"

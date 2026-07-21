@@ -14,9 +14,6 @@ import jax.numpy as jnp
 from src.proj import discrete_projection
 from jax_resnet import resnet_network
 from quadsim import QuadSim
-from quadsim.px4 import Px4Link
-from quadsim.tools.px4_bridge import HilBridge
-from quadsim.tools.px4_lockstep_runner import LockstepRunner
 from jax_resnet import init_resnet_weights
 from src.desired_trajectory import TrajectoryGenerator
 
@@ -176,82 +173,71 @@ class SimRun:
 
     def run(self) -> tuple[float, float, float]:
         """Executes the simulation loop and returns the cost."""
-        QUADSIM_HOST = "localhost"
-        QUADSIM_PORT = 5555
-        PX4_HOST = "127.0.0.1"
-        PX4_INSTANCE = 0
-        PX4_CLIENT = False
-        
-        sim = QuadSim(host=QUADSIM_HOST, command_port=QUADSIM_PORT, telemetry_port=QUADSIM_PORT + 1)
-        sim.connect()
-        # Set wind as requested
-        sim.set_wind(enabled=True, wind_speed=0.0)
-
-        bridge = HilBridge(px4_host=PX4_HOST, instance=PX4_INSTANCE, px4_client=PX4_CLIENT)
-        px4 = Px4Link(stream_hz=0, instance=PX4_INSTANCE)
-        runner = LockstepRunner(sim, bridge, px4, control_hz=self.control_frequency_hz)
-        
-        if self.sim_speed > 0.0:
-            runner.speed_cap = self.sim_speed
-            print(f"[*] Limiting to max real-time speed: {self.sim_speed}")
-        else:
-            print("[*] Running unthrottled (as fast as possible)")
-
-        runner.start()
-        runner.wait_px4()
-        px4.configure_offboard_no_rc()
-        if not runner.wait_ekf_ready():
-            raise SystemExit("EKF never set home")
-        if not runner.wait_heading():
-            raise SystemExit("heading chain failed")
-        if px4.state.pos_enu is None:
-            raise SystemExit("PX4 local position unavailable after EKF ready")
+        with QuadSim() as sim:
+            sim.pause()
+            status = sim.get_status()
+            steps_per_tick = max(1, round((self.control_period_s) / status.fixed_dt))
             
-        traj_t = 0.0
-        
-        # Takeoff Sequence (using PX4)
-        start_x_enu = float(px4.state.pos_enu[0])
-        start_y_enu = float(px4.state.pos_enu[1])
-        start_ned = self.swap_ned_aviary_and_enu([start_x_enu, start_y_enu, 0.0])
-        start_x_ned = float(start_ned[0])
-        start_y_ned = float(start_ned[1])
-        
-        takeoff_target_ned = [start_x_ned, start_y_ned, self.hover_start_z_m_ned_aviary]
-        px4.goto_ned(*takeoff_target_ned, yaw_ned=math.radians(self.init_yaw_deg))
-        px4.emit_setpoint_now()
-        if not (px4.in_offboard() and px4.is_armed()):
-            if not runner.engage_offboard(arm=True):
-                raise SystemExit("PX4 refused OFFBOARD/arm")
-        
-        print(f"Taking off to {takeoff_target_ned} via PX4...")
-        if not runner.fly_to_ned(*takeoff_target_ned, yaw_ned=math.radians(self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
-            print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
-            self.cost_J = 1e6
-            return self.cost_J, 0.0, 0.0
-
-        print("Starting desired trajectory now.")
-        sim_start_time_perf = time.perf_counter()
-        traj_start_time = runner.sim_time
-        
-        flight_mode = 'TRAJECTORY'
-        try:
+            drone = sim.drone()
+            init_position_enu = self.swap_ned_aviary_and_enu(self.init_ned)
+            drone.reset_pose(
+                x=init_position_enu[0],
+                y=init_position_enu[1], 
+                z=init_position_enu[2],
+                qx=0,
+                qy=0,
+                qz=math.sin(math.radians(self.init_yaw_deg / 2)),
+                qw=math.cos(math.radians(self.init_yaw_deg / 2))
+            )
+            flight_mode = 'TAKEOFF'
+            step = 0
+            traj_t = 0.0
+            takeoff_steps = 0
+            max_takeoff_steps = round(self.control_frequency_hz * self.takeoff_timeout_s)
+            
+            wall_start = time.perf_counter()
+            
             while traj_t < self.run_length_s:
-                # Read sensors from PX4
-                q_ned = px4.state.pos_ned
-                q_dot_ned = px4.state.vel_ned
-                yaw_enu = math.atan2(px4.state.R[1, 0], px4.state.R[0, 0])
-                
-                # Check bounds
+                sensors = drone.get_sensors()
+
+                # Read sensors
+                q_ned = self.swap_ned_aviary_and_enu(sensors.gps_position) # GPS is ENU
+                q_dot_ned = self.swap_ned_aviary_and_enu(sensors.velocity_enu) # Velocity is ENU
+                yaw_enu = np.array(sensors.imu_attitude)[-1] # RPY
+
                 if self.check_boundary_escape(q_ned_aviary=q_ned):
                     print(f"[!] Got too close to a wall! Position: {q_ned}. Exiting.")
-                    self.cost_J += self.w_fail * ((self.run_length_s - traj_t) ** 2)
+                    if flight_mode == 'TRAJECTORY':
+                        self.cost_J += self.w_fail * ((self.run_length_s - traj_t) ** 2)
+                    else:
+                        self.cost_J = 1e6
                     break
         
                 # State machine
                 current_t_for_cost = traj_t
-                qd_ned_aviary, qd_dot_ned_aviary, qd_ddot_ned_aviary = self.traj_gen.get_desired_state(traj_t)
-                traj_t = runner.sim_time - traj_start_time
-    
+                match flight_mode:
+                    case 'TAKEOFF':
+                        takeoff_steps += 1
+                        qd_ned_aviary = np.array([self.init_x_ned, self.init_y_ned, self.hover_start_z_m_ned_aviary], dtype=np.float64)
+                        qd_dot_ned_aviary = np.zeros(3, dtype=np.float64)
+                        qd_ddot_ned_aviary = np.zeros(3, dtype=np.float64)
+                        
+                        dist = np.linalg.norm(q_ned - qd_ned_aviary)
+                        if dist <= self.init_tol_m:
+                            flight_mode = 'TRAJECTORY'
+                            sim_start_time_perf = time.perf_counter()
+                            print("Starting desired trajectory now.")
+                        elif takeoff_steps > max_takeoff_steps:
+                            print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
+                            self.cost_J = 1e6
+                            break
+                    
+                    case 'TRAJECTORY':
+                        qd_ned_aviary, qd_dot_ned_aviary, qd_ddot_ned_aviary = self.traj_gen.get_desired_state(traj_t)
+                        traj_t = self.control_period_s * step
+                    case _:
+                        raise ValueError(f'Invalid flight_mode selected: {flight_mode}.')
+
                 # --- TRACKING ERROR COMPUTATION (in NED_aviary frame) ---
                 e_ned_aviary = qd_ned_aviary - q_ned
                 e_dot_ned_aviary = qd_dot_ned_aviary - q_dot_ned
@@ -259,7 +245,7 @@ class SimRun:
                 
                 u_provisional = np.zeros(3, dtype=np.float64)
                 current_control_integrand = np.zeros(3, dtype=np.float64)
-    
+
                 # --- CONTROL LAW EVALUATION ---
                 match self.controller_type:
                     case "baseline" | "baseline_no_wind" | "pid":
@@ -286,14 +272,14 @@ class SimRun:
                         u_nn = phi_val
                         current_control_integrand = self.K_I * e_ned_aviary + (self.K_RISE * np.sign(r1_ned_aviary)) + u_nn
                         u_provisional = (self.K_P * e_ned_aviary) + (self.K_D * e_dot_ned_aviary) + self.integral_control_term
-    
+
                     case "supertwisting":
                         norm_r1 = np.linalg.norm(r1_ned_aviary)
                         sgn_r1 = np.sign(r1_ned_aviary)
                         current_control_integrand = sgn_r1
                         proposed_integral = self.integral_control_term + (sgn_r1 * self.control_period_s)
                         u_provisional = qd_ddot_ned_aviary + self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * proposed_integral + self.k_1 * e_dot_ned_aviary
-    
+
                     case _:
                         raise ValueError(f"Unknown controller type {self.controller_type}")
                         
@@ -347,103 +333,114 @@ class SimRun:
                 if abs(u_clamped_ned_aviary[2]) > self.acc_vert_max_mps2:
                     u_clamped_ned_aviary[2] = self.acc_vert_max_mps2 * np.sign(u_clamped_ned_aviary[2])
 
-                # --- COST EVALUATION ---
-                # New cost function integrand: J = int( q_e * t * ||e(t)||^2 + r_u * ||u(t)||^2 ) dt
-                current_cost_integrand = (self.q_e * current_t_for_cost * (np.linalg.norm(e_ned_aviary)**2)) + \
-                                         (self.r_u * (np.linalg.norm(u_clamped_ned_aviary)**2))
-                self.cost_J += (self.control_period_s / 2.0) * (current_cost_integrand + self.last_cost_integrand)
-                self.last_cost_integrand = current_cost_integrand
+
+                # --- CONTROL ACTION TRANSFORMS ---
+                # 1. Start with clamped control output in NED_aviary frame
+                # 2. Transform NED_aviary back to World ENU frame
+                u_enu_mps2 = self.swap_ned_aviary_and_enu(u_clamped_ned_aviary)
+                
+                # 3. Transform World ENU into Body FLU frame
+                # sensors.imu_orientation is the (Body FLU -> World ENU) active rotation quaternion.
+                # Left-multiplying a World ENU vector by the inverse of this quaternion yields the Body FLU vector.
+                quat_rotation_enu = Rotation.from_quat(sensors.imu_orientation, scalar_first=False)
+                u_flu_mps2 = quat_rotation_enu.inv().apply(u_enu_mps2) 
+
+                if flight_mode == 'TRAJECTORY':
+                    # New cost function integrand: J = int( q_e * t * ||e(t)||^2 + r_u * ||u(t)||^2 ) dt
+                    current_cost_integrand = (self.q_e * current_t_for_cost * (np.linalg.norm(e_ned_aviary)**2)) + \
+                                             (self.r_u * (np.linalg.norm(u_clamped_ned_aviary)**2))
+                    self.cost_J += (self.control_period_s / 2.0) * (current_cost_integrand + self.last_cost_integrand)
+                    self.last_cost_integrand = current_cost_integrand
 
                 # P Controller for yaw (with wrap-around fix)
                 # Shortest angular error in degrees: (target - current + 180) % 360 - 180
-                yaw_enu_deg = math.degrees(yaw_enu)
-                e_yaw_deg = (self.yaw_des_deg - yaw_enu_deg + 180.0) % 360.0 - 180.0
+                e_yaw_deg = (self.yaw_des_deg - yaw_enu + 180.0) % 360.0 - 180.0
                 yaw_rate_cmd = -self.K_P_yaw * e_yaw_deg
                 
-                # We need to send yaw_ned to step_with_acceleration_ned.
-                # Yaw ENU = -Yaw NED. Let's just pass the desired yaw in NED directly?
-                # Actually, our target is self.yaw_des_deg. 
-                yaw_cmd_ned = math.radians(-self.yaw_des_deg)
-                
                 # --- DATA COLLECTION ---
-                sim_time_current = runner.sim_time
-                self.time_history.append(sim_time_current)
-                self.error_norm_history.append(float(np.linalg.norm(e_ned_aviary)))
-                self.control_output_norm_history.append(float(np.linalg.norm(u_clamped_ned_aviary)))
-                self.q_history.append(q_ned.tolist())
-                self.qd_history.append(qd_ned_aviary.tolist())
-                self.u_history.append(u_clamped_ned_aviary.tolist())
-                self.e_history.append(e_ned_aviary.tolist())
-                
-                if hasattr(self, 'theta_hat'):
-                    self.weight_history.append(np.array(self.theta_hat).tolist())
-                else:
-                    self.weight_history.append([])
-    
-                sensors = runner.step_with_acceleration_ned(
-                    accel_north=float(u_clamped_ned_aviary[0]),
-                    accel_east=float(u_clamped_ned_aviary[1]),
-                    accel_down=float(u_clamped_ned_aviary[2]),
-                    yaw_ned=yaw_cmd_ned
-                )
-                if sensors is None:
-                    break
-        finally:
-            runner.stop()
-            sim.close()
-            
-        sim_stop_time_perf = time.perf_counter()
-        if 'sim_start_time_perf' in locals():
-            sim_run_time_realworld = sim_stop_time_perf - sim_start_time_perf
-            print(f"[*] Trajectory execution took {round(sim_run_time_realworld, 1)} real seconds for {self.run_length_s} simulated seconds. Scale: {round(self.run_length_s / max(sim_run_time_realworld, 0.001) , 1)}. Specified speed was {self.sim_speed}.")
-
-
-        # --- COMPUTE RMS ---
-        e_rms = 0.0
-        u_rms = 0.0
-        if len(self.e_history) > 0:
-            e_arr = np.array(self.e_history)
-            u_arr = np.array(self.u_history)
-            
-            e_rms = float(np.sqrt(np.mean(np.sum(e_arr**2, axis=1))))
-            u_rms = float(np.sqrt(np.mean(np.sum(u_arr**2, axis=1))))
-            
-            print(f"Tracking error RMS (e_RMS): {e_rms:.4f} m")
-            print(f"Control effort RMS (u_RMS): {u_rms:.4f} m/s^2")
-
-        # --- SAVE DATA ---
-        if self.config['save_data']:
-            traj_num = self.config['desired_trajectory']
-            controller = self.controller_type
-            
-            output_dir = os.path.join("output", f"traj{traj_num}", controller)
-            os.makedirs(output_dir, exist_ok=True)
-            
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            csv_path = os.path.join(output_dir, f"{timestamp}.csv")
-            
-            with open(csv_path, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                
-                header = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
-                if len(self.weight_history) > 0 and len(self.weight_history[0]) > 0:
-                    num_weights = len(self.weight_history[0])
-                    header.extend([f"W{i}" for i in range(num_weights)])
-                
-                writer.writerow(header)
-                
-                for i in range(len(self.time_history)):
-                    row = [
-                        self.time_history[i],
-                        self.error_norm_history[i],
-                        self.control_output_norm_history[i],
-                        self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
-                        self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
-                    ]
-                    if len(self.weight_history[i]) > 0:
-                        row.extend(self.weight_history[i])
-                    writer.writerow(row)
+                if flight_mode == 'TRAJECTORY':
+                    sim_time_current = step * self.control_period_s
+                    self.time_history.append(sim_time_current)
+                    self.error_norm_history.append(float(np.linalg.norm(e_ned_aviary)))
+                    self.control_output_norm_history.append(float(np.linalg.norm(u_clamped_ned_aviary)))
+                    self.q_history.append(q_ned.tolist())
+                    self.qd_history.append(qd_ned_aviary.tolist())
+                    self.u_history.append(u_clamped_ned_aviary.tolist())
+                    self.e_history.append(e_ned_aviary.tolist())
                     
-            print(f"Saved data to {csv_path}")
+                    if hasattr(self, 'theta_hat'):
+                        self.weight_history.append(np.array(self.theta_hat).tolist())
+                    else:
+                        self.weight_history.append([])
 
-        return self.cost_J, e_rms, u_rms
+                drone.step_with_acceleration(
+                    ax=u_flu_mps2[0],
+                    ay=u_flu_mps2[1],
+                    az=u_flu_mps2[2],
+                    yaw_rate=yaw_rate_cmd,
+                    count=steps_per_tick
+                )
+
+                step += 1
+                sim_time = step * self.control_period_s
+                
+                if self.sim_speed > 0.0:
+                    target_wall_time = sim_time / self.sim_speed
+                    sleep_time = target_wall_time - (time.perf_counter() - wall_start)
+                    if sleep_time > 0.0:
+                        time.sleep(sleep_time)
+            
+            sim_stop_time_perf = time.perf_counter()
+            sim_run_time_realworld = sim_stop_time_perf - sim_start_time_perf
+            print(f"[*] Simulation took {round(sim_run_time_realworld, 1)} real seconds for {self.run_length_s} simulated seconds. Scale: {round(self.run_length_s / sim_run_time_realworld , 1)}. Specified speed was {self.sim_speed}.")
+
+            # --- COMPUTE RMS ---
+            e_rms = 0.0
+            u_rms = 0.0
+            if len(self.e_history) > 0:
+                e_arr = np.array(self.e_history)
+                u_arr = np.array(self.u_history)
+                
+                e_rms = float(np.sqrt(np.mean(np.sum(e_arr**2, axis=1))))
+                u_rms = float(np.sqrt(np.mean(np.sum(u_arr**2, axis=1))))
+                
+                print(f"Tracking error RMS (e_RMS): {e_rms:.4f} m")
+                print(f"Control effort RMS (u_RMS): {u_rms:.4f} m/s^2")
+
+            # --- SAVE DATA ---
+            if self.config['save_data']:
+                traj_num = self.config['desired_trajectory']
+                controller = self.controller_type
+                
+                output_dir = os.path.join("output", f"traj{traj_num}", controller)
+                os.makedirs(output_dir, exist_ok=True)
+                
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                csv_path = os.path.join(output_dir, f"{timestamp}.csv")
+                
+                with open(csv_path, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    
+                    header = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
+                    if len(self.weight_history) > 0 and len(self.weight_history[0]) > 0:
+                        num_weights = len(self.weight_history[0])
+                        header.extend([f"W{i}" for i in range(num_weights)])
+                    
+                    writer.writerow(header)
+                    
+                    for i in range(len(self.time_history)):
+                        row = [
+                            self.time_history[i],
+                            self.error_norm_history[i],
+                            self.control_output_norm_history[i],
+                            self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
+                            self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
+                        ]
+                        if len(self.weight_history[i]) > 0:
+                            row.extend(self.weight_history[i])
+                        writer.writerow(row)
+                        
+                print(f"Saved data to {csv_path}")
+
+            sim.pause()
+            return self.cost_J, e_rms, u_rms

@@ -18,6 +18,7 @@ dependencies = [
     "quadsim-sdk@git+https://git@github.com/ninonick0607/QuadSimLib.git/",
     "optuna",
     "pyyaml",
+    "pymavlink",
     "jax-resnet@git+https://git@github.com/mgardenswartz/resnet.git@v1.2.0"
 ]
 

@@ -35,7 +35,7 @@ aviary_rise_node:
     save_data: false
     shortcut_act_func: swish
     run_length_s: 30.0
-    sim_speed: 0.0 # 0.0 for "as fast possible"
+    sim_speed: 1.0 # 0.0 for "as fast possible"
     sigma_mod: 3.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
@@ -51,7 +51,7 @@ aviary_rise_node:
     takeoff_timeout_s: 10.0
     xy_rand_range_m: 1.0    # +/- variation for takeoff X and Y in mini-batches
     z_rand_range_m: 0.0    # +/- variation for hover_start_z in mini-batches
-    mpc_acc_hor_max_mps2: 6.0
+    mpc_acc_hor_max_mps2: 6.0 # Purposefully set more than PX4's actual 3.0 m/s^2 limit
     mpc_acc_vert_max_mps2: 3.0
     num_eval_seeds: 3 # For mini-batches in optimization.py
     base_seed: 42
