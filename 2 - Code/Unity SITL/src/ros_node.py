@@ -24,8 +24,8 @@ jax.config.update("jax_enable_x64", True) # Use 64 bit since all floats to be us
 jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network
-from proj import discrete_projection
-from desired_trajectory import TrajectoryGenerator
+from aviary_rise_controller.proj import discrete_projection
+from aviary_rise_controller.desired_trajectory import TrajectoryGenerator
 
 class ExperimentState:
     STATE_INIT: int = 0
