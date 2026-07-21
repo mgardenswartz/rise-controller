@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=False, help="Desired trajectory (optional override)")
     parser.add_argument("--config", type=str, default="conf/config.yaml", help="Path to base config.yaml")
     parser.add_argument("--out", type=str, default="hardware_params.yaml", help="Output yaml file path")
-    parser.add_argument("--gazebo", type=bool, required=True, help="Output yaml file path")
+    parser.add_argument("--gazebo", type=bool, required=True, help="Gazebo or real-world experiment?")
     args = parser.parse_args()
 
     # Support 'st' alias for 'supertwisting'
