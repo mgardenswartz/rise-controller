@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=False, help="Desired trajectory (optional override)")
     parser.add_argument("--config", type=str, default="conf/config.yaml", help="Path to base config.yaml")
     parser.add_argument("--out", type=str, default="hardware_params.yaml", help="Output yaml file path")
+    parser.add_argument("--gazebo", type=bool, required=True, help="Output yaml file path")
     args = parser.parse_args()
 
     # Support 'st' alias for 'supertwisting'
@@ -57,11 +58,14 @@ def main():
     param_dict['theta_bar'] = 1e6
     param_dict['odom_timeout_s'] = 1.0
     param_dict['odom_watchdog_freq'] = 10.0
-    param_dict['init_z_m_ned_aviary'] = -0.75 # updated parameter name
-    param_dict['vehicle_name'] = 'sentinel5'
+    if args.gazebo:
+        param_dict['vehicle_name'] = 'px4_1'
+    else:
+        param_dict['vehicle_name'] = 'sentinel5'
 
     # TEMP overrides
     param_dict['traj1_z_amp_m_ned_aviary'] = 0.25
+    param_dict['init_z_m_ned_aviary'] = -0.75 # updated parameter name
 
     # Generate initial neural network weights if applicable
     if target_controller_type in ["resnet", "integrated_resnet"]:

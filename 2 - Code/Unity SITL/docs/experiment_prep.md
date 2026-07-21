@@ -3,11 +3,11 @@
 ## GENERATE PARAMS
 
 ``
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type pid --out output/hardware_params/pid_params.yaml
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type integrated_resnet --out output/hardware_params/integrated_resnet_params.yaml
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type resnet --out output/hardware_params/resnet_params.yaml
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type baseline --out output/hardware_params/baseline_params.yaml
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type st --out output/hardware_params/st_params.yaml
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type pid --out output/hardware_params/pid_params.yaml --gazebo false
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type integrated_resnet --out output/hardware_params/integrated_resnet_params.yaml --gazebo false
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type resnet --out output/hardware_params/resnet_params.yaml --gazebo false
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type baseline --out output/hardware_params/baseline_params.yaml --gazebo false
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type st --out output/hardware_params/st_params.yaml --gazebo false
 ``
 
 Push latest node to the quad.
