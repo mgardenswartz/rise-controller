@@ -99,10 +99,12 @@ class AviaryRiseNode(Node):
             self.k_1: float = self.get_parameter(name='k_1').value
             self.k_2: float = self.get_parameter(name='k_2').value
             self.k_3: float = self.get_parameter(name='k_3').value
-            self.K_RISE: float = self.get_parameter(name='k_rise').value
-            self.K_P: float = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
-            self.K_I: float = (self.k_1 * self.k_2 * self.k_3) + self.k_1
-            self.K_D: float = self.k_1 + self.k_2 + self.k_3
+
+            if self.controller_type in ['baseline', 'integrated_resnet', 'resnet']:
+                self.K_RISE: float = self.get_parameter(name='k_rise').value
+                self.K_P: float = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
+                self.K_I: float = (self.k_1 * self.k_2 * self.k_3) + self.k_1
+                self.K_D: float = self.k_1 + self.k_2 + self.k_3
 
             if self.controller_type in ["resnet", "integrated_resnet"]:
                 self.d_in: int = self.get_parameter(name='d_in').value
@@ -470,8 +472,18 @@ class AviaryRiseNode(Node):
                 phi_val: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
-                    case "baseline" | "pid":
-                        current_integrand: np.ndarray = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
+                    case "baseline":
+                        current_integrand: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                        delta_int: np.ndarray = (dt / 2.0) * (current_integrand + self.last_control_integrand)
+                        if not self.freeze_int_xy:
+                            self.current_integral_control_term[0:2] += delta_int[0:2]
+                        if not self.freeze_int_z:
+                            self.current_integral_control_term[2] += delta_int[2]
+                        self.last_control_integrand = current_integrand
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
+
+                    case "pid":
+                        current_integrand: np.ndarray = (self.K_I * e)
                         delta_int: np.ndarray = (dt / 2.0) * (current_integrand + self.last_control_integrand)
                         if not self.freeze_int_xy:
                             self.current_integral_control_term[0:2] += delta_int[0:2]
