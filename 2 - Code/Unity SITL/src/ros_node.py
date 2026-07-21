@@ -266,9 +266,8 @@ class AviaryRiseNode(Node):
         self.ticks_without_odom += 1
         
         if not self.initial_position_locked:
-            max_boot_time_s: float = 30.0 if self.is_gazebo else 5.0
-            if self.ticks_without_odom >= (max_boot_time_s * self.odom_watchdog_freq):
-                raise OdomTimeoutError(f"No odometry received after {max_boot_time_s}s at boot.")
+            if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
+                raise OdomTimeoutError("No odometry received at boot.")
         else:
             if self.is_gazebo:
                 if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
@@ -437,7 +436,7 @@ class AviaryRiseNode(Node):
                 q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
                 if self.experiment_state == ExperimentState.STATE_TAKEOFF:
                     e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
-                    if np.linalg.norm(x=e_takeoff) <= self.init_tol_m:
+                    if np.linalg.norm(e_takeoff) <= self.init_tol_m:
                         self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
                         # Reset t_0 so the trajectory clock starts at exactly 0.0 now
                         self.t_0 = current_timestamp_s
@@ -471,7 +470,7 @@ class AviaryRiseNode(Node):
                 
                 match self.controller_type:
                     case "baseline" | "pid":
-                        current_integrand: np.ndarray = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(x=r1))
+                        current_integrand: np.ndarray = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
                         delta_int: np.ndarray = (dt / 2.0) * (current_integrand + self.last_control_integrand)
                         if not self.freeze_int_xy:
                             self.current_integral_control_term[0:2] += delta_int[0:2]
@@ -503,7 +502,7 @@ class AviaryRiseNode(Node):
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
                         
-                        current_integrand_res: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(x=r1))
+                        current_integrand_res: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1))
                         delta_int_res: np.ndarray = (dt / 2.0) * (current_integrand_res + self.last_control_integrand)
                         if not self.freeze_int_xy:
                             self.current_integral_control_term[0:2] += delta_int_res[0:2]
@@ -536,7 +535,7 @@ class AviaryRiseNode(Node):
                                 
                             phi_val = np.array(object=phi_out, dtype=np.float64)
                         
-                        current_integrand_int: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(x=r1)) + phi_val
+                        current_integrand_int: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
                         delta_int_int: np.ndarray = (dt / 2.0) * (current_integrand_int + self.last_control_integrand)
                         if not self.freeze_int_xy:
                             self.current_integral_control_term[0:2] += delta_int_int[0:2]
@@ -546,13 +545,13 @@ class AviaryRiseNode(Node):
                         u = (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
 
                     case "supertwisting":
-                        norm_r1: float = float(np.linalg.norm(x=r1))
-                        sgn_r1: np.ndarray = np.sign(x=r1)
+                        norm_r1: float = float(np.linalg.norm(r1))
+                        sgn_r1: np.ndarray = np.sign(r1)
                         self.st_integral += sgn_r1 * dt
-                        u = qd_ddot + self.k_2 * np.sqrt(x=norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
+                        u = qd_ddot + self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
         
-                norm_e: float = float(np.linalg.norm(x=e))
-                norm_u: float = float(np.linalg.norm(x=u))
+                norm_e: float = float(np.linalg.norm(e))
+                norm_u: float = float(np.linalg.norm(u))
                 
                 self.time_history.append(t)
                 self.error_norm_history.append(norm_e)
@@ -591,7 +590,7 @@ class AviaryRiseNode(Node):
                 self.freeze_int_z = False
                 
                 u_xy: np.ndarray = u[0:2]
-                norm_uxy: float = float(np.linalg.norm(x=u_xy))
+                norm_uxy: float = float(np.linalg.norm(u_xy))
                 if norm_uxy > self.acc_hor_max_mps2:
                     u[0:2] = u_xy * (self.acc_hor_max_mps2 / norm_uxy)
                     self.is_saturated = True
@@ -600,17 +599,17 @@ class AviaryRiseNode(Node):
                     self.get_logger().debug(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
                     
                 if abs(u[2]) > self.acc_vert_max_mps2:
-                    u[2] = self.acc_vert_max_mps2 * np.sign(x=u[2])
+                    u[2] = self.acc_vert_max_mps2 * np.sign(u[2])
                     self.is_saturated = True
-                    if np.sign(x=e[2]) == np.sign(x=u[2]):
+                    if np.sign(e[2]) == np.sign(u[2]):
                         self.freeze_int_z = True
                     self.get_logger().debug(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
                 self.publish_trajectory_setpoint_acceleration(ax=u[0], ay=u[1], az=u[2])
                 
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.run_length_s:
-                    rms_error: float = math.sqrt(x=self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
-                    rms_u: float = math.sqrt(x=self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
+                    rms_error: float = math.sqrt(self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
+                    rms_u: float = math.sqrt(self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
                     self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.2f}")
                     self.get_logger().info(f"[RESULT] RMS Error = {rms_error:.4f}")
                     self.get_logger().info(f"[RESULT] RMS Control Effort = {rms_u:.3f}")
