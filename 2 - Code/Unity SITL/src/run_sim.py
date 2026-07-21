@@ -80,6 +80,7 @@ class SimRun:
         
         self.time_history: list[float] = []
         self.error_norm_history: list[float] = []
+        self.control_output_norm_history: list[float] = []
         self.weight_history: list[list[float]] = []
         self.q_history: list[list[float]] = []
         self.qd_history: list[list[float]] = []
@@ -361,6 +362,7 @@ class SimRun:
                     sim_time_current = step * self.control_period_s
                     self.time_history.append(sim_time_current)
                     self.error_norm_history.append(float(np.linalg.norm(e_ned_aviary)))
+                    self.control_output_norm_history.append(float(np.linalg.norm(u_clamped_ned_aviary)))
                     self.q_history.append(q_ned.tolist())
                     self.qd_history.append(qd_ned_aviary.tolist())
                     self.u_history.append(u_clamped_ned_aviary.tolist())
@@ -419,10 +421,10 @@ class SimRun:
                 with open(csv_path, 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)
                     
-                    header = ['time', 'error_norm', 'q_x', 'q_y', 'q_z', 'qd_x', 'qd_y', 'qd_z', 'u_x', 'u_y', 'u_z', 'e_x', 'e_y', 'e_z']
+                    header = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
                     if len(self.weight_history) > 0 and len(self.weight_history[0]) > 0:
                         num_weights = len(self.weight_history[0])
-                        header.extend([f"w_{i}" for i in range(num_weights)])
+                        header.extend([f"W{i}" for i in range(num_weights)])
                     
                     writer.writerow(header)
                     
@@ -430,10 +432,9 @@ class SimRun:
                         row = [
                             self.time_history[i],
                             self.error_norm_history[i],
-                            *self.q_history[i],
-                            *self.qd_history[i],
-                            *self.u_history[i],
-                            *self.e_history[i]
+                            self.control_output_norm_history[i],
+                            self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
+                            self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
                         ]
                         if len(self.weight_history[i]) > 0:
                             row.extend(self.weight_history[i])

@@ -69,6 +69,7 @@ def main():
     param_dict['odom_timeout_s'] = 1.0
     param_dict['odom_watchdog_freq'] = 10.0
     param_dict['vehicle_name'] = 'px4_1' if args.gazebo else 'sentinel5'
+    param_dict['d_in'] = 15 if args.controller_type == "integrated_resnet" else 12
 
     # TEMP overrides
     param_dict['traj1_z_amp_m_ned_aviary'] = 0.25
