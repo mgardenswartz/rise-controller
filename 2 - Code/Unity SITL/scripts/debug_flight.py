@@ -1,6 +1,8 @@
 import argparse
 import yaml
 import os
+import subprocess
+import time
 from typing import Any, Dict
 
 from src.run_sim import SimRun
@@ -44,11 +46,31 @@ def main() -> None:
     print(f"[*] Initializing simulation with {args.controller_type}...")
     sim = SimRun(params, yaml_config_path=args.config)
     
+    print("[*] Launching PX4 SITL...")
+    px4_process = subprocess.Popen(
+        ["make", "px4_sitl", "none_iris"],
+        cwd="/Users/max/PX4-Autopilot",
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True
+    )
+    time.sleep(5) # Give PX4 time to boot
+    
     try:
         cost, e_rms, u_rms = sim.run()
         print(f"\n[*] Flight Complete! Final Cost: {cost:.4f} | E_RMS {e_rms} | u_RMS {u_rms}")
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"\n[!] Flight failed with error: {e}")
+    finally:
+        print("[*] Terminating PX4 SITL...")
+        import signal
+        try:
+            os.killpg(os.getpgid(px4_process.pid), signal.SIGTERM)
+        except Exception:
+            pass
+        px4_process.wait()
 
 if __name__ == "__main__":
     main()

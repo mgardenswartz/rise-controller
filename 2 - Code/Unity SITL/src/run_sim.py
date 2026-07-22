@@ -186,6 +186,16 @@ class SimRun:
         # IGNORE_POS (1+2+4) + IGNORE_VEL (8+16+32) + IGNORE_YAW_RATE (2048) = 2111
         _ACCEL_MASK = 2111 
         
+        # Map a_ned from NED_Aviary (E, -N, -U) to standard NED (N, E, D)
+        # N = -y_aviary
+        # E = x_aviary
+        # D = z_aviary
+        a_ned_px4 = [
+            -float(a_ned[1]),
+            float(a_ned[0]),
+            float(a_ned[2])
+        ]
+        
         with px4._lock:
             tgt_sys = px4._mav.target_system
             tgt_comp = px4._mav.target_component
@@ -194,7 +204,7 @@ class SimRun:
                 t_ms, tgt_sys, tgt_comp, mavutil.mavlink.MAV_FRAME_LOCAL_NED, _ACCEL_MASK,
                 0.0, 0.0, 0.0, # pos
                 0.0, 0.0, 0.0, # vel
-                float(a_ned[0]), float(a_ned[1]), float(a_ned[2]), # accel
+                a_ned_px4[0], a_ned_px4[1], a_ned_px4[2], # accel
                 float(yaw_ned), 0.0 # yaw, yaw_rate
             )
             
@@ -253,14 +263,14 @@ class SimRun:
         takeoff_target_ned = [start_x_ned, start_y_ned, self.hover_start_z_m_ned_aviary]
         takeoff_target_enu = self.swap_ned_aviary_and_enu(takeoff_target_ned)
         
-        px4.goto(*takeoff_target_enu, yaw=math.radians(-self.init_yaw_deg))
+        px4.goto(*takeoff_target_enu, yaw=math.radians(self.init_yaw_deg))
         px4.emit_setpoint_now()
         if not (px4.in_offboard() and px4.is_armed()):
             if not runner.engage_offboard(arm=True):
                 raise SystemExit("PX4 refused OFFBOARD/arm")
         
         print(f"Taking off to {takeoff_target_enu} (ENU) via PX4...")
-        if not runner.fly_to(*takeoff_target_enu, yaw=math.radians(-self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
+        if not runner.fly_to(*takeoff_target_enu, yaw=math.radians(self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
             print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
             self.cost_J = 1e6
             return self.cost_J, 0.0, 0.0
@@ -399,7 +409,8 @@ class SimRun:
                 # We need to send yaw_ned to step_with_acceleration_ned.
                 # Yaw ENU = -Yaw NED. Let's just pass the desired yaw in NED directly?
                 # Actually, our target is self.yaw_des_deg. 
-                yaw_cmd_ned = math.radians(-self.yaw_des_deg)
+                # Convert desired yaw from ENU degrees to NED radians
+                yaw_cmd_ned = math.pi/2 - math.radians(self.yaw_des_deg)
                 
                 # --- DATA COLLECTION ---
                 sim_time_current = runner.sim_time
