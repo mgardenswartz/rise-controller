@@ -32,4 +32,13 @@ python3 scripts/unified_orchestrator.py --desired_trajectory 2 --wind
 
 BEST RUNS (OUTSIDE DOCKER) 
 python3 scripts/run_best_gains.py --controller_type baseline --desired_trajectory 1 --wind --db_dir output/traj1
+python3 scripts/run_best_gains.py --controller_type resnet --desired_trajectory 1 --wind --db_dir output/traj1
+python3 scripts/run_best_gains.py --controller_type integrated_resnet --desired_trajectory 1 --wind --db_dir output/traj1
+python3 scripts/run_best_gains.py --controller_type pid --desired_trajectory 1 --wind --db_dir output/traj1
+python3 scripts/run_best_gains.py --controller_type supertwisting --desired_trajectory 1 --wind --db_dir output/traj1
+
+python3 scripts/run_best_gains.py --controller_type baseline --desired_trajectory 2 --wind --db_dir output/traj2
 python3 scripts/run_best_gains.py --controller_type resnet --desired_trajectory 2 --wind --db_dir output/traj2
+python3 scripts/run_best_gains.py --controller_type integrated_resnet --desired_trajectory 2 --wind --db_dir output/traj2
+python3 scripts/run_best_gains.py --controller_type pid --desired_trajectory 2 --wind --db_dir output/traj2
+python3 scripts/run_best_gains.py --controller_type supertwisting --desired_trajectory 2 --wind --db_dir output/traj2
