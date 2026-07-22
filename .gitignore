@@ -573,3 +573,5 @@ src/conf/tuned_gains.yaml
 2 - Code/Unity SITL/output/*
 2 - Code/Unity SITL/conf/best_gains.yaml
 2 - Code/Gazebo SITL/*.yaml
+2 - Code/Unity SITL/output
+**output/**
