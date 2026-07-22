@@ -43,9 +43,7 @@ def main() -> None:
             print(f"[!] {target_key} not found in {best_gains_path}. Running with base config.yaml parameters.")
             params = {'controller_type': args.controller_type}
 
-    print(f"[*] Initializing simulation with {args.controller_type}...")
-    sim = SimRun(params, yaml_config_path=args.config)
-    
+    # START PX4 BEFORE CONNECTING TO UNITY!
     print("[*] Launching PX4 SITL...")
     px4_process = subprocess.Popen(
         ["make", "px4_sitl", "none_iris"],
@@ -54,11 +52,15 @@ def main() -> None:
         stderr=subprocess.DEVNULL,
         start_new_session=True
     )
-    time.sleep(5) # Give PX4 time to boot
-    
+    time.sleep(4) # Give PX4 time to boot
+
     try:
+        print(f"[*] Initializing simulation with {args.controller_type}...")
+        sim = SimRun(params, yaml_config_path=args.config)
         cost, e_rms, u_rms = sim.run()
         print(f"\n[*] Flight Complete! Final Cost: {cost:.4f} | E_RMS {e_rms} | u_RMS {u_rms}")
+    except KeyboardInterrupt:
+        print("\n[!] Flight interrupted by user (Ctrl+C).")
     except Exception as e:
         import traceback
         traceback.print_exc()
