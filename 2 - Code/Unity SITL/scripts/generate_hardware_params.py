@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate Hardware Param YAML")
     parser.add_argument("--best_gains", type=str, required=True, help="Path to best_gains.yaml file")
     parser.add_argument("--controller_type", type=str, choices=["baseline", "resnet", "integrated_resnet", "supertwisting", "st", "pid", "baseline_no_wind"], required=True)
-    parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=False, help="Desired trajectory (optional override)")
+    parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=True, help="Desired trajectory (optional override)")
     parser.add_argument("--config", type=str, default="conf/config.yaml", help="Path to base config.yaml")
     parser.add_argument("--out", type=str, default="hardware_params.yaml", help="Output yaml file path")
     parser.add_argument("--gazebo", type=str2bool, required=True, help="Gazebo or real-world experiment?")
