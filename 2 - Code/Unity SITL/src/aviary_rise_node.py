@@ -444,8 +444,8 @@ class AviaryRiseNode(Node):
                         return
                 
                 # Check transitions before updating the clock if in TAKEOFF
+                q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
                 if self.is_gazebo:
-                    q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
                     if self.experiment_state == ExperimentState.STATE_TAKEOFF:
                         if (current_timestamp_s - self.takeoff_start_time) > 10.0:
                             self.cost_J += self.w_fail * (self.run_length_s ** 2)

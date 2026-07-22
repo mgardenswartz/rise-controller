@@ -1,0 +1,38 @@
+quadsim:
+  host: localhost
+  port: 5555
+
+px4:
+  host: 127.0.0.1
+  instance: 0
+  client: false
+  param_file: sentinel_px4.params
+
+control:
+  frequency_hz: 50.0
+  simulation_speed: 1.0
+  kp: 2.3
+  ki: 0.5
+  kd: 1.5
+  max_horizontal_accel_mps2: 6.0
+  max_vertical_accel_mps2: 6.0
+  abort_position_error_m: 4.0
+
+  # Fixed NED yaw hold in radians. This is not trajectory yaw tracking.
+  yaw_ned_rad: 0.0
+
+trajectory:
+  type: figure8
+  duration_s: 30.0
+  altitude_m: 3.0
+
+  figure8:
+    period_s: 30.0
+    north_amplitude_m: 1.5
+    east_amplitude_m: 3.0
+    down_amplitude_m: 0.25
+    warp: 0.5
+
+  rose:
+    radius_m: 1.5
+    speed_mps: 0.75
