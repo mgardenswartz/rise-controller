@@ -331,8 +331,15 @@ class AviaryRiseNode(Node):
         base_dir: str = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
         os.makedirs(name=base_dir, exist_ok=True)
         
-        existing_files: List[str] = [f for f in os.listdir(path=base_dir) if os.path.isfile(path=os.path.join(base_dir, f))]
-        iterable: int = len(existing_files) + 1
+        existing_files: List[str] = [f for f in os.listdir(path=base_dir) if f.endswith('.csv') and f.startswith('run_')]
+        max_idx: int = 0
+        for f in existing_files:
+            try:
+                idx = int(f.replace('run_', '').replace('.csv', ''))
+                max_idx = max(max_idx, idx)
+            except ValueError:
+                pass
+        iterable: int = max_idx + 1
         csv_filename: str = os.path.join(base_dir, f"run_{iterable}.csv")
         try:
             with open(file=csv_filename, mode='w', newline='') as file:
@@ -437,20 +444,21 @@ class AviaryRiseNode(Node):
                         return
                 
                 # Check transitions before updating the clock if in TAKEOFF
-                q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
-                if self.experiment_state == ExperimentState.STATE_TAKEOFF:
-                    if (current_timestamp_s - self.takeoff_start_time) > 10.0:
-                        self.cost_J += self.w_fail * (self.run_length_s ** 2)
-                        self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Takeoff Timeout)")
-                        raise FailsafeTriggeredError("Failed to reach takeoff position within timeout.")
-                        
-                    e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
-                    if np.linalg.norm(e_takeoff) <= self.init_tol_m:
-                        self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
-                        # Reset t_0 so the trajectory clock starts at exactly 0.0 now
-                        self.t_0 = current_timestamp_s
-                        self.last_t = 0.0
-                        self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
+                if self.is_gazebo:
+                    q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
+                    if self.experiment_state == ExperimentState.STATE_TAKEOFF:
+                        if (current_timestamp_s - self.takeoff_start_time) > 10.0:
+                            self.cost_J += self.w_fail * (self.run_length_s ** 2)
+                            self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Takeoff Timeout)")
+                            raise FailsafeTriggeredError("Failed to reach takeoff position within timeout.")
+                            
+                        e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
+                        if np.linalg.norm(e_takeoff) <= self.init_tol_m:
+                            self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
+                            # Reset t_0 so the trajectory clock starts at exactly 0.0 now
+                            self.t_0 = current_timestamp_s
+                            self.last_t = 0.0
+                            self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
 
                 # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
                 # However get_desired_state(t) strictly ignores t during TAKEOFF.

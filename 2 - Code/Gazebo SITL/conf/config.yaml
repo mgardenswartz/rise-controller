@@ -29,7 +29,7 @@ aviary_rise_node:
     vehicle_name: 'px4_1'
     control_frequency_hz: 50.0
     save_data: False
-    run_length_s: 10.0
+    run_length_s: 30.0
     
     q_e: 1.0
     r_u: 0.2

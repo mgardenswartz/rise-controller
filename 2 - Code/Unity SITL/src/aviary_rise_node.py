@@ -331,8 +331,15 @@ class AviaryRiseNode(Node):
         base_dir: str = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
         os.makedirs(name=base_dir, exist_ok=True)
         
-        existing_files: List[str] = [f for f in os.listdir(path=base_dir) if os.path.isfile(path=os.path.join(base_dir, f))]
-        iterable: int = len(existing_files) + 1
+        existing_files: List[str] = [f for f in os.listdir(path=base_dir) if f.endswith('.csv') and f.startswith('run_')]
+        max_idx: int = 0
+        for f in existing_files:
+            try:
+                idx = int(f.replace('run_', '').replace('.csv', ''))
+                max_idx = max(max_idx, idx)
+            except ValueError:
+                pass
+        iterable: int = max_idx + 1
         csv_filename: str = os.path.join(base_dir, f"run_{iterable}.csv")
         try:
             with open(file=csv_filename, mode='w', newline='') as file:
