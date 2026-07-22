@@ -4,11 +4,17 @@
 
 ``
 GAZEBO=false
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type pid --out output/hardware_params/pid_params.yaml --gazebo $GAZEBO
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type integrated_resnet --out output/hardware_params/integrated_resnet_params.yaml --gazebo $GAZEBO
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type resnet --out output/hardware_params/resnet_params.yaml --gazebo $GAZEBO
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type baseline --out output/hardware_params/baseline_params.yaml --gazebo $GAZEBO
-python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type st --out output/hardware_params/st_params.yaml --gazebo $GAZEBO
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type pid --out output/hardware_params/pid_params_1.yaml --gazebo $GAZEBO --desired_trajectory 1
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type integrated_resnet --out output/hardware_params/integrated_resnet_params_1.yaml --gazebo $GAZEBO --desired_trajectory 1
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type resnet --out output/hardware_params/resnet_params_1.yaml --gazebo $GAZEBO --desired_trajectory 1
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type baseline --out output/hardware_params/baseline_params_1.yaml --gazebo $GAZEBO --desired_trajectory 1
+python scripts/generate_hardware_params.py --best_gains output/traj1/best_gains.yaml --controller_type st --out output/hardware_params/st_params_1.yaml --gazebo $GAZEBO --desired_trajectory 1
+
+python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.yaml --controller_type pid --out output/hardware_params/pid_params_2.yaml --gazebo $GAZEBO --desired_trajectory 2
+python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.yaml --controller_type integrated_resnet --out output/hardware_params/integrated_resnet_params_2.yaml --gazebo $GAZEBO --desired_trajectory 2
+python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.yaml --controller_type resnet --out output/hardware_params/resnet_params_2.yaml --gazebo $GAZEBO --desired_trajectory 2
+python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.yaml --controller_type baseline --out output/hardware_params/baseline_params_2.yaml --gazebo $GAZEBO --desired_trajectory 2
+python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.yaml --controller_type st --out output/hardware_params/st_params_2.yaml --gazebo $GAZEBO --desired_trajectory 2
 ``
 
 Push latest node to the quad.
@@ -18,15 +24,23 @@ Push latest node to the quad.
 ``
 PATH_TO_MY_REPO="$HOME/Documents/GitHub/rise-controller"
 adb push "$PATH_TO_MY_REPO/2 - Code/Gazebo SITL/ros2_ws/src/aviary_rise_controller/aviary_rise_controller/aviary_rise_node.py" /home/root/humble_ws/src/aviary_rise_controller/aviary_rise_controller/aviary_rise_node.py
+adb push "$PATH_TO_MY_REPO/2 - Code/Gazebo SITL/ros2_ws/src/aviary_rise_controller/aviary_rise_controller/proj.py" /home/root/humble_ws/src/aviary_rise_controller/aviary_rise_controller/proj.py
+adb push "$PATH_TO_MY_REPO/2 - Code/Gazebo SITL/ros2_ws/src/aviary_rise_controller/aviary_rise_controller/desired_trajectory.py" /home/root/humble_ws/src/aviary_rise_controller/aviary_rise_controller/desired_trajectory.py
 ``
 
 Push latest params to the quad.
 ``
-adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/baseline_params.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params.yaml
-adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/resnet_params.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/resnet_params.yaml
-adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/integrated_resnet_params.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params.yaml
-adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/pid_params.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/pid_params.yaml
-adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/st_params.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/st_params.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/baseline_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params_1.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/resnet_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/resnet_params_1.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/integrated_resnet_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params_1.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/pid_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/pid_params_1.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/st_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/st_params_1.yaml
+
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/baseline_params_2.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params_2.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/resnet_params_2.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/resnet_params_2.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/integrated_resnet_params_2.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params_2.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/pid_params_2.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/pid_params_2.yaml
+adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/st_params_2.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/st_params_2.yaml
 ``
 
 Connect the quad to your computer via USB and run the following.
@@ -66,9 +80,10 @@ source /home/root/hyrl/hyrl_ros_sources.sh
 
 To run the experiment:
 ``
-ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params.yaml
-ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/humble_ws/src/aviary_rise_controller/param/resnet_params.yaml
-ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params.yaml
-ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/humble_ws/src/aviary_rise_controller/param/pid_params.yaml
-ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file /home/root/humble_ws/src/aviary_rise_controller/param/st_params.yaml
+DESIRED_TRAJECTORY=1
+ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file "/home/root/humble_ws/src/aviary_rise_controller/param/baseline_params_${DESIRED_TRAJECTORY}.yaml"
+ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file "/home/root/humble_ws/src/aviary_rise_controller/param/resnet_params_${DESIRED_TRAJECTORY}.yaml"
+ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file "/home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params_${DESIRED_TRAJECTORY}.yaml"
+ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file "/home/root/humble_ws/src/aviary_rise_controller/param/pid_params_${DESIRED_TRAJECTORY}.yaml"
+ros2 run aviary_rise_controller aviary_rise_controller --ros-args --params-file "/home/root/humble_ws/src/aviary_rise_controller/param/st_params_${DESIRED_TRAJECTORY}.yaml"
 ``

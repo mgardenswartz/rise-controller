@@ -46,7 +46,7 @@ aviary_rise_node:
     traj1_z_amp_m_ned_aviary: 0.25
     traj2_center_z_m_ned_aviary: -1.0
     traj2_petal_radius_m: 2.5
-    traj2_target_speed_mps: 1.5
+    traj2_target_speed_mps: 1.0
     w_fail: 1000.0
     takeoff_timeout_s: 10.0
     xy_rand_range_m: 1.0    # +/- variation for takeoff X and Y in mini-batches

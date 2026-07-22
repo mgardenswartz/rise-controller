@@ -33,7 +33,7 @@ def build_param_dict(controller_type: str, desired_trajectory: int, optimal_para
     # Apply optimal gains
     param_dict.update(optimal_params)
 
-    initial_weight_scale_factor = 0.1
+    initial_weight_scale_factor = 0.2
 
     if controller_type in ["integrated_resnet", "resnet"]:
         param_dict['d_in'] = 15 if controller_type == "integrated_resnet" else 12

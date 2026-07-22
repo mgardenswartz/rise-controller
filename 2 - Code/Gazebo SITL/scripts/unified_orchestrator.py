@@ -236,7 +236,7 @@ def run_stage_2a(trial: optuna.Trial, db_dir: str, desired_trajectory: int, wind
     best_base_params = get_best_params(f"stage_{base_stage}_study", os.path.join(db_dir, f"stage_{base_stage}.db"))
     param_dict = {
         'controller_type': 'resnet',
-        'initial_weight_scale_factor': 0.1, 
+        'initial_weight_scale_factor': 0.2, 
         'num_blocks': 6,
         'k_0': 2,
         'k_i': 2,
@@ -253,7 +253,7 @@ def run_stage_2b(trial: optuna.Trial, db_dir: str, desired_trajectory: int, wind
     best_base_params = get_best_params(f"stage_{base_stage}_study", os.path.join(db_dir, f"stage_{base_stage}.db"))
     param_dict = {
         'controller_type': 'integrated_resnet',
-        'initial_weight_scale_factor': 0.1,
+        'initial_weight_scale_factor': 0.2,
         'num_blocks': 6,
         'k_0': 2,
         'k_i': 2,
