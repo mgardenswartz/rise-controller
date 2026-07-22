@@ -241,9 +241,33 @@ class SimRun:
         else:
             print("[*] Running unthrottled (as fast as possible)")
 
+        # Spawn the drone exactly where the trajectory starts (X, Y) but on the ground (Z=0)
+        # We do this BEFORE PX4 starts so the EKF initializes perfectly flat on the ground.
+        qd_ned_aviary, _, _ = self.traj_gen.get_desired_state(0.0)
+        start_enu = self.swap_ned_aviary_and_enu(qd_ned_aviary)
+        print(f"[*] Resetting drone pose to trajectory start (grounded): X={start_enu[0]:.2f}, Y={start_enu[1]:.2f}, Z=0.0")
+        
+        import math
+        yaw_enu_rad = math.radians(-self.yaw_des_deg)
+        qw = math.cos(yaw_enu_rad / 2.0)
+        qz = math.sin(yaw_enu_rad / 2.0)
+        
+        # Connect to sim if not connected, so we can reset before runner.start()
+        if not sim.connected:
+            sim.connect()
+        sim.drone().reset_pose(x=start_enu[0], y=start_enu[1], z=0.0, qw=qw, qz=qz)
+
         runner.start()
         runner.wait_px4()
         px4.configure_offboard_no_rc()
+        
+        print("[*] Setting PX4 MPC parameters for Unity mass...")
+        px4.param_set("MPC_THR_HOVER", 0.8)
+        px4.param_set("MPC_ACC_UP_MAX", 10.0)
+        px4.param_set("MPC_ACC_DOWN_MAX", 10.0)
+        px4.param_set("MPC_ACC_HOR_MAX", 10.0)
+
+        print("[*] EKF Ready! Engaging OFFBOARD...")
         if not runner.wait_ekf_ready():
             raise SystemExit("EKF never set home")
         if not runner.wait_heading():
@@ -253,29 +277,33 @@ class SimRun:
             
         traj_t = 0.0
         
-        # Takeoff Sequence (using PX4)
-        start_x_enu = float(px4.state.pos_enu[0])
-        start_y_enu = float(px4.state.pos_enu[1])
-        start_ned = self.swap_ned_aviary_and_enu([start_x_enu, start_y_enu, 0.0])
-        start_x_ned = float(start_ned[0])
-        start_y_ned = float(start_ned[1])
+        # --- PURE ACCELERATION OFFBOARD PRIME ---
+        # Instead of using position commands and fly_to(), we prime the stream
+        # with zero acceleration (which translates to hover thrust in PX4)
+        # and then enter the main control loop directly from the ground!
+        yaw_ned = math.pi/2 - math.radians(self.init_yaw_deg)
+        print("Priming PX4 setpoint stream with pure acceleration commands...")
         
-        takeoff_target_ned = [start_x_ned, start_y_ned, self.hover_start_z_m_ned_aviary]
-        takeoff_target_enu = self.swap_ned_aviary_and_enu(takeoff_target_ned)
+        # Prime the stream for 1.0 simulated seconds before requesting offboard
+        prime_deadline = runner.sim_time + 1.0
+        while runner.sim_time < prime_deadline:
+            self.step_with_acceleration_ned(runner, px4, np.array([0.0, 0.0, 0.0]), float(yaw_ned))
+            
+        print("Engaging OFFBOARD and arming motors...")
+        px4.request_offboard()
+        px4.request_arm(arm=True)
         
-        px4.goto(*takeoff_target_enu, yaw=math.radians(self.init_yaw_deg))
-        px4.emit_setpoint_now()
+        # Wait up to 5.0 seconds for PX4 to accept
+        accept_deadline = runner.sim_time + 5.0
+        while runner.sim_time < accept_deadline:
+            self.step_with_acceleration_ned(runner, px4, np.array([0.0, 0.0, 0.0]), float(yaw_ned))
+            if px4.in_offboard() and px4.is_armed():
+                break
+                
         if not (px4.in_offboard() and px4.is_armed()):
-            if not runner.engage_offboard(arm=True):
-                raise SystemExit("PX4 refused OFFBOARD/arm")
-        
-        print(f"Taking off to {takeoff_target_enu} (ENU) via PX4...")
-        if not runner.fly_to(*takeoff_target_enu, yaw=math.radians(self.init_yaw_deg), tol=self.init_tol_m, settle_s=1.0, timeout_s=self.takeoff_timeout_s, vel_tol=0.4):
-            print(f"[!] Takeoff timeout exceeded ({self.takeoff_timeout_s}s)! Exiting.")
-            self.cost_J = 1e6
-            return self.cost_J, 0.0, 0.0
-
-        print("Starting desired trajectory now.")
+            raise SystemExit("PX4 refused OFFBOARD/arm with acceleration setpoint")
+            
+        print("Taking off using pure acceleration controller!")
         sim_start_time_perf = time.perf_counter()
         traj_start_time = runner.sim_time
         
@@ -349,15 +377,18 @@ class SimRun:
                 # 1. Create a mask to track which specific axes should freeze integration
                 freeze_integrator = np.array([False, False, False])
                 
+                u_clamped_ned_aviary = np.copy(u_provisional)
                 u_xy = u_provisional[0:2]
                 norm_uxy = float(np.linalg.norm(u_xy))
                 if norm_uxy > self.acc_hor_max_mps2:
                     self.is_saturated = True
+                    u_clamped_ned_aviary[0:2] = u_xy * (self.acc_hor_max_mps2 / norm_uxy)
                     if np.dot(e_ned_aviary[0:2], u_xy) > 0.0:
                         freeze_integrator[0:2] = True
                         
                 if abs(u_provisional[2]) > self.acc_vert_max_mps2:
                     self.is_saturated = True
+                    u_clamped_ned_aviary[2] = self.acc_vert_max_mps2 * np.sign(u_provisional[2])
                     if np.sign(e_ned_aviary[2]) == np.sign(u_provisional[2]):
                         freeze_integrator[2] = True
 

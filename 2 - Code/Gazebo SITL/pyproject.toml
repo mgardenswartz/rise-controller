@@ -3,11 +3,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "setinel-sitl"
+name = "setinel-gazebo-sitl"
 version = "1.0.0"
-description = "Sentintel SITL for RISE controller testing that connects to Unity"
+description = "Sentintel SITL for RISE controller testing that connects to Gazebo"
 authors = [
-    { name = "Max Gardenswartz", email = "mgardenswartz@ufl.edu" }
+    { name = "Max Gardenswartz", email = "mgardenswartz@ufl.edu" },
+    { name = "Joe Lullo"}
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -15,11 +16,9 @@ dependencies = [
     "numpy",
     "pandas",
     "matplotlib",
-    "quadsim-sdk[px4] @ git+https://github.com/ninonick0607/QuadSimLib.git",
     "optuna",
     "pyyaml",
-    "pymavlink",
-    "jax-resnet@git+https://git@github.com/mgardenswartz/resnet.git@v1.2.1"
+    "jax-resnet@git+https://git@github.com/mgardenswartz/resnet.git@v1.2.0"
 ]
 
 [project.optional-dependencies]

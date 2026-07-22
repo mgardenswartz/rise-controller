@@ -10,7 +10,7 @@ from src.run_sim import SimRun
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run a single debug flight with best gains.")
     parser.add_argument("--controller_type", type=str, required=True,
-                        choices=["baseline", "resnet", "integrated_resnet", "supertwisting"],
+                        choices=["baseline", "resnet", "integrated_resnet", "supertwisting", "pid"],
                         help="The type of controller to run.")
     parser.add_argument("--config", type=str, default="conf/config.yaml", 
                         help="Path to the base config.yaml")
@@ -32,7 +32,8 @@ def main() -> None:
             "baseline": "BEST_RISE",
             "supertwisting": "BEST_ST",
             "resnet": "BEST_NN",
-            "integrated_resnet": "BEST_INN"
+            "integrated_resnet": "BEST_INN",
+            "pid": "BEST_PID"
         }
         
         target_key = mapping[args.controller_type]
@@ -48,11 +49,17 @@ def main() -> None:
     px4_process = subprocess.Popen(
         ["make", "px4_sitl", "none_iris"],
         cwd="/Users/max/PX4-Autopilot",
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+        text=True
     )
-    time.sleep(4) # Give PX4 time to boot
+    
+    # Fast-boot: Wait dynamically for PX4 to announce it is waiting for Unity
+    for line in px4_process.stdout:
+        if "Waiting for simulator" in line or "px4 starting." in line:
+            print("[*] PX4 is up! Connecting Unity...")
+            break
 
     try:
         print(f"[*] Initializing simulation with {args.controller_type}...")

@@ -8,17 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+import yaml
+
 # Prevent JAX from gobbling up GPU if any, stay on CPU
 jax.config.update("jax_platform_name", "cpu")
 jax.config.update("jax_enable_x64", True)
 
-from unified_orchestrator import run_trial, get_base_param_dict, FIXED_K_1, FIXED_K_2, FIXED_K_3, FIXED_K_RISE, SEED, FIXED_K_ST_1, FIXED_K_ST_2, FIXED_K_ST_3
+from unified_orchestrator import execute_single_run, get_base_param_dict, SEED
 
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "ros2_ws", "src", "aviary_rise_controller", "aviary_rise_controller")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ros2_ws", "src", "aviary_rise_controller", "aviary_rise_controller")))
 from jax_resnet import init_resnet_weights
 
-def build_param_dict(controller_type: str, desired_trajectory: int):
+def build_param_dict(controller_type: str, desired_trajectory: int, optimal_params: dict):
     key = jax.random.PRNGKey(SEED)
 
     param_dict = get_base_param_dict(controller_type, desired_trajectory)
@@ -28,43 +30,17 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
     param_dict['shortcut_act_func'] = 'swish'
     param_dict['theta_bar'] = 1e6
     
-    param_dict['k_1'] = FIXED_K_1
-    param_dict['k_2'] = FIXED_K_2
-    param_dict['k_3'] = FIXED_K_3
-    param_dict['k_rise'] = FIXED_K_RISE
+    # Apply optimal gains
+    param_dict.update(optimal_params)
 
-    initial_weight_scale_factor = float('nan')
+    initial_weight_scale_factor = 0.1
 
-    if controller_type == "resnet":        
-        param_dict['d_in'] = 12
-
-        param_dict['num_blocks'] = 6
-        param_dict['k_0'] = 2
-        param_dict['k_i'] = 2
-        param_dict['hidden_width'] = 12
-        param_dict['gamma'] = 10.0
-        param_dict['sigma_mod'] = 3.0
-        initial_weight_scale_factor = 0.1
-    elif controller_type == "integrated_resnet":        
-        param_dict['d_in'] = 15
-
-        param_dict['num_blocks'] = 6
-        param_dict['k_0'] = 2
-        param_dict['k_i'] = 2
-        param_dict['hidden_width'] = 12
-        param_dict['gamma'] = 10.0
-        param_dict['sigma_mod'] = 3.0
-        initial_weight_scale_factor = 0.1
-    elif controller_type == "supertwisting":
-        param_dict['k_1'] = FIXED_K_ST_1
-        param_dict['k_2'] = FIXED_K_ST_2
-        param_dict['k_3'] = FIXED_K_ST_3
-   
     if controller_type in ["integrated_resnet", "resnet"]:
+        param_dict['d_in'] = 15 if controller_type == "integrated_resnet" else 12
         initial_weights_jax = initial_weight_scale_factor * init_resnet_weights(
-            key, param_dict['d_in'], param_dict['hidden_width'],  
-            param_dict['d_out'], param_dict['num_blocks'], 
-            param_dict['k_0'], param_dict['k_i'], 'xavier', 'he'
+            key, param_dict['d_in'], param_dict.get('hidden_width', 12),  
+            param_dict.get('d_out', 3), param_dict.get('num_blocks', 6), 
+            param_dict.get('k_0', 2), param_dict.get('k_i', 2), 'xavier', 'he'
         )
         param_dict['initial_weights'] = [float(w) for w in initial_weights_jax]
 
@@ -72,46 +48,69 @@ def build_param_dict(controller_type: str, desired_trajectory: int):
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Evaluation Pipeline")
+    parser.add_argument("--controller_type", type=str, required=True,
+                        choices=["baseline", "resnet", "integrated_resnet", "supertwisting", "pid"],
+                        help="The type of controller to run.")
     parser.add_argument("--desired_trajectory", type=int, choices=[1, 2], required=True)
     parser.add_argument("--wind", action="store_true")
+    parser.add_argument("--db_dir", type=str, required=True, 
+                        help="Directory containing the best_gains.yaml file (e.g. output/traj1).")
     args = parser.parse_args()
 
-    controllers = ["baseline", "resnet", "integrated_resnet", "supertwisting"]
+    best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     
-    for controller in controllers:
-        print(f"\n{'='*60}")
-        print(f"[*] EVALUATING: {controller.upper()} | Trajectory: {args.desired_trajectory} | Wind: {args.wind}")
-        print(f"{'='*60}")
+    if not os.path.exists(best_gains_path):
+        print(f"[!] {best_gains_path} not found. Cannot evaluate optimal gains.")
+        sys.exit(1)
         
-        param_dict = build_param_dict(controller, args.desired_trajectory)
+    with open(best_gains_path, 'r') as f:
+        best_gains = yaml.safe_load(f)
         
-        # Run trial to generate telemetry CSVs
-        result = run_trial(param_dict, args.desired_trajectory, args.wind)
-        print(f"[*] {controller.upper()} Evaluation Finished.")
-        if result[0] is not None:
-            print(f"    - ITAE Cost: {result[0]}")
-            print(f"    - RMS Error: {result[1]}")
-            print(f"    - RMS Control: {result[2]}")
+    mapping = {
+        "baseline": "BEST_RISE",
+        "supertwisting": "BEST_ST",
+        "resnet": "BEST_NN",
+        "integrated_resnet": "BEST_INN",
+        "pid": "BEST_PID"
+    }
+    
+    target_key = mapping[args.controller_type]
+    if target_key in best_gains:
+        optimal_params = best_gains[target_key]
+        print(f"[*] Loaded optimal gains for {args.controller_type} from {target_key}")
+    else:
+        print(f"[!] {target_key} not found in {best_gains_path}. Cannot evaluate.")
+        sys.exit(1)
 
-            # Find the newly generated CSV in plot_data/controller/traj
-            traj_name = "figure_eight" if args.desired_trajectory == 1 else "rose"
-            
-            # Since we run on the host Mac, we check the local plot_data directory
-            local_csv_dir = f"plot_data/{controller}/{traj_name}"
-            
-            if os.path.exists(local_csv_dir):
-                csv_files = glob.glob(f"{local_csv_dir}/*.csv")
-                if csv_files:
-                    # Find the most recently created CSV file
-                    latest_csv = max(csv_files, key=os.path.getctime)
-                    print(f"[*] Triggering post-flight analysis on: {latest_csv}")
-                    run_post_flight_analysis(latest_csv)
-                else:
-                    print(f"[!] No CSV found in {local_csv_dir}")
+    print(f"\n{'='*60}")
+    print(f"[*] EVALUATING: {args.controller_type.upper()} | Trajectory: {args.desired_trajectory} | Wind: {args.wind}")
+    print(f"{'='*60}")
+    
+    param_dict = build_param_dict(args.controller_type, args.desired_trajectory, optimal_params)
+    
+    # Run trial to generate telemetry CSVs
+    result = execute_single_run(param_dict, args.desired_trajectory, args.wind)
+    print(f"[*] {args.controller_type.upper()} Evaluation Finished.")
+    if result[0] is not None:
+        print(f"    - ITAE Cost: {result[0]}")
+        print(f"    - RMS Error: {result[1]}")
+        print(f"    - RMS Control: {result[2]}")
+
+        traj_name = "figure_eight" if args.desired_trajectory == 1 else "rose"
+        local_csv_dir = f"plot_data/{args.controller_type}/{traj_name}"
+        
+        if os.path.exists(local_csv_dir):
+            csv_files = glob.glob(f"{local_csv_dir}/*.csv")
+            if csv_files:
+                latest_csv = max(csv_files, key=os.path.getctime)
+                print(f"[*] Triggering post-flight analysis on: {latest_csv}")
+                run_post_flight_analysis(latest_csv)
             else:
-                print(f"[!] Directory {local_csv_dir} does not exist.")
+                print(f"[!] No CSV found in {local_csv_dir}")
         else:
-            print(f"[!] Trial failed for {controller.upper()}, skipping analysis.")
+            print(f"[!] Directory {local_csv_dir} does not exist.")
+    else:
+        print(f"[!] Trial failed for {args.controller_type.upper()}, skipping analysis.")
 
 def run_post_flight_analysis(latest_csv: str):
     print(f"[*] Analyzing: {latest_csv}")

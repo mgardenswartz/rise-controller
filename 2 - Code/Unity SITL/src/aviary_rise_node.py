@@ -165,6 +165,7 @@ class AviaryRiseNode(Node):
         self.last_t: float = 0.0
         self.last_auto_cmd_time: float = 0.0
         self.pause_start_time: float = 0.0
+        self.takeoff_start_time: float = 0.0
         self.pre_pause_state: int = ExperimentState.STATE_INIT
         
         self.ticks_without_odom: int = 0
@@ -399,6 +400,7 @@ class AviaryRiseNode(Node):
                             self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
                             self.reset_integral_terms()
                             self.experiment_state = ExperimentState.STATE_TAKEOFF
+                            self.takeoff_start_time = current_timestamp_s
                         else:
                             # Still waiting for arming to complete!
                             self.get_logger().info("Offboard engaged, waiting for vehicle to arm...", throttle_duration_sec=2.0)
@@ -435,15 +437,21 @@ class AviaryRiseNode(Node):
                         return
                 
                 # Check transitions before updating the clock if in TAKEOFF
-                q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
-                if self.experiment_state == ExperimentState.STATE_TAKEOFF:
-                    e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
-                    if np.linalg.norm(e_takeoff) <= self.init_tol_m:
-                        self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
-                        # Reset t_0 so the trajectory clock starts at exactly 0.0 now
-                        self.t_0 = current_timestamp_s
-                        self.last_t = 0.0
-                        self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
+                if self.is_gazebo:
+                    q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
+                    if self.experiment_state == ExperimentState.STATE_TAKEOFF:
+                        if (current_timestamp_s - self.takeoff_start_time) > 10.0:
+                            self.cost_J += self.w_fail * (self.run_length_s ** 2)
+                            self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Takeoff Timeout)")
+                            raise FailsafeTriggeredError("Failed to reach takeoff position within timeout.")
+                            
+                        e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
+                        if np.linalg.norm(e_takeoff) <= self.init_tol_m:
+                            self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
+                            # Reset t_0 so the trajectory clock starts at exactly 0.0 now
+                            self.t_0 = current_timestamp_s
+                            self.last_t = 0.0
+                            self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
 
                 # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
                 # However get_desired_state(t) strictly ignores t during TAKEOFF.

@@ -1,42 +1,43 @@
 aviary_rise_node:
   ros__parameters:
-    control_frequency: 50.0
+    control_frequency_hz: 50.0
     controller_type: baseline
-    d_in: 15
     d_out: 3
-    desired_trajectory: 2
+    desired_trajectory: 1
     h_act_func: swish
-    init_tol: 0.2
-    init_z: -1.5
+    init_tol_m: 0.2
+    init_z_m_ned_aviary: -1.5
     is_gazebo: true
-    k_1: 0.1250013535217034
-    k_2: 0.8987431755260068
-    k_3: 3.647668260273761
-    k_rise: 0.9771171288636008
-    mpc_acc_hor_max: 6.0
-    mpc_acc_vert_max: 3.0
+    k_1: 0.5043306383062425
+    k_2: 0.1842183542460595
+    k_3: 2.500718542130111
+    k_rise: 0.4073640894980697
+    mpc_acc_hor_max_mps2: 6.0
+    mpc_acc_vert_max_mps2: 3.0
     o_act_func: tanh
-    odom_timeout_sec: 15.0
+    odom_timeout_s: 15.0
+    odom_watchdog_freq: 10.0
     q_e: 1.0
     r_u: 0.2
-    safe_x_max: 5.0
-    safe_y_max: 11.5
-    safe_z_max: 0.5
-    safe_z_min: -6.5
-    save_data: false
-    settle_ticks: 50
+    run_length_s: 10.0
+    safe_x_max_m_ned_aviary: 5.0
+    safe_x_min_m_ned_aviary: -5.0
+    safe_y_max_m_ned_aviary: 11.5
+    safe_y_min_m_ned_aviary: -11.5
+    safe_z_max_m_ned_aviary: 0.5
+    safe_z_min_m_ned_aviary: -6.5
+    save_data: true
     shortcut_act_func: swish
-    sim_time: 60.0
+    stage2_base_gains: 1B
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
-    traj1_center_z: -0.75
-    traj1_period: 30.0
-    traj1_x_amp: 1.5
-    traj1_y_amp: 3.0
-    traj1_z_amp: 0.25
-    traj2_center_z: -0.5
-    traj2_petal_radius: 2.5
-    traj2_target_speed: 1.0
+    traj1_center_z_m_ned_aviary: -0.75
+    traj1_period_s: 30.0
+    traj1_x_amp_m_ned_aviary: 1.5
+    traj1_y_amp_m_ned_aviary: 3.0
+    traj1_z_amp_m_ned_aviary: 0.25
+    traj2_center_z_m_ned_aviary: -0.5
+    traj2_petal_radius_m: 2.5
+    traj2_target_speed_mps: 1.0
     vehicle_name: px4_1
     w_fail: 1000.0
-    watchdog_freq: 10.0

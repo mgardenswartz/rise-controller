@@ -4,6 +4,7 @@ import time
 import csv
 from functools import partial
 import numpy as np
+from typing import Optional, List, Tuple, Dict, Any
 
 import rclpy
 from rclpy.node import Node
@@ -23,170 +24,166 @@ jax.config.update("jax_enable_x64", True) # Use 64 bit since all floats to be us
 jax.config.update("jax_compilation_cache_dir", "/tmp/jax_cache")
 
 from jax_resnet import resnet_network
+from aviary_rise_controller.proj import discrete_projection
+from aviary_rise_controller.desired_trajectory import TrajectoryGenerator
 
 class ExperimentState:
-    STATE_INIT = 0
-    STATE_TAKEOFF = 1
-    STATE_FOLLOW_TRAJ = 2
-    STATE_PAUSED = 3
-    STATE_FAILSAFE = 99
+    STATE_INIT: int = 0
+    STATE_TAKEOFF: int = 1
+    STATE_FOLLOW_TRAJ: int = 2
+    STATE_PAUSED: int = 3
 
-@jax.jit
-def discrete_projection(
-    theta_hat: jax.Array,
-    theta_dot_unprojected: jax.Array,
-    dt: float,
-    theta_bar: float,
-    gamma_diag: jax.Array
-) -> jax.Array:
-    theta_temp = theta_hat + dt * theta_dot_unprojected
-    is_inside = jnp.sum(theta_temp**2) <= theta_bar**2
-    
-    def apply_projection(_: None) -> jax.Array:
-        gamma_min = jnp.min(gamma_diag)
-        norm_temp = jnp.linalg.norm(theta_temp)
-        eta_upper_init = (norm_temp / theta_bar - 1.0) / gamma_min
-        init_state = (0.0, eta_upper_init)
-        
-        def bisection_step(i, state):
-            eta_low, eta_high = state
-            eta_mid = 0.5 * (eta_low + eta_high)
-            theta_test = theta_temp / (1.0 + eta_mid * gamma_diag)
-            val = jnp.sum(theta_test**2) - theta_bar**2
-            new_low = jnp.where(val > 0, eta_mid, eta_low)
-            new_high = jnp.where(val > 0, eta_high, eta_mid)
-            return (new_low, new_high)
-        
-        final_low, final_high = jax.lax.fori_loop(0, 30, bisection_step, init_state)
-        eta_opt = 0.5 * (final_low + final_high)
-        return theta_temp / (1.0 + eta_opt * gamma_diag)
+class CriticalHardwareError(Exception):
+    pass
 
-    def bypass_projection(_: None) -> jax.Array:
-        return theta_temp
+class OdomTimeoutError(Exception):
+    pass
 
-    return jax.lax.cond(is_inside, bypass_projection, apply_projection, None)
+class FailsafeTriggeredError(Exception):
+    pass
+
+class BoundaryBreachError(Exception):
+    pass
 
 class AviaryRiseNode(Node):
-    def __init__(self,):
-        super().__init__('aviary_rise_node')
+    def __init__(self) -> None:
+        super().__init__(
+            node_name='aviary_rise_node',
+            allow_undeclared_parameters=True,
+            automatically_declare_parameters_from_overrides=True
+        )
 
         # Basic Parameters of the Experiment
-        self.declare_parameter('is_gazebo', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter('desired_trajectory', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-        self.declare_parameter('vehicle_name', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter('controller_type', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-        self.declare_parameter('control_frequency_hz', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('save_data', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_BOOL))
-        self.declare_parameter('run_length_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('init_tol_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.is_gazebo = self.get_parameter('is_gazebo').value
-        self.desired_trajectory = self.get_parameter('desired_trajectory').value
-        self.vehicle_name = self.get_parameter('vehicle_name').value
-        self.controller_type = self.get_parameter('controller_type').value
-        control_frequency_hz = self.get_parameter('control_frequency_hz').value
-        self.save_data = self.get_parameter('save_data').value
-        self.run_length_s = self.get_parameter('run_length_s').value
-        self.init_tol_m = self.get_parameter('init_tol_m').value
+        self.is_gazebo: bool = self.get_parameter(name='is_gazebo').value
+        self.desired_trajectory: int = self.get_parameter(name='desired_trajectory').value
+        self.vehicle_name: str = self.get_parameter(name='vehicle_name').value
+        self.controller_type: str = self.get_parameter(name='controller_type').value
+        control_frequency_hz: float = self.get_parameter(name='control_frequency_hz').value
+        self.control_period_s: float = 1.0 / control_frequency_hz
+        self.save_data: bool = self.get_parameter(name='save_data').value
+        self.run_length_s: float = self.get_parameter(name='run_length_s').value
+        self.init_tol_m: float = self.get_parameter(name='init_tol_m').value
+        self.d_out: int = self.get_parameter(name='d_out').value
 
         # Desired Trajectory
-        if self.desired_trajectory == 1:
-            self.declare_parameter('traj1_period_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj1_alpha_warp', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj1_x_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj1_y_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj1_z_amp_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj1_center_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.traj1_period_s = self.get_parameter('traj1_period_s').value
-            self.traj1_alpha_warp = self.get_parameter('traj1_alpha_warp').value
-            self.traj1_x_amp_m_ned_aviary = self.get_parameter('traj1_x_amp_m_ned_aviary').value
-            self.traj1_y_amp_m_ned_aviary = self.get_parameter('traj1_y_amp_m_ned_aviary').value
-            self.traj1_z_amp_m_ned_aviary = self.get_parameter('traj1_z_amp_m_ned_aviary').value
-
-            self.traj_z_center_m_ned_aviary = self.get_parameter('traj1_center_z_m_ned_aviary').value # Note the different name
-            self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.traj1_alpha_warp) if self.traj1_alpha_warp < 1.0 else 1.0
-        elif self.desired_trajectory == 2:
-            self.declare_parameter('traj2_target_speed_mps', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj2_petal_radius_m', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('traj2_center_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.traj2_target_speed_mps = self.get_parameter('traj2_target_speed_mps').value
-            self.traj2_petal_radius_m = self.get_parameter('traj2_petal_radius_m').value
-            
-            self.traj_z_center_m_ned_aviary = self.get_parameter('traj2_center_z_m_ned_aviary').value  # Note the different name
-        else:
-            raise ValueError(f"Invalid Desired Trajectory: {self.desired_trajectory}")
+        if self.desired_trajectory not in [1,2]: 
+            raise ValueError("INVALID DESIRED TRAJECTORY SELECTED.")
+        # Fix: Convert parameters to primitive values for config
+        self.config: Dict[str, Any] = {k: v.value for k, v in self.get_parameters_by_prefix(prefix='').items()}
+        self.traj_gen: TrajectoryGenerator = TrajectoryGenerator(config=self.config)
         
         # Safety
-        self.declare_parameter('mpc_acc_hor_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('mpc_acc_vert_max_mps2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_x_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_x_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_y_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_y_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_z_min_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('safe_z_max_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('odom_timeout_s', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('init_z_m_ned_aviary', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('odom_watchdog_freq', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.acc_hor_max_mps2 = self.get_parameter('mpc_acc_hor_max_mps2').value
-        self.acc_vert_max_mps2 = self.get_parameter('mpc_acc_vert_max_mps2').value
-        self.safe_x_min_m = self.get_parameter('safe_x_min_m_ned_aviary').value
-        self.safe_x_max_m = self.get_parameter('safe_x_max_m_ned_aviary').value
-        self.safe_y_min_m = self.get_parameter('safe_y_min_m_ned_aviary').value
-        self.safe_y_max_m = self.get_parameter('safe_y_max_m_ned_aviary').value
-        self.safe_z_min_m = self.get_parameter('safe_z_min_m_ned_aviary').value
-        self.safe_z_max_m = self.get_parameter('safe_z_max_m_ned_aviary').value
-        self.odom_timeout_s = self.get_parameter('odom_timeout_s').value
-        self.init_z_m_ned_aviary = self.get_parameter('init_z_m_ned_aviary').value
-        self.odom_watchdog_freq = self.get_parameter('odom_watchdog_freq').value
+        self.acc_hor_max_mps2: float = self.get_parameter(name='mpc_acc_hor_max_mps2').value
+        self.acc_vert_max_mps2: float = self.get_parameter(name='mpc_acc_vert_max_mps2').value
+        self.safe_x_min_m: float = self.get_parameter(name='safe_x_min_m_ned_aviary').value
+        self.safe_x_max_m: float = self.get_parameter(name='safe_x_max_m_ned_aviary').value
+        self.safe_y_min_m: float = self.get_parameter(name='safe_y_min_m_ned_aviary').value
+        self.safe_y_max_m: float = self.get_parameter(name='safe_y_max_m_ned_aviary').value
+        self.safe_z_min_m: float = self.get_parameter(name='safe_z_min_m_ned_aviary').value
+        self.safe_z_max_m: float = self.get_parameter(name='safe_z_max_m_ned_aviary').value
+        self.odom_timeout_s: float = self.get_parameter(name='odom_timeout_s').value
+        self.init_z_m_ned_aviary: float = self.get_parameter(name='init_z_m_ned_aviary').value
+        self.odom_watchdog_freq: float = self.get_parameter(name='odom_watchdog_freq').value
         
-        # Gains & Cost weights
-        self.declare_parameter('q_e', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('r_u', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.declare_parameter('w_fail', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-        self.q_e = self.get_parameter('q_e').value
-        self.r_u = self.get_parameter('r_u').value
-        self.w_fail = self.get_parameter('w_fail').value
-
-        # Neural Network
-        if self.controller_type in ['integrated_resnet', 'resnet']:
-            self.declare_parameter('d_in', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('d_out', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('gamma', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('sigma_mod', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('k_0', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('k_i', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('hidden_width', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('num_blocks', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_INTEGER))
-            self.declare_parameter('theta_bar', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('initial_weights', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE_ARRAY))
-            self.declare_parameter('h_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-            self.declare_parameter('o_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
-            self.declare_parameter('shortcut_act_func', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_STRING))
+        # Cost Function
+        self.q_e: float = self.get_parameter(name='q_e').value
+        self.r_u: float = self.get_parameter(name='r_u').value
+        self.w_fail: float = self.get_parameter(name='w_fail').value
 
         if self.controller_type == "pid":
-            self.declare_parameter('K_P', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('K_I', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('K_D', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.K_P = self.get_parameter('K_P').value
-            self.K_I = self.get_parameter('K_I').value
-            self.K_D = self.get_parameter('K_D').value
-        elif self.controller_type in ['baseline', 'integrated_resnet', 'resnet']:
-            self.k_1 = self.get_parameter('k_1').value
-            self.k_2 = self.get_parameter('k_2').value
-            self.k_3 = self.get_parameter('k_3').value
-            self.K_RISE = self.get_parameter('K_RISE').value
-            self.declare_parameter('k_1', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('k_2', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('k_3', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.declare_parameter('k_rise', descriptor=ParameterDescriptor(type=ParameterType.PARAMETER_DOUBLE))
-            self.K_P = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
-            self.K_I = (self.k_1 * self.k_2 * self.k_3) + self.k_1
-            self.K_D = self.k_1 + self.k_2 + self.k_3    
+            self.K_P: float = self.get_parameter(name='K_P').value
+            self.K_I: float = self.get_parameter(name='K_I').value
+            self.K_D: float = self.get_parameter(name='K_D').value
+    
+        elif self.controller_type in ['baseline', 'integrated_resnet', 'resnet', 'supertwisting']:
+            self.k_1: float = self.get_parameter(name='k_1').value
+            self.k_2: float = self.get_parameter(name='k_2').value
+            self.k_3: float = self.get_parameter(name='k_3').value
 
-        self.traj_gen = TrajectoryGenerator(self.config)
+            if self.controller_type in ['baseline', 'integrated_resnet', 'resnet']:
+                self.K_RISE: float = self.get_parameter(name='k_rise').value
+                self.K_P: float = (self.k_1 * self.k_2) + (self.k_1 * self.k_3) + (self.k_2 * self.k_3) + 1.0
+                self.K_I: float = (self.k_1 * self.k_2 * self.k_3) + self.k_1
+                self.K_D: float = self.k_1 + self.k_2 + self.k_3
 
+            if self.controller_type in ["resnet", "integrated_resnet"]:
+                self.d_in: int = self.get_parameter(name='d_in').value
+                
+                self.theta_hat: jax.Array = jnp.array(object=self.get_parameter(name='initial_weights').value)
+                
+                self.gamma_diag: jax.Array = jnp.ones(shape=self.theta_hat.shape[0]) * self.get_parameter(name='gamma').value
+                self.sigma_mod: float = self.get_parameter(name='sigma_mod').value
+                self.theta_bar: float = self.get_parameter(name='theta_bar').value
 
-        qos_profile = QoSProfile(
+                self.bound_resnet = jax.jit(partial(
+                    resnet_network,
+                    d_in=self.d_in,
+                    hidden_width=self.get_parameter(name='hidden_width').value,
+                    d_out=self.d_out,
+                    b=self.get_parameter(name='num_blocks').value,
+                    k_0=self.get_parameter(name='k_0').value,
+                    k_i=self.get_parameter(name='k_i').value,
+                    h_act_func=self.get_parameter(name='h_act_func').value,
+                    o_act_func=self.get_parameter(name='o_act_func').value,
+                    shortcut_act_func=self.get_parameter(name='shortcut_act_func').value,
+                ))
+            
+                @jax.jit
+                def compiled_update_step(theta_hat: jax.Array, x_vec: jax.Array, r1_vec: jax.Array, dt: float, theta_bar: float, gamma_diag: jax.Array, s_mod: float, saturated: bool) -> Tuple[jax.Array, jax.Array]:
+                    phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), has_aux=False, *[theta_hat])
+                    grad_term = vjp_fn(r1_vec)[0]
+                    theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
+                    theta_next = discrete_projection(theta_hat=theta_hat, theta_dot_unprojected=theta_dot_unprojected, dt=dt, theta_bar=theta_bar, gamma_diag=gamma_diag)
+                    final_theta = jax.lax.select(pred=saturated, on_true=theta_hat, on_false=theta_next)
+                    return final_theta, phi_val
+                    
+                self.compiled_update_step = compiled_update_step
+                self.precompile_jax()
+        
+        # For VehicleStatus callback
+        self.nav_state: int = 0
+        self.vehicle_system_id: int = 1
+        self.vehicle_component_id: int = 1
+
+        # Init
+        self.is_armed: bool = False
+        self.in_offboard_mode: bool = False
+        self.landing_command_sent: bool = False  
+        self.cost_started: bool = False
+        self.is_saturated: bool = False
+        self.freeze_int_xy: bool = False
+        self.freeze_int_z: bool = False
+        self.initial_position_locked: bool = False
+        self.latest_odom: Optional[VehicleOdometry] = None
+
+        self.last_odom_ros_time: float = 0.0
+        self.start_x: float = 0.0
+        self.start_y: float = 0.0
+        self.experiment_state: int = ExperimentState.STATE_INIT
+        self.t_0: float = 0.0
+
+        self.last_t: float = 0.0
+        self.last_auto_cmd_time: float = 0.0
+        self.pause_start_time: float = 0.0
+        self.takeoff_start_time: float = 0.0
+        self.pre_pause_state: int = ExperimentState.STATE_INIT
+        
+        self.ticks_without_odom: int = 0
+        self.reset_integral_terms()
+        self.cost_J: float = 0.0
+        self.last_cost_integrand: float = 0.0
+        self.error_sq_integral: float = 0.0
+        self.last_error_sq: float = 0.0
+        self.u_sq_integral: float = 0.0
+        self.last_u_sq: float = 0.0
+        self.time_history: List[float] = []
+        self.control_output_norm_history: List[float] = []
+        self.error_norm_history: List[float] = []
+        self.weight_history: List[List[float]] = []
+        self.q_history: List[List[float]] = []
+        self.qd_history: List[List[float]] = []
+
+        qos_profile: QoSProfile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             durability=DurabilityPolicy.VOLATILE,
             history=HistoryPolicy.KEEP_LAST,
@@ -194,135 +191,63 @@ class AviaryRiseNode(Node):
         )
 
         self.offboard_control_mode_publisher = self.create_publisher(
-            OffboardControlMode, f'/{self.vehicle_name}/fmu/in/offboard_control_mode', qos_profile)
+            msg_type=OffboardControlMode, topic=f'/{self.vehicle_name}/fmu/in/offboard_control_mode', qos_profile=qos_profile)
         self.trajectory_setpoint_publisher = self.create_publisher(
-            TrajectorySetpoint, f'/{self.vehicle_name}/fmu/in/trajectory_setpoint', qos_profile)
+            msg_type=TrajectorySetpoint, topic=f'/{self.vehicle_name}/fmu/in/trajectory_setpoint', qos_profile=qos_profile)
         self.vehicle_command_publisher = self.create_publisher(
-            VehicleCommand, f'/{self.vehicle_name}/fmu/in/vehicle_command', qos_profile)
+            msg_type=VehicleCommand, topic=f'/{self.vehicle_name}/fmu/in/vehicle_command', qos_profile=qos_profile)
 
         self.status_sub = self.create_subscription(
-            VehicleStatus, f'/{self.vehicle_name}/fmu/out/vehicle_status', self.status_callback, qos_profile)
+            msg_type=VehicleStatus, topic=f'/{self.vehicle_name}/fmu/out/vehicle_status', callback=self.vehicle_status_callback, qos_profile=qos_profile)
         self.odom_sub = self.create_subscription(
-            VehicleOdometry, f'/{self.vehicle_name}/fmu/out/vehicle_odometry', self.odom_callback, qos_profile)
-
-        self.nav_state = 0
-        self.is_armed = False
-        self.in_offboard_mode = False
-        self.vehicle_system_id = 1
-        self.vehicle_component_id = 1
-        self.landing_command_sent = False
+            msg_type=VehicleOdometry, topic=f'/{self.vehicle_name}/fmu/out/vehicle_odometry', callback=self.odom_callback, qos_profile=qos_profile)
         
-        self.latest_odom = None
-        self.last_odom_ros_time = 0.0
-        self.initial_position_locked = False
-        self.start_x = 0.0
-        self.start_y = 0.0
+        self.control_timer = self.create_timer(timer_period_sec=self.control_period_s, callback=self.control_timer_callback)
 
-        self.experiment_state = ExperimentState.STATE_INIT
-        self.t_0 = 0.0
-        self.last_t = 0.0
+        self.odom_watchdog_timer = self.create_timer(timer_period_sec=1.0/self.odom_watchdog_freq, callback=self.odom_watchdog_callback)
         
-        self.tau = 0.0
-        self.theta = math.pi /4
-        self.last_traj_time = 0.0
-        
-        self.d_out = self.get_parameter('d_out').value
-        self.integral_term = np.zeros(self.d_out, dtype=np.float64)
-        self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
-        self.st_integral = np.zeros(self.d_out, dtype=np.float64)
-        
-        self.cost_J = 0.0
-        self.last_cost_integrand = 0.0
-        self.cost_started = False
-        
-        self.is_saturated = False
-        self.freeze_int_xy = False
-        self.freeze_int_z = False
-        
-        self.error_sq_integral = 0.0
-        self.last_error_sq = 0.0
-        self.u_sq_integral = 0.0
-        self.last_u_sq = 0.0
-        self.time_history = []
-        self.control_output_norm_history = []
-        self.error_norm_history = []
-        self.weight_history = []
-        self.q_history = []
-        self.qd_history = []
-
-        self.init_wait_start = 0.0
-        self.last_auto_cmd_time = 0.0
-
-        self.control_period = 1 / control_frequency_hz
-        self.control_timer = self.create_timer(self.control_period, self.control_timer_callback)
-
-        if self.controller_type in ["resnet", "integrated_resnet"]:
-            self.d_in = self.get_parameter('d_in').value
-            self.sigma_mod = self.get_parameter('sigma_mod').value
-            self.theta_bar = self.get_parameter('theta_bar').value
-            
-            self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
-            self.gamma_diag = jnp.ones(self.theta_hat.shape[0]) * self.get_parameter('gamma').value
-
-            self.bound_resnet = jax.jit(partial(
-                resnet_network,
-                d_in=self.d_in,
-                hidden_width=self.get_parameter('hidden_width').value,
-                d_out=self.d_out,
-                b=self.get_parameter('num_blocks').value,
-                k_0=self.get_parameter('k_0').value,
-                k_i=self.get_parameter('k_i').value,
-                h_act_func=self.get_parameter('h_act_func').value,
-                o_act_func=self.get_parameter('o_act_func').value,
-                shortcut_act_func=self.get_parameter('shortcut_act_func').value,
-            ))
-            
-            @jax.jit
-            def compiled_update_step(theta_hat, x_vec, r1_vec, dt, theta_bar, gamma_diag, s_mod, saturated):
-                phi_val, vjp_fn = jax.vjp(lambda t: self.bound_resnet(t, x_vec), theta_hat)
-                grad_term = vjp_fn(r1_vec)[0]
-                theta_dot_unprojected = gamma_diag * (grad_term - s_mod * theta_hat)
-                theta_next = discrete_projection(theta_hat, theta_dot_unprojected, dt, theta_bar, gamma_diag)
-                final_theta = jax.lax.select(saturated, theta_hat, theta_next)
-                return final_theta, phi_val
-                
-            self.compiled_update_step = compiled_update_step
-            self.precompile_jax()
-
         self.get_logger().info(f"Node Booted. Controller: {self.controller_type.upper()} | Trajectory: {self.desired_trajectory} | Gazebo Mode: {self.is_gazebo}")
-        self.watchdog_timer = self.create_timer(1.0/self.odom_watchdog_freq, self.odom_watchdog_callback)
-        self.ticks_without_odom = 0
 
     def precompile_jax(self) -> None:
-        dummy_x = jnp.zeros(self.d_in)
-        dummy_r1 = jnp.zeros(self.d_out)
+        dummy_x: jax.Array = jnp.zeros(shape=self.d_in)
+        dummy_r1: jax.Array = jnp.zeros(shape=self.d_out)
         self.get_logger().info("[JAX] Compiling XLA Graph on CPU...")
         
-        # 1. Warmup Neural Net Update Mechanics
-        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        self.theta_hat, _ = self.compiled_update_step(
+            theta_hat=self.theta_hat,
+            x_vec=dummy_x,
+            r1_vec=dummy_r1,
+            dt=self.control_period_s,
+            theta_bar=self.theta_bar,
+            gamma_diag=self.gamma_diag,
+            s_mod=self.sigma_mod,
+            saturated=False # I've never tested True...
+        )
         self.theta_hat.block_until_ready()
         
-        # 2. Warmup Spatial Derivatives (Prevents JIT latency spike on first trajectory tick)
-        _ = traj1_spatial_derivs(0.0, self.traj_z_center_m_ned_aviary, self.traj1_period_s, self.traj1_x_amp_m_ned_aviary, self.traj1_y_amp_m_ned_aviary, self.traj1_z_amp_m_ned_aviary)
-        _ = traj2_spatial_derivs(0.0, self.traj_z_center_m_ned_aviary, self.traj2_petal_radius_m)
-        
-        start_time = time.perf_counter()
-        self.theta_hat, _ = self.compiled_update_step(self.theta_hat, dummy_x, dummy_r1, self.control_period, self.theta_bar, self.gamma_diag, self.sigma_mod, False)
+        start_time: float = time.perf_counter()
+        self.theta_hat, _ = self.compiled_update_step(
+            theta_hat=self.theta_hat,
+            x_vec=dummy_x,
+            r1_vec=dummy_r1,
+            dt=self.control_period_s,
+            theta_bar=self.theta_bar,
+            gamma_diag=self.gamma_diag,
+            s_mod=self.sigma_mod,
+            saturated=False
+        )
         self.theta_hat.block_until_ready()
-        hot_time = time.perf_counter() - start_time
+        hot_time: float = time.perf_counter() - start_time
         
         # Reset the weights back to true initial conditions
-        self.theta_hat = jnp.array(self.get_parameter('initial_weights').value)
+        self.theta_hat = jnp.array(object=self.get_parameter(name='initial_weights').value)
         self.theta_hat.block_until_ready()
-        self.get_logger().info(f"[JAX] Hot-path latency: {hot_time*1000:.2f} ms")
-        if hot_time > self.control_period:
-            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period}s limit!")
-            if self.is_gazebo:
-                os._exit(1)
-            else:
-                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
+        self.get_logger().info(f"[JAX] Neural Network Latency: {hot_time*1000:.2f} ms")
+        if hot_time > self.control_period_s:
+            self.get_logger().fatal(f"[ERROR] Execution time {hot_time}s exceeds {self.control_period_s}s limit!")
+            raise CriticalHardwareError("[JAX] ResNet latency too high for selected control frequency (init).")
 
-    def status_callback(self, msg: VehicleStatus) -> None:
+    def vehicle_status_callback(self, msg: VehicleStatus) -> None:
         self.nav_state = msg.nav_state
         self.is_armed = (msg.arming_state == VehicleStatus.ARMING_STATE_ARMED)
         self.in_offboard_mode = (msg.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD)
@@ -343,27 +268,27 @@ class AviaryRiseNode(Node):
     def odom_watchdog_callback(self) -> None:
         self.ticks_without_odom += 1
         
-        # At boot, we always use the tick counter
         if not self.initial_position_locked:
             if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
-                self.get_logger().fatal("NO ODOMETRY AT BOOT! EXITING NODE.")
-                os._exit(1)
+                raise OdomTimeoutError("No odometry received at boot.")
         else:
             if self.is_gazebo:
-                # Use tick counter to survive Docker suspension / macOS sleep
                 if self.ticks_without_odom >= (self.odom_timeout_s * self.odom_watchdog_freq):
-                    self.get_logger().fatal("YOUR PC IS RUNNING BEHIND SCHEDULE! EXITING SIM.")
-                    self.trigger_failsafe_land()
+                    raise OdomTimeoutError("Simulation running behind schedule.")
             else:
                 # Use original wall clock logic for real vehicle (sim-to-real)
-                current_time = self.get_clock().now().nanoseconds / 1e9
+                current_time: float = self.get_clock().now().nanoseconds / 1e9
                 if (current_time - self.last_odom_ros_time) > self.odom_timeout_s:
-                    self.get_logger().fatal("ODOM LOST! TRIGGERING FAILSAFE.")
-                    self.trigger_failsafe_land()
+                    raise OdomTimeoutError("Odometry feed lost during flight.")
+
+    def reset_integral_terms(self) -> None:
+        self.current_integral_control_term = np.zeros(shape=self.d_out, dtype=np.float64)
+        self.last_control_integrand = np.zeros(shape=self.d_out, dtype=np.float64)
+        self.st_integral = np.zeros(shape=self.d_out, dtype=np.float64)
 
     def publish_vehicle_command(self, command: int, param1: float, param2: float) -> None:
         self.get_logger().info(f"[DEBUG] Publishing command {command}")
-        msg = VehicleCommand()
+        msg: VehicleCommand = VehicleCommand()
         msg.timestamp = int(self.latest_odom.timestamp) if self.latest_odom is not None else int(self.get_clock().now().nanoseconds / 1000)
         msg.param1 = float(param1)
         msg.param2 = float(param2)
@@ -376,7 +301,7 @@ class AviaryRiseNode(Node):
         self.vehicle_command_publisher.publish(msg)
 
     def publish_offboard_heartbeat(self) -> None:
-        msg = OffboardControlMode()
+        msg: OffboardControlMode = OffboardControlMode()
         msg.timestamp = int(self.latest_odom.timestamp) if self.latest_odom is not None else int(self.get_clock().now().nanoseconds / 1000)
         msg.position = False
         msg.velocity = False
@@ -386,41 +311,39 @@ class AviaryRiseNode(Node):
         self.offboard_control_mode_publisher.publish(msg)
 
     def publish_trajectory_setpoint_acceleration(self, ax: float, ay: float, az: float) -> None:
-        msg = TrajectorySetpoint()
+        msg: TrajectorySetpoint = TrajectorySetpoint()
         msg.acceleration = [ax, ay, az]
         msg.position = [float('nan'), float('nan'), float('nan')]
         msg.velocity = [float('nan'), float('nan'), float('nan')]
-        msg.yaw = 0.0
+        msg.yaw = 0.0  # Command a heading of 0.0 always
         if self.latest_odom is not None:
             msg.timestamp = self.latest_odom.timestamp
         self.trajectory_setpoint_publisher.publish(msg)
 
-    def log_csv(self):
-        traj_name = "figure_eight"
-        if self.desired_trajectory == 1:
-            pass
-        elif self.desired_trajectory == 2:
-            traj_name = "rose"
-        else:
-            self.get_logger().fatal("INVALID DESIRED TRAJECTORY SELECTED.")
-            self.trigger_failsafe_land()
+    def log_csv(self) -> None:
+        traj_name: str = ""
+        match self.desired_trajectory:
+            case 1:
+                traj_name = "figure_eight"
+            case 2:
+                traj_name = "rose"
 
-        base_dir = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
-        os.makedirs(base_dir, exist_ok=True)
+        base_dir: str = f"/home/root/plot_data/{self.controller_type}/{traj_name}"
+        os.makedirs(name=base_dir, exist_ok=True)
         
-        existing_files = [f for f in os.listdir(base_dir) if os.path.isfile(os.path.join(base_dir, f))]
-        iterable = len(existing_files) + 1
-        csv_filename = os.path.join(base_dir, f"run_{iterable}.csv")
+        existing_files: List[str] = [f for f in os.listdir(path=base_dir) if os.path.isfile(path=os.path.join(base_dir, f))]
+        iterable: int = len(existing_files) + 1
+        csv_filename: str = os.path.join(base_dir, f"run_{iterable}.csv")
         try:
-            with open(csv_filename, mode='w', newline='') as file:
+            with open(file=csv_filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                headers = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
+                headers: List[str] = ["Time_s", "Error_Norm_m", "Control_Output_Norm_mps2", "x", "y", "z", "xd", "yd", "zd"]
                 if self.controller_type in ["resnet", "integrated_resnet"] and self.weight_history:
-                    num_weights = len(self.weight_history[0])
+                    num_weights: int = len(self.weight_history[0])
                     headers += [f"W{i}" for i in range(num_weights)]
                 writer.writerow(headers)
                 for i in range(len(self.time_history)):
-                    row = [
+                    row: List[float] = [
                         self.time_history[i], self.error_norm_history[i], self.control_output_norm_history[i],
                         self.q_history[i][0], self.q_history[i][1], self.q_history[i][2],
                         self.qd_history[i][0], self.qd_history[i][1], self.qd_history[i][2]
@@ -432,120 +355,65 @@ class AviaryRiseNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to write CSV: {e}")
 
-    def trigger_failsafe_land(self) -> None:
-        if self.save_data:
-            self.log_csv()
-
-        if self.is_gazebo:
-            self.get_logger().error("GAZEBO FAILSAFE TRIGGERED. EXITING SIM.")
-            os._exit(1)
-        else:
-            self.get_logger().error("LANDING!")
-            self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-            self.experiment_state = ExperimentState.STATE_FAILSAFE
-
-    def check_safety_boundary(self, q: np.ndarray) -> bool:
+    def check_safety_boundary(self, q: np.ndarray) -> Optional[str]:
         if not (self.safe_x_min_m <= q[0] <= self.safe_x_max_m):
-            self.get_logger().fatal(f"X BOUNDARY BREACH: {q[0]} not in [{-self.safe_x_max_m}, {self.safe_x_max_m}]")
-            return True 
+            return f"X position {q[0]:.2f} breached bounds [{self.safe_x_min_m}, {self.safe_x_max_m}]."
         if not (self.safe_y_min_m <= q[1] <= self.safe_y_max_m):
-            self.get_logger().fatal(f"Y BOUNDARY BREACH: {q[1]} not in [{-self.safe_y_max_m}, {self.safe_y_max_m}]")
-            return True 
+            return f"Y position {q[1]:.2f} breached bounds [{self.safe_y_min_m}, {self.safe_y_max_m}]."
         if not (self.safe_z_min_m <= q[2] <= self.safe_z_max_m):
-            self.get_logger().fatal(f"Z BOUNDARY BREACH: {q[2]} not in [{self.safe_z_min_m}, {self.safe_z_max_m}]")
-            return True 
-        return False
+            return f"Z position {q[2]:.2f} breached bounds [{self.safe_z_min_m}, {self.safe_z_max_m}]."
+        return None
 
-
-    def get_desired_state(self, t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_desired_state(self, t: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.experiment_state == ExperimentState.STATE_TAKEOFF:
             # During takeoff, hold exactly above where it initialized
-            return (np.array([self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64), 
-                    np.zeros(3, dtype=np.float64), np.zeros(3, dtype=np.float64))
+            return (np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64), 
+                    np.zeros(shape=3, dtype=np.float64), np.zeros(shape=3, dtype=np.float64))
             
-        dt = t - self.last_traj_time
-        self.last_traj_time = t
-        if dt < 0: dt = 0.0
-
-        if self.desired_trajectory == 1:
-            w = (2.0 * math.pi) / self.traj1_period_s
-            tau_dot = self.traj1_warp_c * (1.0 - self.traj1_alpha_warp * (math.sin(w * self.tau)**2))
-            tau_ddot = -self.traj1_warp_c * self.traj1_alpha_warp * w * math.sin(2.0 * w * self.tau) * tau_dot
-            
-            self.tau += tau_dot * dt
-            
-            pos_jnp, dp_dtau, d2p_dtau2 = traj1_spatial_derivs(
-                self.tau, self.traj_z_center_m_ned_aviary, self.traj1_period_s, self.traj1_x_amp_m_ned_aviary, self.traj1_y_amp_m_ned_aviary, self.traj1_z_amp_m_ned_aviary
-            )
-            
-            qd = np.array(pos_jnp, dtype=np.float64)
-            qd_dot = np.array(dp_dtau, dtype=np.float64) * tau_dot
-            qd_ddot = (np.array(d2p_dtau2, dtype=np.float64) * (tau_dot**2)) + (np.array(dp_dtau, dtype=np.float64) * tau_ddot)
-
-        else:
-            f_theta = 1.0 + 3.0 * (math.sin(2.0 * self.theta)**2)
-            theta_dot = self.traj2_target_speed_mps / (self.traj2_petal_radius_m * math.sqrt(f_theta))
-            
-            sin_4theta = math.sin(4.0 * self.theta)
-            theta_ddot = - (3.0 * (self.traj2_target_speed_mps**2) * sin_4theta) / ((self.traj2_petal_radius_m**2) * (f_theta**2))
-            
-            self.theta += theta_dot * dt
-            
-            pos_jnp, dp_dth, d2p_dth2 = traj2_spatial_derivs(
-                self.theta, self.traj_z_center_m_ned_aviary, self.traj2_petal_radius_m
-            )
-            
-            qd = np.array(pos_jnp, dtype=np.float64)
-            qd_dot = np.array(dp_dth, dtype=np.float64) * theta_dot
-            qd_ddot = (np.array(d2p_dth2, dtype=np.float64) * (theta_dot**2)) + (np.array(dp_dth, dtype=np.float64) * theta_ddot)
-
-        return qd, qd_dot, qd_ddot
+        return self.traj_gen.get_desired_state(t=t)
 
     def control_timer_callback(self) -> None:
         if self.latest_odom is None: return
-        current_timestamp_s = self.latest_odom.timestamp / 1e6
+        current_timestamp_s: float = self.latest_odom.timestamp / 1e6
 
         match self.experiment_state:
-            case ExperimentState.STATE_FAILSAFE:
-                if not self.landing_command_sent:
-                    self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-                    self.landing_command_sent = True
-                return
-
             case ExperimentState.STATE_INIT:
                 self.landing_command_sent = False
                 self.cost_started = False
-                
-                if self.init_wait_start == 0.0:
-                    self.init_wait_start = current_timestamp_s
-                
-                if not self.in_offboard_mode: # haven't started or Joe dropped me out of off-board
-                    self.get_logger().info("Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
-                    self.publish_offboard_heartbeat()
-                    self.publish_trajectory_setpoint_acceleration(0.0, 0.0, 0.0)
-                    
-                    if self.is_gazebo:
-                        # Throttle automatic MAVLink commands to 1 Hz to prevent PX4 Commander flood
-                        if current_timestamp_s - self.last_auto_cmd_time > 1.0:
-                            if not self.in_offboard_mode:
-                                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1.0, 6.0)
-                            if not self.is_armed:
-                                self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0, 0.0)
-                            self.last_auto_cmd_time = current_timestamp_s
-                    return
 
-                if self.in_offboard_mode and self.is_armed:
-                    self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
-                    self.integral_term = np.zeros(self.d_out, dtype=np.float64)
-                    self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
-                    self.st_integral = np.zeros(self.d_out, dtype=np.float64)
-                    self.experiment_state = ExperimentState.STATE_TAKEOFF
+                # Always stream heartbeats and 0-setpoints in INIT so PX4 accepts Offboard mode and doesn't timeout
+                self.publish_offboard_heartbeat()
+                self.publish_trajectory_setpoint_acceleration(ax=0.0, ay=0.0, az=0.0)
+
+                match self.in_offboard_mode:
+                    case False:
+                        self.get_logger().info("Waiting for PX4 Offboard Mode switch engagement...", throttle_duration_sec=2.0)
+
+                        if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
+                            self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1=1.0, param2=6.0)
+                            if not self.is_armed:
+                                self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
+                            self.last_auto_cmd_time = current_timestamp_s
+                    
+                    case True:
+                        if self.is_armed:
+                            self.get_logger().info(f"ARMED & OFFBOARD validated. Initializing Takeoff to Z={self.init_z_m_ned_aviary}.")
+                            self.reset_integral_terms()
+                            self.experiment_state = ExperimentState.STATE_TAKEOFF
+                            self.takeoff_start_time = current_timestamp_s
+                        else:
+                            # Still waiting for arming to complete!
+                            self.get_logger().info("Offboard engaged, waiting for vehicle to arm...", throttle_duration_sec=2.0)
+                            if self.is_gazebo and (current_timestamp_s - self.last_auto_cmd_time > 1.0):
+                                self.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1=1.0, param2=0.0)
+                                self.last_auto_cmd_time = current_timestamp_s
+
 
             case ExperimentState.STATE_PAUSED:
                 if self.in_offboard_mode and self.is_armed:
                     # Pilot re-engaged offboard mode. 
                     # We shift t_0 forward by the elapsed paused time so the trajectory completely froze during the dropout
-                    time_paused = current_timestamp_s - self.pause_start_time
+                    time_paused: float = current_timestamp_s - self.pause_start_time
                     self.t_0 += time_paused  
                     self.experiment_state = self.pre_pause_state
                     self.get_logger().info("Offboard Mode re-engaged! Resuming trajectory seamlessly.")
@@ -558,127 +426,152 @@ class AviaryRiseNode(Node):
 
                 if not self.in_offboard_mode:
                     if self.is_gazebo:
-                        self.get_logger().error("PX4 LEFT OFFBOARD MODE IN SITL! FAILING TRIAL.")
-                        self.trigger_failsafe_land()
-                        return
+                        raise FailsafeTriggeredError("PX4 left offboard mode during SITL simulation.")
                     else:
-                        self.get_logger().warn("RC Pilot Intervention Detected! Pausing trajectory.", throttle_duration_sec=1.0)
+                        self.get_logger().warn("RC pilot intervention detected. Pausing trajectory.", throttle_duration_sec=1.0)
                         self.pre_pause_state = self.experiment_state
                         self.experiment_state = ExperimentState.STATE_PAUSED
                         self.pause_start_time = current_timestamp_s
                         
-                        # Reset memory integrals so they don't explosively un-wind when re-engaged
-                        self.integral_term = np.zeros(self.d_out, dtype=np.float64)
-                        self.last_integrand = np.zeros(self.d_out, dtype=np.float64)
-                        self.st_integral = np.zeros(self.d_out, dtype=np.float64)
+                        self.reset_integral_terms()
                         return
                 
                 # Check transitions before updating the clock if in TAKEOFF
-                q = np.array(self.latest_odom.position, dtype=np.float64)
+                q: np.ndarray = np.array(object=self.latest_odom.position, dtype=np.float64)
                 if self.experiment_state == ExperimentState.STATE_TAKEOFF:
-                    e_takeoff = np.array([self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
+                    if (current_timestamp_s - self.takeoff_start_time) > 10.0:
+                        self.cost_J += self.w_fail * (self.run_length_s ** 2)
+                        self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Takeoff Timeout)")
+                        raise FailsafeTriggeredError("Failed to reach takeoff position within timeout.")
+                        
+                    e_takeoff: np.ndarray = np.array(object=[self.start_x, self.start_y, self.init_z_m_ned_aviary], dtype=np.float64) - q
                     if np.linalg.norm(e_takeoff) <= self.init_tol_m:
                         self.experiment_state = ExperimentState.STATE_FOLLOW_TRAJ
                         # Reset t_0 so the trajectory clock starts at exactly 0.0 now
                         self.t_0 = current_timestamp_s
                         self.last_t = 0.0
-                        self.last_traj_time = 0.0
-                        self.tau = 0.0
-                        self.theta = math.pi / 4.0
                         self.get_logger().info(f"TAKEOFF SETTLED. Step Response Triggered: Starting Trajectory {self.desired_trajectory}.")
 
                 # If in TAKEOFF, t_0 hasn't been set to the trajectory clock yet, so t evaluates to arbitrary.
                 # However get_desired_state(t) strictly ignores t during TAKEOFF.
-                t = current_timestamp_s - self.t_0 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else 0.0
-                dt = t - self.last_t if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else self.control_period
+                t: float = current_timestamp_s - self.t_0 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else 0.0
+                dt: float = t - self.last_t if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ else self.control_period_s
                 
-                q_dot = np.array(self.latest_odom.velocity, dtype=np.float64)
+                q_dot: np.ndarray = np.array(object=self.latest_odom.velocity, dtype=np.float64)
                 
-                if self.check_safety_boundary(q):
+                boundary_err: Optional[str] = self.check_safety_boundary(q=q)
+                if boundary_err is not None:
                     if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
                         self.cost_J += self.w_fail * ((self.run_length_s - t) ** 2)
-                        self.get_logger().error(f"[RESULT] COST = {self.cost_J:.4f} (BOUNDARY FAILURE)")
-                    self.trigger_failsafe_land()
-                    return
+                        self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.4f} (Boundary Failure)")
+                    raise BoundaryBreachError(boundary_err)
 
-                qd, qd_dot, qd_ddot = self.get_desired_state(t)
-                e = qd - q
-                e_dot = qd_dot - q_dot
-                r1 = e_dot + (self.k_1 * e)
+                qd: np.ndarray
+                qd_dot: np.ndarray
+                qd_ddot: np.ndarray
+                qd, qd_dot, qd_ddot = self.get_desired_state(t=t)
+                e: np.ndarray = qd - q
+                e_dot: np.ndarray = qd_dot - q_dot
+                if self.controller_type in ['resnet', 'integrated_resnet', 'baseline', 'supertwisting']:
+                    r1: np.ndarray = e_dot + (self.k_1 * e)
 
-                u = np.zeros(self.d_out, dtype=np.float64)
-                phi_val = np.zeros(self.d_out, dtype=np.float64)
+                u: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
+                phi_val: np.ndarray = np.zeros(shape=self.d_out, dtype=np.float64)
                 
                 match self.controller_type:
-                    case "baseline" | "pid":
-                        current_integrand = (self.K_I * e) + (self.controller_type == "baseline") * (self.K_RISE * np.sign(r1))
-                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                    case "baseline":
+                        current_integrand: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                        delta_int: np.ndarray = (dt / 2.0) * (current_integrand + self.last_control_integrand)
                         if not self.freeze_int_xy:
-                            self.integral_term[0:2] += delta_int[0:2]
+                            self.current_integral_control_term[0:2] += delta_int[0:2]
                         if not self.freeze_int_z:
-                            self.integral_term[2] += delta_int[2]
-                        self.last_integrand = current_integrand
-                        u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                            self.current_integral_control_term[2] += delta_int[2]
+                        self.last_control_integrand = current_integrand
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
+
+                    case "pid":
+                        current_integrand: np.ndarray = (self.K_I * e)
+                        delta_int: np.ndarray = (dt / 2.0) * (current_integrand + self.last_control_integrand)
+                        if not self.freeze_int_xy:
+                            self.current_integral_control_term[0:2] += delta_int[0:2]
+                        if not self.freeze_int_z:
+                            self.current_integral_control_term[2] += delta_int[2]
+                        self.last_control_integrand = current_integrand
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
                         
                     case "resnet":
                         if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ: 
-                            x_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot)))
+                            x_vec: jax.Array = jnp.array(object=np.concatenate((q, q_dot, qd, qd_dot)))
                             
-                            t_start_jax = time.perf_counter()
+                            t_start_jax: float = time.perf_counter()
                             self.theta_hat, phi_out = self.compiled_update_step(
-                                self.theta_hat, x_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                                theta_hat=self.theta_hat,
+                                x_vec=x_vec, 
+                                r1_vec=jnp.array(object=r1),
+                                dt=dt,
+                                theta_bar=self.theta_bar,
+                                gamma_diag=self.gamma_diag,
+                                s_mod=self.sigma_mod,
+                                saturated=self.is_saturated
                             )
                             self.theta_hat.block_until_ready()
-                            t_end_jax = time.perf_counter()
-                            jax_dt = t_end_jax - t_start_jax
-                            if jax_dt > self.control_period:
+                            t_end_jax: float = time.perf_counter()
+                            jax_dt: float = t_end_jax - t_start_jax
+                            if jax_dt > self.control_period_s:
                                 self.get_logger().warn(f"[DEBUG] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
-                            phi_val = np.array(phi_out, dtype=np.float64)
+                            phi_val = np.array(object=phi_out, dtype=np.float64)
                         
-                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1))
-                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                        current_integrand_res: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1))
+                        delta_int_res: np.ndarray = (dt / 2.0) * (current_integrand_res + self.last_control_integrand)
                         if not self.freeze_int_xy:
-                            self.integral_term[0:2] += delta_int[0:2]
+                            self.current_integral_control_term[0:2] += delta_int_res[0:2]
                         if not self.freeze_int_z:
-                            self.integral_term[2] += delta_int[2]
-                        self.last_integrand = current_integrand
-                        u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                            self.current_integral_control_term[2] += delta_int_res[2]
+                        self.last_control_integrand = current_integrand_res
+                        u = phi_val + (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
                         
                     case "integrated_resnet":
                         if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
-                            u_last =  (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
-                            kappa_vec = jnp.array(np.concatenate((q, q_dot, qd, qd_dot, u_last)))
+                            u_last: np.ndarray =  (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
+                            kappa_vec: jax.Array = jnp.array(object=np.concatenate((q, q_dot, qd, qd_dot, u_last)))
                             
                             t_start_jax = time.perf_counter()
                             self.theta_hat, phi_out = self.compiled_update_step(
-                                self.theta_hat, kappa_vec, jnp.array(r1), dt, self.theta_bar, self.gamma_diag, self.sigma_mod, self.is_saturated
+                                theta_hat=self.theta_hat,
+                                x_vec=kappa_vec,
+                                r1_vec=jnp.array(object=r1),
+                                dt=dt,
+                                theta_bar=self.theta_bar,
+                                gamma_diag=self.gamma_diag,
+                                s_mod=self.sigma_mod,
+                                saturated=self.is_saturated
                             )
                             self.theta_hat.block_until_ready()
                             t_end_jax = time.perf_counter()
                             jax_dt = t_end_jax - t_start_jax
-                            if jax_dt > self.control_period:
+                            if jax_dt > self.control_period_s:
                                 self.get_logger().warn(f"[CRITICAL] JAX Execution took {jax_dt*1000:.2f} ms at t={t:.2f}s!")
                                 
-                            phi_val = np.array(phi_out, dtype=np.float64)
+                            phi_val = np.array(object=phi_out, dtype=np.float64)
                         
-                        current_integrand = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
-                        delta_int = (dt / 2.0) * (current_integrand + self.last_integrand)
+                        current_integrand_int: np.ndarray = (self.K_I * e) + (self.K_RISE * np.sign(r1)) + phi_val
+                        delta_int_int: np.ndarray = (dt / 2.0) * (current_integrand_int + self.last_control_integrand)
                         if not self.freeze_int_xy:
-                            self.integral_term[0:2] += delta_int[0:2]
+                            self.current_integral_control_term[0:2] += delta_int_int[0:2]
                         if not self.freeze_int_z:
-                            self.integral_term[2] += delta_int[2]
-                        self.last_integrand = current_integrand
-                        u = (self.K_P * e) + (self.K_D * e_dot) + self.integral_term
+                            self.current_integral_control_term[2] += delta_int_int[2]
+                        self.last_control_integrand = current_integrand_int
+                        u = (self.K_P * e) + (self.K_D * e_dot) + self.current_integral_control_term
 
                     case "supertwisting":
-                        norm_r1 = np.linalg.norm(r1)
-                        sgn_r1 = np.sign(r1)
+                        norm_r1: float = float(np.linalg.norm(r1))
+                        sgn_r1: np.ndarray = np.sign(r1)
                         self.st_integral += sgn_r1 * dt
                         u = qd_ddot + self.k_2 * np.sqrt(norm_r1) * sgn_r1 + self.k_3 * self.st_integral + self.k_1 * e_dot
         
-                norm_e = float(np.linalg.norm(e))
-                norm_u = float(np.linalg.norm(u))
+                norm_e: float = float(np.linalg.norm(e))
+                norm_u: float = float(np.linalg.norm(u))
                 
                 self.time_history.append(t)
                 self.error_norm_history.append(norm_e)
@@ -687,12 +580,12 @@ class AviaryRiseNode(Node):
                 self.qd_history.append(qd.tolist())
 
                 if self.controller_type in ["resnet", "integrated_resnet"]:
-                    self.weight_history.append(np.array(self.theta_hat).flatten().tolist())
+                    self.weight_history.append(np.array(object=self.theta_hat).flatten().tolist())
 
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ:
-                    current_error_sq = float(norm_e ** 2)
-                    current_u_sq = float(norm_u ** 2)
-                    current_cost_integrand = (t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
+                    current_error_sq: float = float(norm_e ** 2)
+                    current_u_sq: float = float(norm_u ** 2)
+                    current_cost_integrand: float = (t * self.q_e * (norm_e ** 2)) + (self.r_u * (norm_u ** 2))
 
                     if not self.cost_started:
                         # Seed the history at exact start to prevent trapezoidal integration jump
@@ -716,12 +609,12 @@ class AviaryRiseNode(Node):
                 self.freeze_int_xy = False
                 self.freeze_int_z = False
                 
-                u_xy = u[0:2]
-                norm_uxy = float(np.linalg.norm(u_xy))
+                u_xy: np.ndarray = u[0:2]
+                norm_uxy: float = float(np.linalg.norm(u_xy))
                 if norm_uxy > self.acc_hor_max_mps2:
                     u[0:2] = u_xy * (self.acc_hor_max_mps2 / norm_uxy)
                     self.is_saturated = True
-                    if np.dot(e[0:2], u[0:2]) > 0.0:
+                    if np.dot(a=e[0:2], b=u[0:2]) > 0.0:
                         self.freeze_int_xy = True
                     self.get_logger().debug(f"[DEBUG] XY SATURATION at t={t:.2f}s!")
                     
@@ -732,36 +625,50 @@ class AviaryRiseNode(Node):
                         self.freeze_int_z = True
                     self.get_logger().debug(f"[DEBUG] Z SATURATION at t={t:.2f}s!")
 
-                self.publish_trajectory_setpoint_acceleration(u[0], u[1], u[2])
+                self.publish_trajectory_setpoint_acceleration(ax=u[0], ay=u[1], az=u[2])
                 
                 if self.experiment_state == ExperimentState.STATE_FOLLOW_TRAJ and t >= self.run_length_s:
-                    rms_error = math.sqrt(self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
-                    rms_u = math.sqrt(self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
-                    self.get_logger().info(f"[RESULT] COST = {self.cost_J:.2f}")
-                    self.get_logger().info(f"[RESULT] RMS_ERROR = {rms_error:.4f}")
-                    self.get_logger().info(f"[RESULT] RMS_CONTROL_EFFORT = {rms_u:.3f}")
-                    self.trigger_failsafe_land()
+                    rms_error: float = math.sqrt(self.error_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
+                    rms_u: float = math.sqrt(self.u_sq_integral / self.run_length_s) if self.run_length_s > 0 else 0.0
+                    self.get_logger().info(f"[RESULT] Final Cost = {self.cost_J:.2f}")
+                    self.get_logger().info(f"[RESULT] RMS Error = {rms_error:.4f}")
+                    self.get_logger().info(f"[RESULT] RMS Control Effort = {rms_u:.3f}")
+                    raise SystemExit("Trajectory completed successfully.")
 
-def main(args=None):
+def main(args: Optional[List[str]] = None) -> None:
     rclpy.init(args=args)
-    node = AviaryRiseNode()
+    node: AviaryRiseNode = AviaryRiseNode()
     try:
-        rclpy.spin(node)
-    except (SystemExit, KeyboardInterrupt):
-        pass
+        rclpy.spin(node=node)
+    except SystemExit as e:
+        node.get_logger().info(f"Experiment terminated: {e}")
+    except KeyboardInterrupt:
+        node.get_logger().info("Keyboard interrupt received.")
+    except ValueError as e:
+        node.get_logger().fatal(f"Value error: {e}")
+    except CriticalHardwareError as e:
+        node.get_logger().fatal(f"Hardware error: {e}")
+    except OdomTimeoutError as e:
+        node.get_logger().fatal(f"Odometry timeout: {e}")
+    except FailsafeTriggeredError as e:
+        node.get_logger().fatal(f"Failsafe triggered: {e}")
+    except BoundaryBreachError as e:
+        node.get_logger().fatal(f"Boundary breach: {e}")
     finally:
-        try:
-            if node.save_data:
-                node.get_logger().info("Interrupt detected. Attempting to save CSV...")
-                node.log_csv()
+        if node.save_data:
+            node.get_logger().info("Saving telemetry data to CSV...")
+            node.log_csv()
 
-            if rclpy.ok() and not node.is_gazebo: 
-                node.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, 0.0, 0.0)
-        except Exception: 
-            pass
+        if rclpy.ok(): 
+            node.get_logger().info("Commanding vehicle to land.")
+            node.publish_vehicle_command(command=VehicleCommand.VEHICLE_CMD_NAV_LAND, param1=0.0, param2=0.0)
+            
         node.destroy_node()
         if rclpy.ok(): 
             rclpy.shutdown()
+            print("[INFO] Node cleanly destroyed.")
+        else:
+            print("[FATAL] Node not cleanly destroyed.")
 
 if __name__ == '__main__':
     main()
