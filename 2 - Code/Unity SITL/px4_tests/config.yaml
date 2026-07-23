@@ -36,3 +36,32 @@ trajectory:
   rose:
     radius_m: 1.5
     speed_mps: 0.75
+
+optuna:
+  study_name: risemax_pid_gains
+  journal_file: output/risemax_pid_gains.log
+  n_trials: 120
+  sampler_seed: 42
+  simulation_speed: 10.0
+
+  # The first trial uses the current known gains before TPE samples new ones.
+  enqueue_current_gains: true
+  gain_bounds:
+    kp: {low: 0.5, high: 12.0, log: true}
+    ki: {low: 0.01, high: 3.0, log: true}
+    kd: {low: 0.2, high: 8.0, log: true}
+
+  # Same ITAE-style objective used by the base Aviary RISE experiments.
+  objective:
+    error_weight: 1.0
+    acceleration_weight: 0.2
+    failure_weight: 1000.0
+
+  # PX4 position control owns this reset between every pair of trials.
+  reset:
+    north_m: 0.0
+    east_m: 0.0
+    position_tolerance_m: 0.30
+    velocity_tolerance_mps: 0.25
+    settle_s: 2.0
+    timeout_s: 40.0

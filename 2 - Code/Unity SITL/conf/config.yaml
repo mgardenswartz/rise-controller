@@ -34,13 +34,13 @@ aviary_rise_node:
     safe_z_min_m_ned_aviary: -6.5
     save_data: false
     shortcut_act_func: swish
-    run_length_s: 30.0
+    run_length_s: 60.0
     sim_speed: 1.0 # 0.0 for "as fast possible"
     sigma_mod: 3.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
     traj1_center_z_m_ned_aviary: -1.25
-    traj1_period_s: 60.0
+    traj1_period_s: 30.0
     traj1_x_amp_m_ned_aviary: 1.5
     traj1_y_amp_m_ned_aviary: 3.0
     traj1_z_amp_m_ned_aviary: 0.25
