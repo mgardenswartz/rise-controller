@@ -19,8 +19,7 @@ cleanup() {
     echo "=========================================="
     echo " Cleaning up background processes..."
     echo "=========================================="
-    pkill -f Unity_QuadSim
-    pkill -f px4
+    pkill -9 -f "aviary|Unity_QuadSim|px4"
     kill -9 $CAFF_PID 2>/dev/null
 }
 
@@ -28,8 +27,7 @@ cleanup() {
 trap cleanup EXIT SIGINT SIGTERM
 
 kill_simulators() {
-    pkill -f Unity_QuadSim
-    pkill -f px4
+    pkill -9 -f "aviary|Unity_QuadSim|px4"
     sleep 2 # wait for ports to be freed
 }
 
@@ -40,7 +38,7 @@ start_simulators() {
     
     echo "[*] Starting PX4 SITL lockstep"
     pushd ~/PX4-Autopilot >/dev/null
-    make px4_sitl none_iris &
+    make px4_sitl none_iris > px4_main.log 2>&1 &
     popd >/dev/null
     
     echo "[*] Waiting 10 seconds for ports to bind..."

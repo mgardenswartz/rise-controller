@@ -14,6 +14,23 @@ from quadsim.px4 import Px4Link
 from quadsim.tools.px4_bridge import HilBridge
 from quadsim.tools.px4_lockstep_runner import LockstepRunner, load_param_file
 from src.run_sim import SimRun
+import signal
+import sys
+
+# ==========================================
+# Configuration Constants
+# ==========================================
+PX4_BOOT_SPEED_CAP = 1.0     # Cap sim speed to 1x during boot to prevent flooding uORB queues
+PX4_FLY_TIMEOUT_S = 30.0     # Timeout for PX4 returning to the start position
+MAX_CRASH_RETRIES = 1        # Number of crashes allowed before failing the trial
+MAX_SETUP_RETRIES = 3        # Number of times to retry a failed setup (e.g. fly_to_ned timeout)
+# ==========================================
+
+def signal_handler(sig, frame):
+    print("\n[!] Ctrl+C detected! Forcefully exiting optimization.py immediately.")
+    os._exit(1)
+    
+signal.signal(signal.SIGINT, signal_handler)
 
 # Globals for PX4 plant
 sim = None
@@ -73,7 +90,7 @@ def restart_px4():
             print(f"[!] Error closing runner: {e}")
             
     print("[*] Killing existing PX4 instance...")
-    os.system("pkill -f px4")
+    os.system("pkill -9 -f px4")
     time.sleep(2.0)
     
     print("[*] Resetting Unity drone to safe hover position...")
@@ -83,7 +100,8 @@ def restart_px4():
         print(f"[!] Warning: Could not reset pose: {e}")
         
     print("[*] Restarting PX4 SITL...")
-    subprocess.Popen("make px4_sitl none_iris", cwd=os.path.expanduser("~/PX4-Autopilot"), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    px4_log = open("px4_restart.log", "w")
+    subprocess.Popen("make px4_sitl none_iris", cwd=os.path.expanduser("~/PX4-Autopilot"), shell=True, stdout=px4_log, stderr=subprocess.STDOUT)
     time.sleep(6.0)
     
     # Reload config
@@ -108,10 +126,25 @@ def restart_px4():
     runner.speed_cap = speed if speed > 0.0 else None
 
     runner.start()
+    
+    # Cap sim speed to 1x during boot to prevent flooding PX4's uORB queues 
+    # which causes EKF data loss and STALE sensors.
+    runner.speed_cap = PX4_BOOT_SPEED_CAP
     runner.wait_px4()
-    param_file = os.path.join("conf", px4_config["param_file"])
-    load_param_file(px4, param_file)
-    px4.configure_offboard_no_rc()
+    runner.speed_cap = speed if speed > 0.0 else None
+
+    import threading
+    def _setup_params():
+        param_file = os.path.join("conf", px4_config["param_file"])
+        load_param_file(px4, param_file)
+        px4.configure_offboard_no_rc()
+        
+    th = threading.Thread(target=_setup_params)
+    th.start()
+    while th.is_alive():
+        runner.hil_tick()
+        time.sleep(0.002)
+
     if not runner.wait_ekf_ready() or not runner.wait_heading():
         raise RuntimeError("PX4 estimator is not ready after restart")
         
@@ -128,6 +161,13 @@ def restart_px4():
 def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float:
     """Runs a mini-batch of robust domain randomizations and returns the worst-case cost."""
     global runner, px4
+    
+    # Check if we should stop early due to poor performance
+    worst_cost = -1.0
+    costs = []
+    e_rmses = []
+    u_rmses = []
+    
     with open("conf/config.yaml", 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
 
@@ -136,8 +176,6 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
     xy_range = base_config['xy_rand_range_m']
     z_range = base_config['z_rand_range_m']
 
-    costs = []
-    e_rmses = []
     u_rmses = []
     base_desired_traj = base_config['desired_trajectory']
     if base_desired_traj == 1:
@@ -190,10 +228,18 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
                 tol=base_config['init_tol_m'],
                 vel_tol=0.50,
                 settle_s=1.0,
-                timeout_s=60.0,
+                timeout_s=PX4_FLY_TIMEOUT_S,
             ):
                 print("[!] Could not recover and settle at hover origin!")
-                raise RuntimeError("PX4 could not recover to start position.")
+                
+                setup_retries += 1
+                if setup_retries > MAX_SETUP_RETRIES:
+                    raise RuntimeError("Too many setup failures. The simulation environment or PX4 is fundamentally broken.")
+                
+                print(f"[!] SETUP FAILED (Attempt {setup_retries}/{MAX_SETUP_RETRIES}).")
+                print("[!] This is NOT a controller failure. Restarting PX4 and retrying this seed without penalizing the trial...")
+                restart_px4()
+                continue
                 
             print("  -> Arrived at start position. Handing over to RISE controller...")
             
@@ -205,12 +251,17 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
             print(f"  -> Seed #{i+1} | Pos: ({target_x:.2f}, {target_y:.2f}, {target_z:.2f}) | Cost: {cost:.4f}")
             
             crash_count = 0 # reset crash count on success
+            setup_retries = 0 # reset setup retries on success
             i += 1 # advance to next seed
             
         except RuntimeError as e:
+            # Check if this was our setup failure abort
+            if "Too many setup failures" in str(e):
+                raise e
+                
             print(f"[W] Trial encountered runtime error: {e}")
             crash_count += 1
-            if crash_count >= 3:
+            if crash_count >= MAX_CRASH_RETRIES:
                 print(f"[!] Trial failed {crash_count} times in a row. Assigning max cost and continuing.")
                 worst_cost = 1e6
                 worst_e_rms = 1e6
@@ -218,10 +269,14 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
                 trial.set_user_attr('e_RMS', worst_e_rms)
                 trial.set_user_attr('u_RMS', worst_u_rms)
                 print(f"[Mini-Batch] Terminated early due to repeated crashes. Cost: {worst_cost:.4f}")
+                
+                print("[!] Restarting PX4 to ensure a clean state for the next trial...")
+                restart_px4()
+                
                 return worst_cost
                 
             restart_px4()
-            print(f"[!] Retrying seed #{i+1} (Attempt {crash_count+1}/3)...")
+            print(f"[!] Retrying seed #{i+1} (Attempt {crash_count+1}/{MAX_CRASH_RETRIES})...")
             continue
         
     worst_cost = float(np.max(costs))
@@ -400,10 +455,24 @@ if __name__ == "__main__":
     runner.speed_cap = speed if speed > 0.0 else None
 
     runner.start()
+    
+    # Cap sim speed to 1x during boot to prevent flooding PX4's uORB queues 
+    # which causes EKF data loss and STALE sensors.
+    runner.speed_cap = PX4_BOOT_SPEED_CAP
     runner.wait_px4()
-    param_file = os.path.join("conf", px4_config["param_file"])
-    load_param_file(px4, param_file)
-    px4.configure_offboard_no_rc()
+    runner.speed_cap = speed if speed > 0.0 else None
+
+    import threading
+    def _setup_params_main():
+        param_file = os.path.join("conf", px4_config["param_file"])
+        load_param_file(px4, param_file)
+        px4.configure_offboard_no_rc()
+        
+    th = threading.Thread(target=_setup_params_main)
+    th.start()
+    while th.is_alive():
+        runner.hil_tick()
+        time.sleep(0.002)
     if not runner.wait_ekf_ready() or not runner.wait_heading():
         raise RuntimeError("PX4 estimator is not ready")
 

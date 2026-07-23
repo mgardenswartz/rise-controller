@@ -4059,7 +4059,7 @@ nolink "false"
 
 \end_layout
 
-\begin_layout Theorem
+\begin_layout Lemma
 \begin_inset CommandInset label
 LatexCommand label
 name "thm:Universal-Approximation-Theorem"
