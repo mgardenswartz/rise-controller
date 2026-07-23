@@ -86,16 +86,16 @@ for TRAJ_NUM in 1 2; do
     # Update config.yaml with correct trajectory
     sed -i '' "s/desired_trajectory: [0-9]/desired_trajectory: ${TRAJ_NUM}/g" conf/config.yaml
     
-    # ==========================
-    # Phase 1: No Wind (Stage 1A)
-    # ==========================
-    echo "=========================================="
-    echo " Trajectory ${TRAJ_NUM} - NO WIND ENVIRONMENT"
-    echo "=========================================="
-    kill_simulators
-    start_simulators "aviary_0.app"
+    # # ==========================
+    # # Phase 1: No Wind (Stage 1A)
+    # # ==========================
+    # echo "=========================================="
+    # echo " Trajectory ${TRAJ_NUM} - NO WIND ENVIRONMENT"
+    # echo "=========================================="
+    # kill_simulators
+    # start_simulators "aviary_0.app"
     
-    run_stage "1A" $TRIALS_PHASE_1 $DB_DIR
+    # run_stage "1A" $TRIALS_PHASE_1 $DB_DIR
     
     # ==========================
     # Phase 2: Wind Environment

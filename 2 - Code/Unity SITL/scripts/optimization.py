@@ -7,6 +7,7 @@ import time
 from datetime import timedelta
 import math
 import os
+import subprocess
 
 from quadsim import QuadSim
 from quadsim.px4 import Px4Link
@@ -61,6 +62,69 @@ class EarlyStoppingCallback:
             pass
 
 
+def restart_px4():
+    global runner, px4, sim
+    print("\n[!] PX4 crash detected. Initiating recovery sequence...")
+    
+    if runner:
+        try:
+            runner.close()
+        except Exception as e:
+            print(f"[!] Error closing runner: {e}")
+            
+    print("[*] Killing existing PX4 instance...")
+    os.system("pkill -f px4")
+    time.sleep(2.0)
+    
+    print("[*] Resetting Unity drone to safe hover position...")
+    try:
+        sim.drone(0).reset_pose(0.0, 0.3, 0.0)
+    except Exception as e:
+        print(f"[!] Warning: Could not reset pose: {e}")
+        
+    print("[*] Restarting PX4 SITL...")
+    subprocess.Popen("make px4_sitl none_iris", cwd=os.path.expanduser("~/PX4-Autopilot"), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(6.0)
+    
+    # Reload config
+    with open("conf/config.yaml", 'r') as f:
+        full_config = yaml.safe_load(f)
+    px4_config = full_config['px4']
+    aviary_config = full_config['aviary_rise_node']['ros__parameters']
+
+    bridge = HilBridge(
+        px4_host=px4_config["host"],
+        instance=px4_config["instance"],
+        px4_client=px4_config["client"],
+    )
+    px4 = Px4Link(stream_hz=0, instance=px4_config["instance"])
+    runner = LockstepRunner(
+        sim,
+        bridge,
+        px4,
+        control_hz=aviary_config["control_frequency_hz"],
+    )
+    speed = aviary_config["sim_speed"]
+    runner.speed_cap = speed if speed > 0.0 else None
+
+    runner.start()
+    runner.wait_px4()
+    param_file = os.path.join("conf", px4_config["param_file"])
+    load_param_file(px4, param_file)
+    px4.configure_offboard_no_rc()
+    if not runner.wait_ekf_ready() or not runner.wait_heading():
+        raise RuntimeError("PX4 estimator is not ready after restart")
+        
+    ground_ned = np.asarray(runner.ground_ned, dtype=float)
+    start_position = [ground_ned[0], ground_ned[1], ground_ned[2] - 1.0] 
+    
+    px4.goto_ned(*start_position, yaw_ned=0.0)
+    px4.emit_setpoint_now()
+    if not runner.engage_offboard(arm=True):
+        raise RuntimeError("PX4 refused OFFBOARD or arm after restart")
+    
+    print("[*] PX4 restarted and armed successfully.\n")
+
 def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float:
     """Runs a mini-batch of robust domain randomizations and returns the worst-case cost."""
     global runner, px4
@@ -89,7 +153,9 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
     traj2_fixed = [(-1.5, 0.0), (1.5, 0.0), (0.0, -1.5), (0.0, 1.5)]
 
     print(f"\n[Mini-Batch] Evaluating {num_seeds} initial conditions:")
-    for i in range(num_seeds):
+    crash_count = 0
+    i = 0
+    while i < num_seeds:
         # Deterministic perturbation based on seed index
         np.random.seed(base_seed + i)
         
@@ -111,30 +177,52 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
         batch_params['hover_start_z_m_ned'] = target_z
         
         print(f"[reset] PX4 position control -> ({target_x:.2f}, {target_y:.2f}, {target_z:.2f})")
-        if not (px4.is_armed() and px4.in_offboard()):
-            raise RuntimeError("vehicle left armed OFFBOARD during a trial")
         
-        if not runner.fly_to_ned(
-            target_x,
-            target_y,
-            target_z,
-            yaw_ned=yaw_rad,
-            tol=base_config['init_tol_m'],
-            vel_tol=0.50,
-            settle_s=1.0,
-            timeout_s=60.0,
-        ):
-            print("[!] Could not recover and settle at hover origin!")
-            raise RuntimeError("PX4 could not recover to start position.")
+        try:
+            if not (px4.is_armed() and px4.in_offboard()):
+                raise RuntimeError("vehicle left armed OFFBOARD during a trial")
             
-        print("  -> Arrived at start position. Handing over to RISE controller...")
-        
-        sim_run = SimRun(batch_params, yaml_config_path="conf/config.yaml", runner=runner, px4=px4)
-        cost, e_rms, u_rms = sim_run.run()
-        costs.append(cost)
-        e_rmses.append(e_rms)
-        u_rmses.append(u_rms)
-        print(f"  -> Seed #{i+1} | Pos: ({target_x:.2f}, {target_y:.2f}, {target_z:.2f}) | Cost: {cost:.4f}")
+            if not runner.fly_to_ned(
+                target_x,
+                target_y,
+                target_z,
+                yaw_ned=yaw_rad,
+                tol=base_config['init_tol_m'],
+                vel_tol=0.50,
+                settle_s=1.0,
+                timeout_s=60.0,
+            ):
+                print("[!] Could not recover and settle at hover origin!")
+                raise RuntimeError("PX4 could not recover to start position.")
+                
+            print("  -> Arrived at start position. Handing over to RISE controller...")
+            
+            sim_run = SimRun(batch_params, yaml_config_path="conf/config.yaml", runner=runner, px4=px4)
+            cost, e_rms, u_rms = sim_run.run()
+            costs.append(cost)
+            e_rmses.append(e_rms)
+            u_rmses.append(u_rms)
+            print(f"  -> Seed #{i+1} | Pos: ({target_x:.2f}, {target_y:.2f}, {target_z:.2f}) | Cost: {cost:.4f}")
+            
+            crash_count = 0 # reset crash count on success
+            i += 1 # advance to next seed
+            
+        except RuntimeError as e:
+            print(f"[W] Trial encountered runtime error: {e}")
+            crash_count += 1
+            if crash_count >= 3:
+                print(f"[!] Trial failed {crash_count} times in a row. Assigning max cost and continuing.")
+                worst_cost = 1e6
+                worst_e_rms = 1e6
+                worst_u_rms = 1e6
+                trial.set_user_attr('e_RMS', worst_e_rms)
+                trial.set_user_attr('u_RMS', worst_u_rms)
+                print(f"[Mini-Batch] Terminated early due to repeated crashes. Cost: {worst_cost:.4f}")
+                return worst_cost
+                
+            restart_px4()
+            print(f"[!] Retrying seed #{i+1} (Attempt {crash_count+1}/3)...")
+            continue
         
     worst_cost = float(np.max(costs))
     worst_e_rms = float(np.max(e_rmses))
