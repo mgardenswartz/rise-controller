@@ -7,14 +7,14 @@ aviary_rise_node:
     desired_trajectory: 1
     h_act_func: swish
     h_method: xavier
-    hover_start_z_m_ned_aviary: -0.75
+    hover_start_z_m_ned: -0.75
     initial_weight_scale_factor: 0.2
     init_tol_m: 0.2
-    traj1_init_x_m_ned_aviary: 1.22
-    traj1_init_y_m_ned_aviary: 3.87
-    traj2_init_x_m_ned_aviary: 0.70
-    traj2_init_y_m_ned_aviary: -2.37
-    init_z_m_ned_aviary: -0.75
+    traj1_init_x_m_ned: 1.22
+    traj1_init_y_m_ned: 3.87
+    traj2_init_x_m_ned: 0.70
+    traj2_init_y_m_ned: -2.37
+    init_z_m_ned: -0.75
     init_yaw_deg: 180.0
     yaw_des_deg: 180.0
     k_1: 0.72
@@ -26,12 +26,12 @@ aviary_rise_node:
     o_method: he
     q_e: 1.0
     r_u: 0.2
-    safe_x_min_m_ned_aviary: -5.0
-    safe_x_max_m_ned_aviary: 5.0
-    safe_y_min_m_ned_aviary: -11.5
-    safe_y_max_m_ned_aviary: 11.5
-    safe_z_max_m_ned_aviary: 0.5
-    safe_z_min_m_ned_aviary: -6.5
+    safe_x_min_m_ned: -5.0
+    safe_x_max_m_ned: 5.0
+    safe_y_min_m_ned: -11.5
+    safe_y_max_m_ned: 11.5
+    safe_z_max_m_ned: 0.5
+    safe_z_min_m_ned: -6.5
     save_data: false
     shortcut_act_func: swish
     run_length_s: 60.0
@@ -39,12 +39,12 @@ aviary_rise_node:
     sigma_mod: 3.0
     theta_bar: 1000000.0
     traj1_alpha_warp: 0.5
-    traj1_center_z_m_ned_aviary: -1.25
+    traj1_center_z_m_ned: -1.25
     traj1_period_s: 30.0
-    traj1_x_amp_m_ned_aviary: 1.5
-    traj1_y_amp_m_ned_aviary: 3.0
-    traj1_z_amp_m_ned_aviary: 0.25
-    traj2_center_z_m_ned_aviary: -1.0
+    traj1_x_amp_m_ned: 1.5
+    traj1_y_amp_m_ned: 3.0
+    traj1_z_amp_m_ned: 0.25
+    traj2_center_z_m_ned: -1.0
     traj2_petal_radius_m: 2.5
     traj2_target_speed_mps: 1.0
     w_fail: 1000.0
@@ -53,7 +53,17 @@ aviary_rise_node:
     z_rand_range_m: 0.0    # +/- variation for hover_start_z in mini-batches
     mpc_acc_hor_max_mps2: 6.0 # Purposefully set more than PX4's actual 3.0 m/s^2 limit
     mpc_acc_vert_max_mps2: 3.0
-    num_eval_seeds: 3 # For mini-batches in optimization.py
+    num_eval_seeds: 1 # For mini-batches in optimization.py
     base_seed: 42
     stage2_base_gains: "1A" # Which baseline stage to use for Stage 2 (1A or 1B)
     db_path: "sqlite:///output/optimization.db"
+
+quadsim:
+  host: localhost
+  port: 5555
+
+px4:
+  host: 127.0.0.1
+  instance: 0
+  client: false
+  param_file: sentinel_px4.params

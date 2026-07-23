@@ -13,17 +13,17 @@ class TrajectoryGenerator:
 
         match self.desired_traj:
             case 1:
-                self.traj1_center_z_m_ned_aviary = config['traj1_center_z_m_ned_aviary']
+                self.traj1_center_z_m_ned = config['traj1_center_z_m_ned']
                 self.traj1_period_s = config['traj1_period_s']
-                self.traj1_x_amp_m_ned_aviary = config['traj1_x_amp_m_ned_aviary']
-                self.traj1_y_amp_m_ned_aviary = config['traj1_y_amp_m_ned_aviary']
-                self.traj1_z_amp_m_ned_aviary = config['traj1_z_amp_m_ned_aviary']
+                self.traj1_x_amp_m_ned = config['traj1_x_amp_m_ned']
+                self.traj1_y_amp_m_ned = config['traj1_y_amp_m_ned']
+                self.traj1_z_amp_m_ned = config['traj1_z_amp_m_ned']
                 self.traj1_alpha_warp = config['traj1_alpha_warp']
                 self.traj1_warp_c = 1.0 / math.sqrt(1.0 - self.traj1_alpha_warp) if self.traj1_alpha_warp < 1.0 else 1.0
                 self._precompute_phases()
                 _ = self._get_traj1_jax(0.0)
             case 2:
-                self.traj2_center_z_m_ned_aviary = config['traj2_center_z_m_ned_aviary']
+                self.traj2_center_z_m_ned = config['traj2_center_z_m_ned']
                 self.traj2_petal_radius_m = config['traj2_petal_radius_m']
                 self.traj2_target_speed_mps = config['traj2_target_speed_mps']
                 self._precompute_phases()
@@ -70,9 +70,9 @@ class TrajectoryGenerator:
 
         def pos_fn(tau_val: jax.Array) -> jax.Array:
             return jnp.array([
-                self.traj1_x_amp_m_ned_aviary * jnp.sin(wx * tau_val),
-                self.traj1_y_amp_m_ned_aviary * jnp.sin(wy * tau_val),
-                self.traj1_z_amp_m_ned_aviary * jnp.sin(wz * tau_val) + self.traj1_center_z_m_ned_aviary
+                self.traj1_x_amp_m_ned * jnp.sin(wx * tau_val),
+                self.traj1_y_amp_m_ned * jnp.sin(wy * tau_val),
+                self.traj1_z_amp_m_ned * jnp.sin(wz * tau_val) + self.traj1_center_z_m_ned
             ])
             
         # 3. Apply the exact chain rule
@@ -100,7 +100,7 @@ class TrajectoryGenerator:
             return jnp.array([
                 r * jnp.cos(th),
                 r * jnp.sin(th),
-                self.traj2_center_z_m_ned_aviary
+                self.traj2_center_z_m_ned
             ])
             
         # 3. Apply the exact chain rule

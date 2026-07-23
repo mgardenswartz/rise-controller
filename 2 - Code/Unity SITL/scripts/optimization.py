@@ -5,7 +5,19 @@ import yaml
 from typing import Any
 import time
 from datetime import timedelta
-from src.run_sim import SimRun
+import math
+import os
+
+from quadsim import QuadSim
+from quadsim.px4 import Px4Link
+from quadsim.tools.px4_bridge import HilBridge
+from quadsim.tools.px4_lockstep_runner import LockstepRunner, load_param_file
+from src.run_sim_px4 import SimRun
+
+# Globals for PX4 plant
+sim = None
+runner = None
+px4 = None
 
 class ETACallback:
     def __init__(self, target_trials: int):
@@ -51,6 +63,7 @@ class EarlyStoppingCallback:
 
 def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float:
     """Runs a mini-batch of robust domain randomizations and returns the worst-case cost."""
+    global runner, px4
     with open("conf/config.yaml", 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
 
@@ -64,11 +77,13 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
     u_rmses = []
     base_desired_traj = base_config.get('desired_trajectory', 1)
     if base_desired_traj == 1:
-        base_x = base_config.get('traj1_init_x_m_ned_aviary', 1.22)
-        base_y = base_config.get('traj1_init_y_m_ned_aviary', 3.87)
+        base_x = base_config.get('traj1_init_x_m_ned', 1.22)
+        base_y = base_config.get('traj1_init_y_m_ned', 3.87)
     else:
-        base_x = base_config.get('traj2_init_x_m_ned_aviary', 0.70)
-        base_y = base_config.get('traj2_init_y_m_ned_aviary', -2.37)
+        base_x = base_config.get('traj2_init_x_m_ned', 0.70)
+        base_y = base_config.get('traj2_init_y_m_ned', -2.37)
+
+    yaw_rad = math.radians(base_config.get('init_yaw_deg', 0.0))
 
     print(f"\n[Mini-Batch] Evaluating {num_seeds} randomized initial conditions:")
     for i in range(num_seeds):
@@ -76,16 +91,38 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
         np.random.seed(base_seed + i)
         
         batch_params = param_dict.copy()
-        batch_params['init_x_m_ned_aviary'] = base_x + np.random.uniform(-xy_range, xy_range)
-        batch_params['init_y_m_ned_aviary'] = base_y + np.random.uniform(-xy_range, xy_range)
-        batch_params['hover_start_z_m_ned_aviary'] = base_config['hover_start_z_m_ned_aviary'] + np.random.uniform(-z_range, z_range)
+        target_x = base_x + np.random.uniform(-xy_range, xy_range)
+        target_y = base_y + np.random.uniform(-xy_range, xy_range)
+        target_z = base_config['hover_start_z_m_ned'] + np.random.uniform(-z_range, z_range)
+        batch_params['init_x_m_ned'] = target_x
+        batch_params['init_y_m_ned'] = target_y
+        batch_params['hover_start_z_m_ned'] = target_z
         
-        sim = SimRun(batch_params, yaml_config_path="conf/config.yaml")
-        cost, e_rms, u_rms = sim.run()
+        print(f"[reset] PX4 position control -> ({target_x:.2f}, {target_y:.2f}, {target_z:.2f})")
+        if not (px4.is_armed() and px4.in_offboard()):
+            raise RuntimeError("vehicle left armed OFFBOARD during a trial")
+        
+        if not runner.fly_to_ned(
+            target_x,
+            target_y,
+            target_z,
+            yaw_ned=yaw_rad,
+            tol=base_config.get('init_tol_m', 0.20),
+            vel_tol=0.25,
+            settle_s=2.0,
+            timeout_s=40.0,
+        ):
+            print("[!] Could not recover and settle at hover origin!")
+            raise RuntimeError("PX4 could not recover to start position.")
+            
+        print("  -> Arrived at start position. Handing over to RISE controller...")
+        
+        sim_run = SimRun(batch_params, yaml_config_path="conf/config.yaml", runner=runner, px4=px4)
+        cost, e_rms, u_rms = sim_run.run()
         costs.append(cost)
         e_rmses.append(e_rms)
         u_rmses.append(u_rms)
-        print(f"  -> Seed #{i+1} | Pos: ({batch_params['init_x_m_ned_aviary']:.2f}, {batch_params['init_y_m_ned_aviary']:.2f}, {batch_params['hover_start_z_m_ned_aviary']:.2f}) | Cost: {cost:.4f}")
+        print(f"  -> Seed #{i+1} | Pos: ({target_x:.2f}, {target_y:.2f}, {target_z:.2f}) | Cost: {cost:.4f}")
         
     worst_cost = float(np.max(costs))
     worst_e_rms = float(np.max(e_rmses))
@@ -205,7 +242,6 @@ def run_stage_4(trial: optuna.Trial) -> float:
     return evaluate_minibatch(trial, param_dict)
 
 if __name__ == "__main__":
-    import os
     parser = argparse.ArgumentParser(description="Optuna Orchestrator for Quadcopter Adaptive Control")
     parser.add_argument("--stage", type=str, required=True, choices=['1A', '1B', '2A', '2B', '3', '4', 'LHS'], help="Optimization stage to run.")
     parser.add_argument("--num_trials", type=int, required=True, help="Number of trials.")
@@ -213,7 +249,17 @@ if __name__ == "__main__":
     parser.add_argument("--patience", type=int, required=True, help="Number of trials to wait for improvement before stopping early. 0 to disable.")
     args = parser.parse_args()
 
+    # Initialize PX4 plant config
+    with open("conf/config.yaml", 'r') as f:
+        full_config = yaml.safe_load(f)
+    px4_config = full_config['px4']
+    quadsim_config = full_config['quadsim']
+    aviary_config = full_config['aviary_rise_node']['ros__parameters']
+    desired_traj = aviary_config.get('desired_trajectory', 1)
+
     # Construct the file path and SQLite URL
+    args.db_dir = os.path.join(args.db_dir, f"traj{desired_traj}")
+    os.makedirs(args.db_dir, exist_ok=True)
     db_file_path = os.path.join(args.db_dir, f"stage_{args.stage}.db")
     db_url = f"sqlite:///{db_file_path}"
     
@@ -232,46 +278,105 @@ if __name__ == "__main__":
     early_stop_callback = EarlyStoppingCallback(args.patience)
     from typing import Callable
     callbacks: list[Callable[[optuna.Study, optuna.trial.FrozenTrial], None]] = [eta_callback, early_stop_callback]
+    
+    sim = QuadSim(
+        host=quadsim_config["host"],
+        command_port=quadsim_config["port"],
+        telemetry_port=quadsim_config["port"] + 1,
+    )
+    sim.connect()
+    bridge = HilBridge(
+        px4_host=px4_config["host"],
+        instance=px4_config["instance"],
+        px4_client=px4_config["client"],
+    )
+    px4 = Px4Link(stream_hz=0, instance=px4_config["instance"])
+    runner = LockstepRunner(
+        sim,
+        bridge,
+        px4,
+        control_hz=aviary_config["control_frequency_hz"],
+    )
+    speed = aviary_config.get("sim_speed", 10.0)
+    runner.speed_cap = speed if speed > 0.0 else None
 
-    if args.stage == '1A':
-        study.optimize(run_stage_1a, n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '1B':
-        study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '2A':
-        with open("conf/config.yaml", 'r') as f:
-            base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
-        base_stage = base_config.get('stage2_base_gains', '1B')
+    runner.start()
+    runner.wait_px4()
+    param_file = os.path.join("conf", px4_config["param_file"])
+    load_param_file(px4, param_file)
+    px4.configure_offboard_no_rc()
+    if not runner.wait_ekf_ready() or not runner.wait_heading():
+        raise RuntimeError("PX4 estimator is not ready")
+
+    try:
+        # Get ground reference
+        ground_ned = np.asarray(runner.ground_ned, dtype=float)
+        start_position = [ground_ned[0], ground_ned[1], ground_ned[2] - 1.0] 
         
-        stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
-        try:
-            study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
-            print("\n=========================================================================")
-            print(f" [Sanity Check] Stage {base_stage} Best Gains injected into Stage 2A:")
-            for k, v in study_base.best_params.items():
-                print(f"    {k}: {v}")
-            print("=========================================================================\n")
-        except Exception:
-            print(f"\n[!] Could not load Stage {base_stage} gains for sanity check print.\n")
+        px4.goto_ned(*start_position, yaw_ned=0.0)
+        px4.emit_setpoint_now()
+        if not runner.engage_offboard(arm=True):
+            raise RuntimeError("PX4 refused OFFBOARD or arm")
+
+        if args.stage == '1A':
+            study.optimize(run_stage_1a, n_trials=args.num_trials, callbacks=callbacks)
+        elif args.stage == '1B':
+            study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=callbacks)
+        elif args.stage == '2A':
+            base_stage = aviary_config.get('stage2_base_gains', '1B')
+            stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
+            try:
+                study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
+                print("\n=========================================================================")
+                print(f" [Sanity Check] Stage {base_stage} Best Gains injected into Stage 2A:")
+                for k, v in study_base.best_params.items():
+                    print(f"    {k}: {v}")
+                print("=========================================================================\n")
+            except Exception:
+                print(f"\n[!] Could not load Stage {base_stage} gains for sanity check print.\n")
+                
+            study.optimize(lambda t: run_stage_2a(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
+        elif args.stage == '2B':
+            base_stage = aviary_config.get('stage2_base_gains', '1B')
+            stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
+            try:
+                study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
+                print("\n=========================================================================")
+                print(f" [Sanity Check] Stage {base_stage} Best Gains injected into Stage 2B:")
+                for k, v in study_base.best_params.items():
+                    print(f"    {k}: {v}")
+                print("=========================================================================\n")
+            except Exception:
+                print(f"\n[!] Could not load Stage {base_stage} gains for sanity check print.\n")
+                
+            study.optimize(lambda t: run_stage_2b(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
+        elif args.stage == '3':
+            study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=callbacks)
+        elif args.stage == '4':
+            study.optimize(run_stage_4, n_trials=args.num_trials, callbacks=callbacks)
             
-        study.optimize(lambda t: run_stage_2a(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '2B':
-        with open("conf/config.yaml", 'r') as f:
-            base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
-        base_stage = base_config.get('stage2_base_gains', '1B')
-        
-        stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
-        try:
-            study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
-            print("\n=========================================================================")
-            print(f" [Sanity Check] Stage {base_stage} Best Gains injected into Stage 2B:")
-            for k, v in study_base.best_params.items():
-                print(f"    {k}: {v}")
-            print("=========================================================================\n")
-        except Exception:
-            print(f"\n[!] Could not load Stage {base_stage} gains for sanity check print.\n")
-            
-        study.optimize(lambda t: run_stage_2b(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '3':
-        study.optimize(run_stage_3, n_trials=args.num_trials, callbacks=callbacks)
-    elif args.stage == '4':
-        study.optimize(run_stage_4, n_trials=args.num_trials, callbacks=callbacks)
+    except KeyboardInterrupt:
+        print("\n[study] interrupted")
+    except Exception as e:
+        print(f"\n[study] stopped: {e}")
+    finally:
+        # Land and cleanup cleanly
+        if px4 and px4.is_armed():
+            print("\nLanding drone before exit...")
+            ground = runner.ground_ned
+            runner.fly_to_ned(
+                ground[0],
+                ground[1],
+                ground[2] - 0.08,
+                yaw_ned=0.0,
+                tol=0.12,
+                vel_tol=0.25,
+                settle_s=1.5,
+                timeout_s=45.0,
+            )
+            runner.disarm()
+        if runner:
+            runner.close()
+        if sim:
+            sim.resume()
+            sim.disconnect()
