@@ -10,8 +10,10 @@ echo " Starting Monte Carlo Robustness Sweep"
 echo "=========================================="
 echo "Ensure you have started Unity in HEADLESS mode:"
 echo "  ~/Desktop/aviary_${TRAJ_NUM}.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556"
+echo "AND you have started PX4 SITL lockstep:"
+echo "  make px4_sitl none_iris"
 echo "=========================================="
-read -p "Press Enter to continue once Unity is running..."
+read -p "Press Enter to continue once both Unity and PX4 are running..."
 
 echo "[*] Running Robustness Sweep on $DB_DIR/best_gains.yaml..."
 python scripts/evaluate_robustness.py --num_trials $NUM_TRIALS --config conf/config.yaml --db_dir $DB_DIR

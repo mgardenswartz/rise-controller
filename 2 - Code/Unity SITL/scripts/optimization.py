@@ -12,7 +12,7 @@ from quadsim import QuadSim
 from quadsim.px4 import Px4Link
 from quadsim.tools.px4_bridge import HilBridge
 from quadsim.tools.px4_lockstep_runner import LockstepRunner, load_param_file
-from src.run_sim_px4 import SimRun
+from src.run_sim import SimRun
 
 # Globals for PX4 plant
 sim = None
@@ -75,15 +75,15 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
     costs = []
     e_rmses = []
     u_rmses = []
-    base_desired_traj = base_config.get('desired_trajectory', 1)
+    base_desired_traj = base_config['desired_trajectory']
     if base_desired_traj == 1:
-        base_x = base_config.get('traj1_init_x_m_ned', 1.22)
-        base_y = base_config.get('traj1_init_y_m_ned', 3.87)
+        base_x = base_config['traj1_init_x_m_ned']
+        base_y = base_config['traj1_init_y_m_ned']
     else:
-        base_x = base_config.get('traj2_init_x_m_ned', 0.70)
-        base_y = base_config.get('traj2_init_y_m_ned', -2.37)
+        base_x = base_config['traj2_init_x_m_ned']
+        base_y = base_config['traj2_init_y_m_ned']
 
-    yaw_rad = math.radians(base_config.get('init_yaw_deg', 0.0))
+    yaw_rad = math.radians(base_config['init_yaw_deg'])
 
     print(f"\n[Mini-Batch] Evaluating {num_seeds} randomized initial conditions:")
     for i in range(num_seeds):
@@ -107,7 +107,7 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
             target_y,
             target_z,
             yaw_ned=yaw_rad,
-            tol=base_config.get('init_tol_m', 0.20),
+            tol=base_config['init_tol_m'],
             vel_tol=0.25,
             settle_s=2.0,
             timeout_s=40.0,
@@ -174,13 +174,13 @@ def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
 
     param_dict = {
         'controller_type': 'resnet', # Stage 2A tunes the Neural Network
-        'initial_weight_scale_factor': 0.1, 
-        'num_blocks': 0,
-        'k_0': 1,
-        'k_i': 1,
-        'hidden_width': 4,
-        'gamma': trial.suggest_float("gamma", -10.0, 30.0),
-        'sigma_mod': trial.suggest_float("sigma_mod", 0.001, 5.0, log=True),
+        'initial_weight_scale_factor': 0.5, 
+        'num_blocks': 4,
+        'k_0': 2,
+        'k_i': 2,
+        'hidden_width': 8,
+        'gamma': trial.suggest_float("gamma", 0.0, 100.0),
+        'sigma_mod': trial.suggest_float("sigma_mod", 0.01, 20.0, log=True),
         **best_base_params
     }
     return evaluate_minibatch(trial, param_dict)
@@ -188,7 +188,7 @@ def run_stage_2a(trial: optuna.Trial, db_dir: str) -> float:
 def run_stage_2b(trial: optuna.Trial, db_dir: str) -> float:
     with open("conf/config.yaml", 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
-    base_stage = base_config.get('stage2_base_gains', '1B')
+    base_stage = base_config['stage2_base_gains']
     
     db_filename = f"stage_{base_stage}.db"
     study_name = f"stage_{base_stage}_study"
@@ -208,12 +208,12 @@ def run_stage_2b(trial: optuna.Trial, db_dir: str) -> float:
     param_dict = {
         'controller_type': 'integrated_resnet', # Stage 2B tunes the Integrated Neural Network (INN)
         'initial_weight_scale_factor': 0.1, 
-        'num_blocks': 0,
-        'k_0': 1,
-        'k_i': 1,
-        'hidden_width': 4,
-        'gamma': trial.suggest_float("gamma", -10.0, 30.0),
-        'sigma_mod': trial.suggest_float("sigma_mod", 0.001, 5.0, log=True),
+        'num_blocks': 4,
+        'k_0': 2,
+        'k_i': 2,
+        'hidden_width': 8,
+        'gamma': trial.suggest_float("gamma", 0.0, 100.0),
+        'sigma_mod': trial.suggest_float("sigma_mod", 0.01, 20.0, log=True),
         **best_base_params
     }
     return evaluate_minibatch(trial, param_dict)
@@ -255,10 +255,9 @@ if __name__ == "__main__":
     px4_config = full_config['px4']
     quadsim_config = full_config['quadsim']
     aviary_config = full_config['aviary_rise_node']['ros__parameters']
-    desired_traj = aviary_config.get('desired_trajectory', 1)
+    desired_traj = aviary_config['desired_trajectory']
 
     # Construct the file path and SQLite URL
-    args.db_dir = os.path.join(args.db_dir, f"traj{desired_traj}")
     os.makedirs(args.db_dir, exist_ok=True)
     db_file_path = os.path.join(args.db_dir, f"stage_{args.stage}.db")
     db_url = f"sqlite:///{db_file_path}"
@@ -297,7 +296,7 @@ if __name__ == "__main__":
         px4,
         control_hz=aviary_config["control_frequency_hz"],
     )
-    speed = aviary_config.get("sim_speed", 10.0)
+    speed = aviary_config["sim_speed"]
     runner.speed_cap = speed if speed > 0.0 else None
 
     runner.start()
@@ -323,7 +322,7 @@ if __name__ == "__main__":
         elif args.stage == '1B':
             study.optimize(run_stage_1b, n_trials=args.num_trials, callbacks=callbacks)
         elif args.stage == '2A':
-            base_stage = aviary_config.get('stage2_base_gains', '1B')
+            base_stage = aviary_config['stage2_base_gains']
             stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
             try:
                 study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
@@ -337,7 +336,7 @@ if __name__ == "__main__":
                 
             study.optimize(lambda t: run_stage_2a(t, args.db_dir), n_trials=args.num_trials, callbacks=callbacks)
         elif args.stage == '2B':
-            base_stage = aviary_config.get('stage2_base_gains', '1B')
+            base_stage = aviary_config['stage2_base_gains']
             stage_db_url = f"sqlite:///{os.path.join(args.db_dir, f'stage_{base_stage}.db')}"
             try:
                 study_base = optuna.load_study(study_name=f"stage_{base_stage}_study", storage=stage_db_url)
@@ -361,20 +360,26 @@ if __name__ == "__main__":
         print(f"\n[study] stopped: {e}")
     finally:
         # Land and cleanup cleanly
-        if px4 and px4.is_armed():
-            print("\nLanding drone before exit...")
-            ground = runner.ground_ned
-            runner.fly_to_ned(
-                ground[0],
-                ground[1],
-                ground[2] - 0.08,
-                yaw_ned=0.0,
-                tol=0.12,
-                vel_tol=0.25,
-                settle_s=1.5,
-                timeout_s=45.0,
-            )
-            runner.disarm()
+        try:
+            if px4 and px4.is_armed():
+                print("\nLanding drone before exit...")
+                ground = runner.ground_ned
+                runner.fly_to_ned(
+                    ground[0],
+                    ground[1],
+                    ground[2] - 0.08,
+                    yaw_ned=0.0,
+                    tol=0.12,
+                    vel_tol=0.25,
+                    settle_s=1.5,
+                    timeout_s=45.0,
+                )
+                runner.disarm()
+        except KeyboardInterrupt:
+            print("\n[!] Force quitting during landing.")
+        except Exception as e:
+            print(f"\n[!] Error during landing: {e}")
+            
         if runner:
             runner.close()
         if sim:

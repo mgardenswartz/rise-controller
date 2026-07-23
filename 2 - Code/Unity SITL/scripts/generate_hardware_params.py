@@ -46,7 +46,7 @@ def main():
     # Find the specific controller parameters in best_gains.yaml
     controller_params = None
     for key, params in best_gains.items():
-        if params.get('controller_type') == target_controller_type:
+        if params['controller_type'] == target_controller_type:
             controller_params = params
             break
             
@@ -72,13 +72,13 @@ def main():
     param_dict['d_in'] = 15 if args.controller_type == "integrated_resnet" else 12
 
     # TEMP overrides
-    param_dict['traj1_z_amp_m_ned_aviary'] = 0.25
-    param_dict['init_z_m_ned_aviary'] = -0.75 # updated parameter name
+    param_dict['traj1_z_amp_m_ned'] = 0.25
+    param_dict['init_z_m_ned'] = -0.75 # updated parameter name
 
     # Generate initial neural network weights if applicable
     if target_controller_type in ["resnet", "integrated_resnet"]:
-        key = jax.random.PRNGKey(param_dict.get('base_seed', 42))
-        init_scale = param_dict.get('initial_weight_scale_factor', 0.2)
+        key = jax.random.PRNGKey(param_dict['base_seed'])
+        init_scale = param_dict['initial_weight_scale_factor']
         
         initial_weights_jax = init_scale * init_resnet_weights(
             key=key,

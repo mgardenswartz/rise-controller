@@ -21,13 +21,21 @@ echo " Starting Optimization Sweep"
 echo "=========================================="
 echo "Ensure you have started Unity in HEADLESS mode:"
 echo "  ~/Desktop/aviary_${TRAJ_NUM}.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556"
+echo "AND you have started PX4 SITL lockstep:"
+echo "  make px4_sitl none_iris"
 echo "=========================================="
-read -p "Press Enter to continue once Unity is running..."
+read -p "Press Enter to continue once both Unity and PX4 are running..."
 
 
 # Comment out any lines below to skip a specific stage
+
+# No wind
 # ~/Desktop/aviary_0.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
+
+# Trajectory 1 Fan setup
 # ~/Desktop/aviary_1.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
+
+# Trajectory 2 Fan setup
 # ~/Desktop/aviary_2.app/Contents/MacOS/Unity_QuadSim -batchmode -nographics -rpcPort 5555 -telemetryPort 5556
 
 # echo "[*] Running Stage 1A (RISE No Wind - Ensure wind is OFF in Unity/config)"

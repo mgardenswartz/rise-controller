@@ -9,6 +9,10 @@ def main() -> None:
     parser.add_argument("--db_dir", type=str, required=True, help="Directory containing the Optuna SQLite databases.")
     parser.add_argument("--config", type=str, required=True, help="Path to config.yaml")
     args = parser.parse_args()
+    
+    with open(args.config, 'r') as f:
+        full_config = yaml.safe_load(f)
+        aviary_config = full_config['aviary_rise_node']['ros__parameters']
 
     best_gains_path = os.path.join(args.db_dir, "best_gains.yaml")
     best_gains: Dict[str, Dict[str, Any]] = {}
@@ -69,7 +73,7 @@ def main() -> None:
         
     with open(args.config, 'r') as f:
         base_config = yaml.safe_load(f)['aviary_rise_node']['ros__parameters']
-    base_stage = base_config.get('stage2_base_gains', '1B')
+    base_stage = base_config['stage2_base_gains']
     stage2_base_params = rise_params_no_wind if base_stage == '1A' else rise_params
 
     fixed_arch = {
