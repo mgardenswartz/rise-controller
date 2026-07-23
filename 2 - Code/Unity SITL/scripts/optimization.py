@@ -85,15 +85,27 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
 
     yaw_rad = math.radians(base_config['init_yaw_deg'])
 
-    print(f"\n[Mini-Batch] Evaluating {num_seeds} randomized initial conditions:")
+    traj1_fixed = [(1.5, 5.5), (1.5, 2.5), (-1.5, 5.5), (-1.5, 2.5)]
+    traj2_fixed = [(-1.5, 0.0), (1.5, 0.0), (0.0, -1.5), (0.0, 1.5)]
+
+    print(f"\n[Mini-Batch] Evaluating {num_seeds} initial conditions:")
     for i in range(num_seeds):
         # Deterministic perturbation based on seed index
         np.random.seed(base_seed + i)
         
         batch_params = param_dict.copy()
-        target_x = base_x + np.random.uniform(-xy_range, xy_range)
-        target_y = base_y + np.random.uniform(-xy_range, xy_range)
-        target_z = base_config['hover_start_z_m_ned'] + np.random.uniform(-z_range, z_range)
+        
+        if i < 4:
+            if base_desired_traj == 1:
+                target_x, target_y = traj1_fixed[i]
+            else:
+                target_x, target_y = traj2_fixed[i]
+            target_z = base_config['init_z_m_ned']
+        else:
+            target_x = base_x + np.random.uniform(-xy_range, xy_range)
+            target_y = base_y + np.random.uniform(-xy_range, xy_range)
+            target_z = base_config['init_z_m_ned'] + np.random.uniform(-z_range, z_range)
+            
         batch_params['init_x_m_ned'] = target_x
         batch_params['init_y_m_ned'] = target_y
         batch_params['hover_start_z_m_ned'] = target_z
@@ -108,9 +120,9 @@ def evaluate_minibatch(trial: optuna.Trial, param_dict: dict[str, Any]) -> float
             target_z,
             yaw_ned=yaw_rad,
             tol=base_config['init_tol_m'],
-            vel_tol=0.25,
-            settle_s=2.0,
-            timeout_s=40.0,
+            vel_tol=0.50,
+            settle_s=1.0,
+            timeout_s=60.0,
         ):
             print("[!] Could not recover and settle at hover origin!")
             raise RuntimeError("PX4 could not recover to start position.")

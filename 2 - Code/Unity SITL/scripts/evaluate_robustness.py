@@ -119,13 +119,24 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
         results[f"{name}_e_RMS"] = []
         results[f"{name}_u_RMS"] = []
     
+    traj1_fixed = [(1.5, 5.5), (1.5, 2.5), (-1.5, 5.5), (-1.5, 2.5)]
+    traj2_fixed = [(-1.5, 0.0), (1.5, 0.0), (0.0, -1.5), (0.0, 1.5)]
+    
     print(f"[*] Starting Monte Carlo Sweep ({n_trials} trials per controller)...")
     
     for i in range(n_trials):
         np.random.seed(100 + i) 
-        trial_x = base_x + np.random.uniform(-xy_range, xy_range)
-        trial_y = base_y + np.random.uniform(-xy_range, xy_range)
-        trial_z = base_z + np.random.uniform(-z_range, z_range)
+        
+        if i < 4:
+            if base_desired_traj == 1:
+                trial_x, trial_y = traj1_fixed[i]
+            else:
+                trial_x, trial_y = traj2_fixed[i]
+            trial_z = base_config['init_z_m_ned']
+        else:
+            trial_x = base_x + np.random.uniform(-xy_range, xy_range)
+            trial_y = base_y + np.random.uniform(-xy_range, xy_range)
+            trial_z = base_config['init_z_m_ned'] + np.random.uniform(-z_range, z_range)
         
         print(f"\n--- Trial {i+1}/{n_trials} | Spawn: ({trial_x:.2f}, {trial_y:.2f}, {trial_z:.2f}) ---")
         
@@ -142,7 +153,7 @@ def run_robustness_sweep(n_trials: int, config_path: str, controllers: List[Tupl
             yaw_rad = 0.0 # simplified
             if not runner.fly_to_ned(
                 trial_x, trial_y, trial_z, yaw_ned=yaw_rad,
-                tol=0.20, vel_tol=0.25, settle_s=2.0, timeout_s=40.0,
+                tol=0.20, vel_tol=0.50, settle_s=1.0, timeout_s=60.0,
             ):
                 raise RuntimeError("PX4 could not recover to start position.")
                 

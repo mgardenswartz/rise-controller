@@ -2,9 +2,10 @@
 
 # Configuration
 # 500 takes about 50 minutes with 4 mini-batches
-TRIALS_PHASE_1=50 
-TRIALS_PHASE_2=50
-TRIALS_PHASE_3=50
+TRIALS_PHASE_1=3
+TRIALS_PHASE_2=3
+TRIALS_PHASE_3=3
+TRIALS_PHASE_4=3
 PATIENCE=0
 TRAJ_NUM=2
 DB_DIR="output/traj${TRAJ_NUM}"
@@ -57,7 +58,7 @@ echo "[*] Running Stage 3 (Super-Twisting Baseline)"
 python scripts/optimization.py --stage 3 --num_trials $TRIALS_PHASE_3 --db_dir $DB_DIR --patience $PATIENCE
 
 echo "[*] Running Stage 4 (PID Controller Baseline)"
-python scripts/optimization.py --stage 4 --num_trials $TRIALS_PHASE_1 --db_dir $DB_DIR --patience $PATIENCE
+python scripts/optimization.py --stage 4 --num_trials $TRIALS_PHASE_4 --db_dir $DB_DIR --patience $PATIENCE
 
 echo "=========================================="
 echo " Extracting Best Gains..."

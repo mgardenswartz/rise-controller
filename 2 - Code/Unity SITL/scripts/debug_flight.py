@@ -32,17 +32,28 @@ def evaluate_gains(param_dict: dict, base_config: dict, runner: LockstepRunner, 
 
     yaw_rad = math.radians(base_config['init_yaw_deg'])
 
-    print(f"\n[Test] Evaluating {num_seeds} randomized initial conditions for {param_dict['controller_type']}:")
+    traj1_fixed = [(1.5, 5.5), (1.5, 2.5), (-1.5, 5.5), (-1.5, 2.5)]
+    traj2_fixed = [(-1.5, 0.0), (1.5, 0.0), (0.0, -1.5), (0.0, 1.5)]
+
+    print(f"\n[Test] Evaluating {num_seeds} initial conditions for {param_dict['controller_type']}:")
     for i in range(num_seeds):
         np.random.seed(base_seed + i)
         
-        batch_params = param_dict.copy()
-        target_x = base_x + np.random.uniform(-xy_range, xy_range)
-        target_y = base_y + np.random.uniform(-xy_range, xy_range)
-        target_z = base_config['hover_start_z_m_ned'] + np.random.uniform(-z_range, z_range)
-        batch_params['init_x_m_ned'] = target_x
-        batch_params['init_y_m_ned'] = target_y
-        batch_params['hover_start_z_m_ned'] = target_z
+        if i < 4:
+            if base_desired_traj == 1:
+                target_x, target_y = traj1_fixed[i]
+            else:
+                target_x, target_y = traj2_fixed[i]
+            target_z = base_config['init_z_m_ned']
+        else:
+            target_x = base_x + np.random.uniform(-xy_range, xy_range)
+            target_y = base_y + np.random.uniform(-xy_range, xy_range)
+            target_z = base_config['init_z_m_ned'] + np.random.uniform(-z_range, z_range)
+            
+        test_params = param_dict.copy()
+        test_params['init_x_m_ned'] = target_x
+        test_params['init_y_m_ned'] = target_y
+        test_params['hover_start_z_m_ned'] = target_z
         
         print(f"[reset] PX4 position control -> ({target_x:.2f}, {target_y:.2f}, {target_z:.2f})")
         if not (px4.is_armed() and px4.in_offboard()):
@@ -54,16 +65,16 @@ def evaluate_gains(param_dict: dict, base_config: dict, runner: LockstepRunner, 
             target_z,
             yaw_ned=yaw_rad,
             tol=base_config['init_tol_m'],
-            vel_tol=0.25,
-            settle_s=2.0,
-            timeout_s=40.0,
+            vel_tol=0.50,
+            settle_s=1.0,
+            timeout_s=60.0,
         ):
             print("[!] Could not recover and settle at hover origin!")
             raise RuntimeError("PX4 could not recover to start position.")
             
         print("  -> Arrived at start position. Handing over to RISE controller...")
         
-        sim_run = SimRun(batch_params, yaml_config_path="conf/config.yaml", runner=runner, px4=px4)
+        sim_run = SimRun(test_params, yaml_config_path="conf/config.yaml", runner=runner, px4=px4)
         cost, e_rms, u_rms = sim_run.run()
         costs.append(cost)
         e_rmses.append(e_rms)
