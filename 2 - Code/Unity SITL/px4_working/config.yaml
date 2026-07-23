@@ -24,7 +24,7 @@ control:
 trajectory:
   type: figure8
   duration_s: 30.0
-  altitude_m: 3.0
+  altitude_m: 1.0
 
   figure8:
     period_s: 30.0
