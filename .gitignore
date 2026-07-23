@@ -574,6 +574,6 @@ src/conf/tuned_gains.yaml
 2 - Code/Unity SITL/conf/best_gains.yaml
 2 - Code/Gazebo SITL/*.yaml
 2 - Code/Unity SITL/output
-**output/**
-**unity_executables/**
+**output**
+**unity_executables**
 **PX4-Autopilot**
