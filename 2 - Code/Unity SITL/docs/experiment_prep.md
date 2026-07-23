@@ -1,6 +1,6 @@
-# PREPARING FOR A REAL-WORLD EXPERIMENT:
+# PREPARING FOR A REAL-WORLD EXPERIMENT
 
-## GENERATE PARAMS
+Generate params for the quadcopter.
 
 ``
 GAZEBO=false
@@ -18,9 +18,6 @@ python scripts/generate_hardware_params.py --best_gains output/traj2/best_gains.
 ``
 
 Push latest node to the quad.
-
-<!-- adb push $PATH_TO_MY_REPO/2\ -\ Code/Gazebo\ SITL/ros2_ws/src/aviary_rise_controller/. /home/root/humble_ws/src/aviary_rise_controller/ -->
-
 ``
 PATH_TO_MY_REPO="$HOME/Documents/GitHub/rise-controller"
 adb push "$PATH_TO_MY_REPO/2 - Code/Gazebo SITL/ros2_ws/src/aviary_rise_controller/aviary_rise_controller/aviary_rise_node.py" /home/root/humble_ws/src/aviary_rise_controller/aviary_rise_controller/aviary_rise_node.py
@@ -30,6 +27,7 @@ adb push "$PATH_TO_MY_REPO/2 - Code/Gazebo SITL/ros2_ws/src/aviary_rise_controll
 
 Push latest params to the quad.
 ``
+PATH_TO_MY_REPO="$HOME/Documents/GitHub/rise-controller"
 adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/baseline_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/baseline_params_1.yaml
 adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/resnet_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/resnet_params_1.yaml
 adb push "$PATH_TO_MY_REPO/2 - Code/Unity SITL/output/hardware_params/integrated_resnet_params_1.yaml" /home/root/humble_ws/src/aviary_rise_controller/param/integrated_resnet_params_1.yaml
